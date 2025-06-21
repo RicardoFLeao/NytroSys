@@ -1,0 +1,35 @@
+QMainWindow {
+    background-color: #01050D;
+}
+
+QPushButton {
+    background-color: #031740;
+    color: #FFFFFF;
+    border: 2px solid #364959;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+QPushButton:hover {
+    background-color: #030C26;
+    border: 2px solid #70818C;
+}
+
+QMenuBar {
+    background-color: #031740;
+    color: #FFFFFF;
+}
+
+QMenuBar::item:selected {
+    background-color: #364959;
+}
+
+QMenu {
+    background-color: #031740;
+    color: #FFFFFF;
+}
+
+QMenu::item:selected {
+    background-color: #364959;
+}
