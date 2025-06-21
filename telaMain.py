@@ -46,9 +46,9 @@ class telaPrincipal(QMainWindow):
             '<span style="color: white;">Nitro </span><span style="color: #FFA500;">Sys</span>')
         titulo.setAlignment(Qt.AlignmentFlag.AlignCenter)
         titulo.setStyleSheet("""
-            font-size: 75px;
+            font-size: 85px;
             font-weight: bold;
-            letter-spacing: 2px;
+            letter-spacing: 5px;
         """)
         layout_principal.addWidget(titulo)
 
@@ -76,7 +76,7 @@ class telaPrincipal(QMainWindow):
         layout_botoes.addWidget(btnF, 2, 1)
 
         bloco_notas = QTextEdit()
-        bloco_notas.setPlaceholderText("bloco de notas para anotação...")
+        bloco_notas.setPlaceholderText("bloco de notas para anotações...")
         bloco_notas.setFixedSize(400, 300)
         bloco_notas.setStyleSheet("""
             QTextEdit {
