@@ -1,8 +1,8 @@
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtCore import Qt
+from cadastro_funcionarios import CadastroFuncionario
 import sys
-
 
 class telaPrincipal(QMainWindow):
     def __init__(self):
@@ -27,16 +27,29 @@ class telaPrincipal(QMainWindow):
     def menu(self):
         barra_menu = self.menuBar()
 
+        # Menu Ad. Produtos (placeholder)
         barra_menu.addMenu('Ad. Produtos')
-        barra_menu.addMenu('Cad. Entidades')
+
+        # Menu Cad. Entidades
+        menu_entidades = barra_menu.addMenu('Cad. Entidades')
+        acao_funcionarios = QAction('Cadastro de Funcionários', self)
+        acao_funcionarios.triggered.connect(self.abrir_cadastro_funcionarios)
+        menu_entidades.addAction(acao_funcionarios)
+
+        # Demais menus (placeholders por enquanto)
         barra_menu.addMenu('Financeiro')
         barra_menu.addMenu('Movimentação')
         barra_menu.addMenu('Contabilidade')
         barra_menu.addMenu('Utilitários')
 
+        # Menu Sair
         menu_sair = QAction('Sair', self)
         menu_sair.triggered.connect(self.close)
         barra_menu.addAction(menu_sair)
+
+    def abrir_cadastro_funcionarios(self):
+        self.janela_cadastro = CadastroFuncionario()
+        self.janela_cadastro.exec()
 
     def conteudo(self):
         conteudo = QWidget()
@@ -100,8 +113,7 @@ class telaPrincipal(QMainWindow):
         conteudo.setContentsMargins(0, 75, 0, 0)
         self.setCentralWidget(conteudo)
 
-
-# Teste isolado (executar tela principal sem login)
+# Teste isolado
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     tela = telaPrincipal()
