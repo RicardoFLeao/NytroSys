@@ -1,11 +1,11 @@
+
 QMainWindow {
     background-color: #01050D;
 }
 
 QPushButton {
     background-color: #031740;
-    color: #FFFFFF;
-    /* color:#adb5ba */
+    color: white;
     border: 2px solid #364959;
     border-radius: 10px;
     font-size: 18px;
@@ -19,7 +19,7 @@ QPushButton:hover {
 
 QMenuBar {
     background-color: #031740;
-    color: #FFFFFF;
+    color: white;
 }
 
 QMenuBar::item:selected {
@@ -28,7 +28,7 @@ QMenuBar::item:selected {
 
 QMenu {
     background-color: #031740;
-    color: #FFFFFF;
+    color: white;
 }
 
 QMenu::item:selected {

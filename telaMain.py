@@ -1,8 +1,10 @@
-from PyQt6.QtWidgets import *
-from PyQt6.QtGui import QAction, QIcon
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QGridLayout
+from PyQt6.QtGui import QAction,  QShortcut, QKeySequence
 from PyQt6.QtCore import Qt
-from cadastro_funcionarios import CadastroFuncionario
+from PyQt6.QtGui import QIcon
+from estilo import gerar_estilo
 import sys
+
 
 class telaPrincipal(QMainWindow):
     def __init__(self):
@@ -14,42 +16,22 @@ class telaPrincipal(QMainWindow):
         self.showMaximized()
         self.menu()
         self.conteudo()
-        self.setStyleSheet(self.carregar_estilo())
 
-    def carregar_estilo(self):
-        try:
-            with open("estilo.css", "r", encoding="utf-8") as arquivo:
-                return arquivo.read()
-        except FileNotFoundError:
-            print(">>> Arquivo estilo.css não encontrado.")
-            return ""
+        QShortcut(QKeySequence('Esc'), self).activated.connect(self.close)
 
     def menu(self):
         barra_menu = self.menuBar()
 
-        # Menu Ad. Produtos (placeholder)
         barra_menu.addMenu('Ad. Produtos')
-
-        # Menu Cad. Entidades
-        menu_entidades = barra_menu.addMenu('Cad. Entidades')
-        acao_funcionarios = QAction('Cadastro de Funcionários', self)
-        acao_funcionarios.triggered.connect(self.abrir_cadastro_funcionarios)
-        menu_entidades.addAction(acao_funcionarios)
-
-        # Demais menus (placeholders por enquanto)
+        barra_menu.addMenu('Cad. Entidades')
         barra_menu.addMenu('Financeiro')
         barra_menu.addMenu('Movimentação')
         barra_menu.addMenu('Contabilidade')
         barra_menu.addMenu('Utilitários')
-
-        # Menu Sair
+        
         menu_sair = QAction('Sair', self)
         menu_sair.triggered.connect(self.close)
         barra_menu.addAction(menu_sair)
-
-    def abrir_cadastro_funcionarios(self):
-        self.janela_cadastro = CadastroFuncionario()
-        self.janela_cadastro.exec()
 
     def conteudo(self):
         conteudo = QWidget()
@@ -59,9 +41,9 @@ class telaPrincipal(QMainWindow):
             '<span style="color: white;">Nitro </span><span style="color: #FFA500;">Sys</span>')
         titulo.setAlignment(Qt.AlignmentFlag.AlignCenter)
         titulo.setStyleSheet("""
-            font-size: 85px;
+            font-size: 75px;
             font-weight: bold;
-            letter-spacing: 5px;
+            letter-spacing: 2px;
         """)
         layout_principal.addWidget(titulo)
 
@@ -89,7 +71,7 @@ class telaPrincipal(QMainWindow):
         layout_botoes.addWidget(btnF, 2, 1)
 
         bloco_notas = QTextEdit()
-        bloco_notas.setPlaceholderText("bloco de notas para anotações...")
+        bloco_notas.setPlaceholderText("bloco de notas para anotação...")
         bloco_notas.setFixedSize(400, 300)
         bloco_notas.setStyleSheet("""
             QTextEdit {
@@ -113,9 +95,12 @@ class telaPrincipal(QMainWindow):
         conteudo.setContentsMargins(0, 75, 0, 0)
         self.setCentralWidget(conteudo)
 
-# Teste isolado
+
+# Teste isolado (executar tela principal sem login)
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    estilo = gerar_estilo()
+    app.setStyleSheet(estilo)
     tela = telaPrincipal()
     tela.show()
     sys.exit(app.exec())
