@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QPushBut
 from PyQt6.QtGui import QAction,  QShortcut, QKeySequence
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
-from estilo import gerar_estilo
+from util.estilo import gerar_estilo
 import sys
 
 

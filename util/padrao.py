@@ -1,7 +1,7 @@
-from PyQt6.QtWidgets import QPushButton, QTabWidget
-from estilo import cores
-from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QPushButton, QTabWidget, QLabel, QComboBox, QLineEdit
+from PyQt6.QtGui import QIcon, QFont
 
+# Cores de exemplo (pode manter se estiver usando em outro lugar)
 exem = {
     "cor1": "#01050D",
     "cor2": "#030C26",
@@ -12,7 +12,7 @@ exem = {
 }
 
 # BOTÃO DE PESQUISA - PADRÃO 
-def botao_pesquisa():
+def criar_botao_pesquisa():
     botao = QPushButton("F8 - Pesquisar")
     botao.setIcon(QIcon("icons/pesquisar.png"))
     botao.setStyleSheet("""
@@ -30,38 +30,36 @@ def botao_pesquisa():
             font-size: 14px;
         }
     """)
-
     botao.setFixedSize(130, 27)
     return botao
 
-#TabWidget - PADRAO
-def tabWidget():
-    tabWidget = QTabWidget()
-    tabWidget.setStyleSheet("""
-    QTabBar::tab:first{
-        margin-left: 6px;
-    }
-                    
-    QTabBar::tab {
-        background-color: #cbcdce;
-        color: black;
-        padding: 4px 10px;  /* ← Reduzido */
-        margin-top: 2px;    /* ← Pode controlar altura geral */
-        border-top-left-radius: 5px;
-        border-top-right-radius: 5px;
-    }
-                            
-    QTabBar::tab:selected {
-        background-color: #82888a;
-        font: bold;
-    }
-    QTabBar::tab:!selected{
-        margin-top: 8px}
-""")
-    return tabWidget
+# TABWIDGET - PADRÃO
+def criar_tab_widget():
+    tabs = QTabWidget()
+    tabs.setStyleSheet("""
+        QTabBar::tab:first {
+            margin-left: 6px;
+        }
+        QTabBar::tab {
+            background-color: #cbcdce;
+            color: black;
+            padding: 4px 10px;
+            margin-top: 2px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+        }
+        QTabBar::tab:selected {
+            background-color: #cbcdce;
+            font: bold;
+        }
+        QTabBar::tab:!selected {
+            margin-top: 8px;
+        }
+    """)
+    return tabs
 
-#BOTÃO SAIR - PADRÃO
-def botao_sair():
+# BOTÃO SAIR - PADRÃO
+def criar_botao_sair():
     botao = QPushButton("ESC - Sair")
     botao.setStyleSheet("""
         QPushButton {
@@ -81,8 +79,8 @@ def botao_sair():
     botao.setFixedSize(230, 70)
     return botao
 
-#BOTÃO SALVAR - PADRÃO
-def botao_salvar():
+# BOTÃO SALVAR - PADRÃO
+def criar_botao_salvar():
     botao = QPushButton("F12 - Salvar")
     botao.setStyleSheet("""
         QPushButton {
@@ -102,3 +100,20 @@ def botao_salvar():
     botao.setFixedSize(230, 70)
     return botao
 
+# LABEL PADRÃO
+def criar_label_padrao():
+    lbl = QLabel("")
+    lbl.setStyleSheet("font-size: 14px")
+    return lbl
+
+# COMBOBOX PADRÃO
+def criar_combobox_padrao():
+    cbx = QComboBox()
+    cbx.setStyleSheet("background-color: white")
+    return cbx
+
+# LINEEDIT PADRÃO
+def criar_lineedit_padrao():
+    lnedit = QLineEdit()
+    lnedit.setStyleSheet("background-color: white; color: black; font-size: 14px")
+    return lnedit

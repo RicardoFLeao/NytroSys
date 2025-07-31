@@ -1,7 +1,7 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtGui import QShortcut, QKeySequence
 from telaMain import telaPrincipal
-from estilo import gerar_estilo
+from util.estilo import gerar_estilo
 from bd import verificar_login
 
 
