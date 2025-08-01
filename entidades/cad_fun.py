@@ -124,7 +124,9 @@ class CadFuncionarios(QWidget):
         self.tabela_resultado.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.tabela_resultado.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.tabela_resultado.setAlternatingRowColors(True)
-        self.tabela_resultado.setFixedHeight(300)
+        self.tabela_resultado.setMinimumHeight(100)
+        self.tabela_resultado.setMaximumHeight(300)
+        
 
         #botões controle novo, relatório
 
@@ -148,7 +150,9 @@ class CadFuncionarios(QWidget):
         layout_geral_aba1.addLayout(hbox_linha1)
         layout_geral_aba1.addLayout(vbox_linha2)
         layout_geral_aba1.addWidget(self.tabela_resultado)
+        layout_geral_aba1.addStretch()
         layout_geral_aba1.addLayout(hbox_botoes_rodape)
+        layout_geral_aba1.addStretch()
 
         aba1.setLayout(layout_geral_aba1)
 

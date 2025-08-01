@@ -29,7 +29,7 @@ class TelaEntidades(QWidget):
 
         nometela = QLabel("Cadastro de Entidades")
         nometela.setStyleSheet("color: orange; font-size:38px; font: bold")
-        nometela.setContentsMargins(0, 30, 0, 70)
+        nometela.setContentsMargins(0, 30, 0, 10)
 
 
         botao_fun = QPushButton('A - Funcionários')
@@ -50,17 +50,17 @@ class TelaEntidades(QWidget):
         vbox_botoes = QVBoxLayout()
         vbox_botoes.setAlignment(Qt.AlignmentFlag.AlignCenter)
         vbox_botoes.addWidget(botao_fun)
-        vbox_botoes.addSpacing(10)
+        vbox_botoes.addSpacing(20)
         vbox_botoes.addWidget(botao_cli)
-        vbox_botoes.addSpacing(10)
+        vbox_botoes.addSpacing(20)
         vbox_botoes.addWidget(botao_for)
-        vbox_botoes.addSpacing(10)
+        vbox_botoes.addSpacing(20)
         vbox_botoes.addWidget(botao_uti)
-        vbox_botoes.addSpacing(10)
+        vbox_botoes.addSpacing(20)
         vbox_botoes.addWidget(botao_sair)
 
         layout_geral = QVBoxLayout()
-        # layout_geral.setContentsMargins(0, 40, 0, 0)
+        layout_geral.setContentsMargins(0, 10, 0, 30)
         layout_geral.addWidget(nometela, alignment=Qt.AlignmentFlag.AlignCenter)
         layout_geral.addLayout(vbox_botoes)
         layout_geral.addStretch()  # Agora empurra o final pra baixo
