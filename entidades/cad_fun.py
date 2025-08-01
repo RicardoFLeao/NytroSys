@@ -7,7 +7,7 @@ from PyQt6.QtGui import QIcon, QShortcut, QKeySequence
 from PyQt6.QtCore import Qt
 
 from util.padrao import (
-    criar_botao_pesquisa,
+    criar_botao,
     criar_tab_widget,
     criar_botao_sair,
     criar_botao_salvar,
@@ -22,12 +22,19 @@ class CadFuncionarios(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Cadastro Funcionários")
-        self.setWindowIcon(QIcon('imagens/icone.png'))
+        
+        # Ícone seguro com verificação de caminho
+        icon_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'imagens', 'icone.png'))
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+        else:
+            print(f"[ERRO] Ícone não encontrado: {icon_path}")
+
 
         self.componentes()
 
         self.showMaximized()
-        QShortcut(QKeySequence('Esc'), self).activated.connect(self.close)
+        QShortcut(QKeySequence('Esc'), self).activated.connect(self.sair)
 
     def componentes(self):
         nometela = QLabel("Cadastro Funcionários")
@@ -97,7 +104,8 @@ class CadFuncionarios(QWidget):
         combo_ativo.addItems(["Todos", "Ativo", "Inativo"])
         combo_ativo.setFixedWidth(220)
 
-        btn_pesq = criar_botao_pesquisa()
+        btn_pesq = criar_botao()
+        btn_pesq.setText("F8 - Pesquisa")
         btn_pesq.clicked.connect(self.preencher_tabela)  # chama função ao clicar
 
         hbox_linha2 = QHBoxLayout()
@@ -118,12 +126,29 @@ class CadFuncionarios(QWidget):
         self.tabela_resultado.setAlternatingRowColors(True)
         self.tabela_resultado.setFixedHeight(300)
 
+        #botões controle novo, relatório
+
+        botao_novo = criar_botao()
+        botao_novo.setText('F5 - Novo')
+
+        botao_relat = criar_botao()
+        botao_relat.setText('Relatórios')
+
+        hbox_botoes_rodape = QHBoxLayout()
+        hbox_botoes_rodape.setAlignment(Qt.AlignmentFlag.AlignCenter )
+        hbox_botoes_rodape.addWidget(botao_novo)
+        hbox_botoes_rodape.addSpacing(5)
+        hbox_botoes_rodape.addWidget(botao_relat)
+        hbox_botoes_rodape.addStretch()
+
+
         layout_geral_aba1 = QVBoxLayout()
         layout_geral_aba1.setContentsMargins(20, 20, 20, 0)
         layout_geral_aba1.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         layout_geral_aba1.addLayout(hbox_linha1)
         layout_geral_aba1.addLayout(vbox_linha2)
         layout_geral_aba1.addWidget(self.tabela_resultado)
+        layout_geral_aba1.addLayout(hbox_botoes_rodape)
 
         aba1.setLayout(layout_geral_aba1)
 
@@ -390,6 +415,9 @@ class CadFuncionarios(QWidget):
                 self.tabela_resultado.setItem(linha, coluna, QTableWidgetItem(valor))
 
     def sair(self):
+        from entidades import TelaEntidades
+        self.janela = TelaEntidades()
+        self.janela.show()
         self.close()
 
 if __name__ == "__main__":

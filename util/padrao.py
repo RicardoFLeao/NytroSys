@@ -12,9 +12,8 @@ exem = {
 }
 
 # BOTÃO DE PESQUISA - PADRÃO 
-def criar_botao_pesquisa():
-    botao = QPushButton("F8 - Pesquisar")
-    botao.setIcon(QIcon("icons/pesquisar.png"))
+def criar_botao():
+    botao = QPushButton()
     botao.setStyleSheet("""
         QPushButton {
             background-color: white; 
@@ -26,7 +25,7 @@ def criar_botao_pesquisa():
         }
         QPushButton:hover {
             background-color: #e6f2ff;
-            border: 1px solid #1e90ff;
+            border: 1px solid #70818c;
             font-size: 14px;
         }
     """)
@@ -117,3 +116,5 @@ def criar_lineedit_padrao():
     lnedit = QLineEdit()
     lnedit.setStyleSheet("background-color: white; color: black; font-size: 14px")
     return lnedit
+
+

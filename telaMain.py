@@ -12,7 +12,7 @@ class telaPrincipal(QMainWindow):
         print(">>> telaPrincipal foi chamada!")  # ← TESTE CRÍTICO
         self.setWindowTitle('Nitro Sys')
         self.setGeometry(QApplication.primaryScreen().availableGeometry())
-        self.setWindowIcon(QIcon('imagens/Nitro_sys2.png'))
+        self.setWindowIcon(QIcon('imagens/icone.png'))
         self.showMaximized()
         self.menu()
         self.conteudo()
