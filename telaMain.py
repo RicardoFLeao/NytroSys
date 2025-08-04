@@ -1,15 +1,15 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QGridLayout
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QGridLayout, QMenuBar, QMenu
 from PyQt6.QtGui import QAction,  QShortcut, QKeySequence
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from util.estilo import gerar_estilo
+from util.fun_telas import tela_ent, tela_cad_fun, tela_cad_cli, tela_cad_for
 import sys
 
 
 class telaPrincipal(QMainWindow):
     def __init__(self):
         super().__init__()
-        print(">>> telaPrincipal foi chamada!")  # ← TESTE CRÍTICO
         self.setWindowTitle('Nitro Sys')
         self.setGeometry(QApplication.primaryScreen().availableGeometry())
         self.setWindowIcon(QIcon('imagens/icone.png'))
@@ -18,20 +18,47 @@ class telaPrincipal(QMainWindow):
         self.conteudo()
 
         QShortcut(QKeySequence('Esc'), self).activated.connect(self.close)
+        QShortcut(QKeySequence(Qt.Key.Key_B), self).activated.connect(lambda: tela_ent(self))
+
 
     def menu(self):
-        barra_menu = self.menuBar()
+        barra_menu = QMenuBar()
+        self.setMenuBar(barra_menu)
 
-        barra_menu.addMenu('Ad. Produtos')
-        barra_menu.addMenu('Cad. Entidades')
-        barra_menu.addMenu('Financeiro')
-        barra_menu.addMenu('Movimentação')
-        barra_menu.addMenu('Contabilidade')
-        barra_menu.addMenu('Utilitários')
+        menu_prod = QMenu('Ad. Produtos', self)
+        menu_enti = QMenu('Cad. Entidades', self)
+        menu_fina = QMenu('Financeiro', self)
+        menu_movi = QMenu('Movimentação', self)
+        menu_cont = QMenu('Contabilidade', self)
+        menu_util = QMenu('Utilitários', self)
+
+        barra_menu.addMenu(menu_prod)
+        barra_menu.addMenu(menu_enti)
+        barra_menu.addMenu(menu_fina)
+        barra_menu.addMenu(menu_movi)
+        barra_menu.addMenu(menu_cont)
+        barra_menu.addMenu(menu_util)
+
+        act_func = QAction('Cad. Funcionários', self)
+        act_clie = QAction('Cad. Clientes', self)
+        act_forn = QAction('Cad. Fornecedores', self)
+
+        menu_enti.addAction(act_func)
+        menu_enti.addSeparator()
+        menu_enti.addAction(act_clie)
+        menu_enti.addSeparator()
+        menu_enti.addAction(act_forn)
+
+
+        #ações dos menus
+        act_func.triggered.connect(lambda: tela_cad_fun(self))
+        act_clie.triggered.connect(lambda: tela_cad_cli(self))
+        act_forn.triggered.connect(lambda: tela_cad_for(self))
         
         menu_sair = QAction('Sair', self)
         menu_sair.triggered.connect(self.close)
         barra_menu.addAction(menu_sair)
+
 
     def conteudo(self):
         conteudo = QWidget()
@@ -70,8 +97,12 @@ class telaPrincipal(QMainWindow):
         layout_botoes.addWidget(btnC, 2, 0)
         layout_botoes.addWidget(btnF, 2, 1)
 
+        #Ações botões
+
+        btnB.clicked.connect(lambda: tela_ent(self))
+
         bloco_notas = QTextEdit()
-        bloco_notas.setPlaceholderText("bloco de notas para anotação...")
+        bloco_notas.setPlaceholderText("bloco de notas...")
         bloco_notas.setFixedSize(400, 300)
         bloco_notas.setStyleSheet("""
             QTextEdit {

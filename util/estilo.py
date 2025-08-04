@@ -5,6 +5,7 @@ cores = {
     "cor3": "#031740",
     "cor4": "#364959",
     "cor5": "#70818C",
+    "cor6": "#cbdae4",
     "branco": "#FFFFFF"
 }
 

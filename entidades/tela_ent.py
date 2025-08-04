@@ -5,6 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon, QShortcut, QKeySequence
+from util.fun_telas import tela_cad_for, tela_cad_fun, tela_cad_cli
 from util.estilo import gerar_estilo
 
 class TelaEntidades(QWidget):
@@ -22,7 +23,9 @@ class TelaEntidades(QWidget):
         self.componentes()
         self.showMaximized()
 
-        QShortcut(QKeySequence(Qt.Key.Key_A), self).activated.connect(self.tela_funcionarios)
+        QShortcut(QKeySequence(Qt.Key.Key_A), self).activated.connect(lambda: tela_cad_fun(self))
+        QShortcut(QKeySequence(Qt.Key.Key_B), self).activated.connect(lambda: tela_cad_cli(self))
+        QShortcut(QKeySequence(Qt.Key.Key_C), self).activated.connect(lambda: tela_cad_for(self))
         QShortcut(QKeySequence('Esc'), self).activated.connect(self.sair)
 
     def componentes(self):
@@ -44,7 +47,9 @@ class TelaEntidades(QWidget):
             botao.setFixedSize(350, 90)
 
         # ligações funções nos botões
-        botao_fun.clicked.connect(self.tela_funcionarios)
+        botao_fun.clicked.connect(lambda: tela_cad_fun(self))
+        botao_cli.clicked.connect(lambda: tela_cad_cli(self))
+        botao_for.clicked.connect(lambda: tela_cad_for(self))
         botao_sair.clicked.connect(self.sair)
 
         vbox_botoes = QVBoxLayout()
@@ -67,17 +72,12 @@ class TelaEntidades(QWidget):
 
         self.setLayout(layout_geral)
 
-    def tela_funcionarios(self):
-        from cad_fun import CadFuncionarios
-        self.janela = CadFuncionarios()
-        self.janela.show()
-        self.close()
-
     def sair(self):
         from telaMain import telaPrincipal
         self.janela = telaPrincipal()
         self.janela.show()
         self.close()
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
