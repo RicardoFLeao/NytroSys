@@ -17,6 +17,7 @@ from util.padrao import (
 )
 
 from util.estilo import gerar_estilo
+from util.fun_basicas import consulta_cep, LineEditComEnter
 
 class CadFornecedor(QWidget):
     def __init__(self):
@@ -43,6 +44,8 @@ class CadFornecedor(QWidget):
         nometela.setStyleSheet("color: orange; font-size:38px; font: bold")
 
         tab = criar_tab_widget()
+        tab.currentChanged.connect(self.ao_trocar_aba)
+        self.tab = tab  # guarda o tab como atributo se precisar
 
         # ----------- ABA 1 (Consulta) ------------
         aba1 = QWidget()
@@ -162,44 +165,6 @@ class CadFornecedor(QWidget):
         aba2 = QWidget()
         aba2.setStyleSheet('background-color: #cbcdce;')
 
-        #table cadastro de clientes
-
-        # table_cliente = criar_tab_widget()
-        # aba_cad = QWidget()
-        # aba_ref = QWidget()
-
-        # table_cliente.addTab(aba_cad, "Cadastro")
-        # table_cliente.addTab(aba_ref, 'Referências')
-
-        # table_cliente.setStyleSheet("""
-        #     QTabWidget::pane {
-        #         border: 2px solid #444444;  /* borda mais escura */
-        #     }
-                                    
-        #     QTabBar::tab {
-        #     background-color: orange;
-        #     color: black;
-        #     padding: 4px 10px;
-        #     margin-top: 2px;
-        #     border-top-left-radius: 5px;
-        #     border-top-right-radius: 5px;
-        # }
-                                    
-        #     QTabBar::tab:selected {
-        #     background-color: orange;
-        #     font: bold;
-        # }
-        #     QTabBar::tab:!selected {
-        #     margin-top: 8px;
-        # }
-        # """)
-
-        # vbox_tabs_cliente = QVBoxLayout()
-        # vbox_tabs_cliente.addWidget(table_cliente)
-        # vbox_tabs_cliente.setContentsMargins(20,20,20,20)
-
-        # aba2.setLayout(vbox_tabs_cliente)
-
         # linha 1 --- inicio ---
 
         # código fornecedor
@@ -218,29 +183,52 @@ class CadFornecedor(QWidget):
         # Razão social 
 
         raz_social = criar_label_padrao()
-        raz_social.setText('Razão Social')
+        raz_social.setText('Razão Social/Nome')
         raz_social.setContentsMargins(2, 0, 0, 0)
         raz_social.setFixedSize(raz_social.sizeHint())
 
-        edit_raz_social = criar_lineedit_padrao()
-        edit_raz_social.setFixedWidth (435)
+        # check física / jurídica
+        
+        self.check_jur = QCheckBox('Jurídica')
+        self.check_jur.stateChanged.connect(self.atualiza_form)
+        self.check_fis = QCheckBox('Física')
+        self.check_fis.stateChanged.connect(self.atualiza_form)
+
+        self.grupo_tipo_pessoa = QButtonGroup(self)
+        self.grupo_tipo_pessoa.setExclusive(True)  # Permite só um marcado
+        self.grupo_tipo_pessoa.addButton(self.check_jur)
+        self.grupo_tipo_pessoa.addButton(self.check_fis)
+
+        hbox_check = QHBoxLayout()
+        hbox_check.addWidget(self.check_jur, alignment=Qt.AlignmentFlag.AlignRight)
+        hbox_check.addWidget(self.check_fis, alignment=Qt.AlignmentFlag.AlignRight)
+
+        hbox_label_raz_social = QHBoxLayout()
+        hbox_label_raz_social.addWidget(raz_social)
+        hbox_label_raz_social.addStretch()
+        hbox_label_raz_social.addLayout(hbox_check)
+        hbox_label_raz_social.setContentsMargins(0, 0, 17, 0)
+
+        self.edit_raz_social = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_raz_social.setFixedWidth (435)
+        self.edit_raz_social.setFocus()
 
         vbox_raz_social = QVBoxLayout()
-        vbox_raz_social.addWidget(raz_social)
-        vbox_raz_social.addWidget(edit_raz_social)
+        vbox_raz_social.addLayout(hbox_label_raz_social)
+        vbox_raz_social.addWidget(self.edit_raz_social)
 
         # Nome fantasia 
         fant_forn = criar_label_padrao()
-        fant_forn.setText('Nome Fantasia')
+        fant_forn.setText('Nome Fantasia/Apelido')
         fant_forn.setContentsMargins(2, 0, 0, 0)
         fant_forn.setFixedSize(fant_forn.sizeHint())
 
-        edit_fant_forn = criar_lineedit_padrao()
-        edit_fant_forn.setFixedWidth(400)
+        self.edit_fant_forn = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_fant_forn.setFixedWidth(400)
 
         vbox_fant_forn = QVBoxLayout()
         vbox_fant_forn.addWidget(fant_forn, alignment=Qt.AlignmentFlag.AlignLeft)
-        vbox_fant_forn.addWidget(edit_fant_forn)
+        vbox_fant_forn.addWidget(self.edit_fant_forn)
 
         #contato 
 
@@ -249,27 +237,26 @@ class CadFornecedor(QWidget):
         cont_forn.setContentsMargins(2, 0, 0, 0)
         cont_forn.setFixedSize(fant_forn.sizeHint())
 
-        edit_cont_forn = criar_lineedit_padrao()
-        edit_cont_forn.setFixedWidth(180)
+        self.edit_cont_forn = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_cont_forn.setFixedWidth(180)
 
         vbox_cont_forn = QVBoxLayout()
         vbox_cont_forn.addWidget(cont_forn)
-        vbox_cont_forn.addWidget(edit_cont_forn)
+        vbox_cont_forn.addWidget(self.edit_cont_forn)
 
         #WhatsApp
-
         zap_forn = criar_label_padrao()
         zap_forn.setText('WhatsApp')
         zap_forn.setContentsMargins(2, 0, 0, 0)
         zap_forn.setFixedSize(zap_forn.sizeHint())
 
-        edit_zap_forn = criar_lineedit_padrao()
-        edit_zap_forn.setFixedWidth(130)
-        edit_zap_forn.setInputMask('(00)00000-0000;_')
+        self.edit_zap_forn = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_zap_forn.setFixedWidth(130)
+        self.edit_zap_forn.setInputMask('(00)00000-0000;_')
 
         vbox_zap_forn = QVBoxLayout()
         vbox_zap_forn.addWidget(zap_forn)
-        vbox_zap_forn.addWidget(edit_zap_forn)
+        vbox_zap_forn.addWidget(self.edit_zap_forn)
 
         # layout linha 1
         forn_linha1 = QHBoxLayout()
@@ -283,15 +270,207 @@ class CadFornecedor(QWidget):
         # linha 1 --- fim ---
 
         # linha 2 --- inicio ---
-
         
+        #cep fornecedor
+        cep_forn = criar_label_padrao()
+        cep_forn.setText('CEP')
+        cep_forn.setContentsMargins(2, 0, 0, 0)
+        cep_forn.setFixedSize(cep_forn.sizeHint())
 
+        self.edit_cep_forn = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_cep_forn.setFixedWidth(90)
+        self.edit_cep_forn.setInputMask('00.000-000;_')
+        self.edit_cep_forn.editingFinished.connect(self.buscar_cep)
+
+        vbox_cep_forn = QVBoxLayout()
+        vbox_cep_forn.addWidget(cep_forn)
+        vbox_cep_forn.addWidget(self.edit_cep_forn)
+        
+        #endereço fornecedor 
+        end_forn = criar_label_padrao()
+        end_forn.setText('Endereço')
+        end_forn.setContentsMargins(2, 0, 0, 0)
+        end_forn.setFixedSize(end_forn.sizeHint())
+
+        self.edit_end_forn = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_end_forn.setFixedWidth(350)
+
+        vbox_end_forn = QVBoxLayout()
+        vbox_end_forn.addWidget(end_forn)
+        vbox_end_forn.addWidget(self.edit_end_forn)
+
+        #bairro funcionário
+        bairro_forn = criar_label_padrao()
+        bairro_forn.setText('Bairro')
+        bairro_forn.setContentsMargins(2, 0, 0, 0)
+        bairro_forn.setFixedSize(bairro_forn.sizeHint())
+
+        self.edit_bairro_forn = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_bairro_forn.setFixedWidth(205)
+
+        vbox_bairro_forn = QVBoxLayout()
+        vbox_bairro_forn.addWidget(bairro_forn)
+        vbox_bairro_forn.addWidget(self.edit_bairro_forn)
+
+        #cidade fornecedor
+        cid_forn = criar_label_padrao()
+        cid_forn.setText('Cidade')
+        cid_forn.setContentsMargins(2, 0, 0, 0)
+        cid_forn.setFixedSize(cid_forn.sizeHint())
+
+        self.edit_cid_forn = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_cid_forn.setFixedWidth(220)
+
+        vbox_cid_forn = QVBoxLayout()
+        vbox_cid_forn.addWidget(cid_forn)
+        vbox_cid_forn.addWidget(self.edit_cid_forn)
+
+        #estado fornecedor
+        est_forn = criar_label_padrao()
+        est_forn.setText('UF')
+        est_forn.setContentsMargins(2, 0, 0, 0)
+        est_forn.setFixedSize(est_forn.sizeHint())
+
+        self.edit_est_forn = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_est_forn.setFixedWidth(60)
+
+        vbox_est_forn = QVBoxLayout()
+        vbox_est_forn.addWidget(est_forn)
+        vbox_est_forn.addWidget(self.edit_est_forn)
+
+        #e-mail fornecedor
+        email_forn = criar_label_padrao()
+        email_forn.setText('e-mail')
+        email_forn.setContentsMargins(2, 0 , 0, 0)
+        email_forn.setFixedSize(email_forn.sizeHint())
+
+        self.edit_email_forn = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_email_forn.setFixedWidth(305)
+
+        vbox_email_forn = QVBoxLayout()
+        vbox_email_forn.addWidget(email_forn)
+        vbox_email_forn.addWidget(self.edit_email_forn)
+
+        #layout linha 2
+        forn_linha2 = QHBoxLayout()
+        forn_linha2.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        forn_linha2.addLayout(vbox_cep_forn)
+        forn_linha2.addLayout(vbox_end_forn)
+        forn_linha2.addLayout(vbox_bairro_forn)
+        forn_linha2.addLayout(vbox_cid_forn)
+        forn_linha2.addLayout(vbox_est_forn)
+        forn_linha2.addLayout(vbox_email_forn)
+
+        # linha 2 --- fim ---
+
+        # linha 3 --- início ---
+
+        # telefone
+        tel_forn = criar_label_padrao()
+        tel_forn.setText('Telefone')
+        tel_forn.setContentsMargins(2, 0, 0, 0)
+        tel_forn.setFixedSize(tel_forn.sizeHint())
+
+        self.edit_tel_forn = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_tel_forn.setFixedWidth(130)
+        self.edit_tel_forn.setInputMask('(00)00000-0000;_')
+
+        vbox_tel_forn = QVBoxLayout()
+        vbox_tel_forn.addWidget(tel_forn)
+        vbox_tel_forn.addWidget(self.edit_tel_forn)
+
+        #CNPJ / CPF
+        self.cnpj_forn = criar_label_padrao()
+        self.edit_cnpj_forn = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_cnpj_forn.setFixedWidth(150)
+
+
+        vbox_cnpj_forn = QVBoxLayout()
+        vbox_cnpj_forn.addWidget(self.cnpj_forn)
+        vbox_cnpj_forn.addWidget(self.edit_cnpj_forn)
+
+        # Insc. Estadual
+        self.insc_forn = criar_label_padrao()
+        self.edit_insc_forn = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_insc_forn.setFixedWidth(150)
+        
+        vbox_insc_forn = QVBoxLayout()
+        vbox_insc_forn.addWidget(self.insc_forn)
+        vbox_insc_forn.addWidget(self.edit_insc_forn)
+
+        # Insc. Municipal
+        insc_mun_forn = criar_label_padrao()
+        insc_mun_forn.setText('Insc. Municipal')
+        insc_mun_forn.setContentsMargins(2, 0, 0, 0)
+        insc_mun_forn.setFixedSize(insc_mun_forn.sizeHint())
+
+        self.edit_insc_mun_forn = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_insc_mun_forn.setFixedWidth(150)
+        
+        vbox_insc_mun_forn = QVBoxLayout()
+        vbox_insc_mun_forn.addWidget(insc_mun_forn)
+        vbox_insc_mun_forn.addWidget(self.edit_insc_mun_forn)
+
+        #layout linha 3
+        forn_linha3 = QHBoxLayout()
+        forn_linha3.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        forn_linha3.addLayout(vbox_tel_forn)
+        forn_linha3.addLayout(vbox_cnpj_forn)
+        forn_linha3.addLayout(vbox_insc_forn)
+        forn_linha3.addLayout(vbox_insc_mun_forn)
+
+        # linha 3 --- fim ---
+
+        # linha 4 --- início ---
+
+        inf_add_forn = criar_label_padrao()
+        inf_add_forn.setText('Informações adicionais')
+        inf_add_forn.setContentsMargins(2, 0, 0, 0)
+        inf_add_forn.setFixedSize(inf_add_forn.sizeHint())
+
+        text_inf_add_forn = QTextEdit()
+        text_inf_add_forn.setFixedSize(875, 70)
+        text_inf_add_forn.setStyleSheet('background-color: white; font-size: 14px')
+
+        vbox_inf_add_forn = QVBoxLayout()
+        vbox_inf_add_forn.addWidget(inf_add_forn)
+        vbox_inf_add_forn.addWidget(text_inf_add_forn)
+ 
+        forn_linha4 = QHBoxLayout()
+        forn_linha4.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        forn_linha4.addLayout(vbox_inf_add_forn)
+        
+        # linha 4 --- fim ---
+
+        botao_novo_fun = criar_botao()
+        botao_novo_fun.setText('F5 - Novo')
+
+        botao_canc_fun = criar_botao()
+        botao_canc_fun.setText('Cancelar')
+
+        botao_excl_fun = criar_botao()
+        botao_excl_fun.setText('Excluir')
+
+        hbox_botoes_aba2 = QHBoxLayout()
+        hbox_botoes_aba2.setAlignment(Qt.AlignmentFlag.AlignCenter )
+        hbox_botoes_aba2.addWidget(botao_novo_fun)
+        hbox_botoes_aba2.addSpacing(5)
+        hbox_botoes_aba2.addWidget(botao_canc_fun)
+        hbox_botoes_aba2.addSpacing(5)
+        hbox_botoes_aba2.addWidget(botao_excl_fun)
+        hbox_botoes_aba2.addStretch()
 
         # layout geral aba 2
         layout_geral_aba2 = QVBoxLayout()
         layout_geral_aba2.setContentsMargins(20, 20, 20, 0)
         layout_geral_aba2.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         layout_geral_aba2.addLayout(forn_linha1)
+        layout_geral_aba2.addLayout(forn_linha2)
+        layout_geral_aba2.addLayout(forn_linha3)
+        layout_geral_aba2.addLayout(forn_linha4)
+        layout_geral_aba2.addStretch()
+        layout_geral_aba2.addLayout(hbox_botoes_aba2)
+        layout_geral_aba2.addSpacing(30)
 
 
         aba2.setLayout(layout_geral_aba2)
@@ -341,6 +520,46 @@ class CadFornecedor(QWidget):
         self.janela = TelaEntidades()
         self.janela.show()
         self.close()
+
+    def buscar_cep(self):
+        cep = self.edit_cep_forn.text()
+        dados = consulta_cep(cep)
+
+        if dados is None:
+            QMessageBox.warning(self, "CEP inválido", "CEP não encontrado ou mal formatado.")
+        elif dados:
+            self.edit_end_forn.setText(dados.get('logradouro', '').upper())
+            self.edit_bairro_forn.setText(dados.get('bairro', '').upper())
+            self.edit_cid_forn.setText(dados.get('localidade', '').upper())
+            self.edit_est_forn.setText(dados.get('uf', '').upper())
+        # Se dados == {}, significa sem internet → não faz nada
+
+
+    def ao_trocar_aba(self, index):
+    # Aba 2 é a de Cadastro
+        if index == 1:
+            self.edit_raz_social.setFocus()
+            self.check_jur.setChecked(True)
+
+        
+    def atualiza_form(self):
+        if self.check_jur.isChecked():
+            self.cnpj_forn.setText('CNPJ')
+            self.cnpj_forn.setContentsMargins(2, 0, 0, 0)
+            self.cnpj_forn.setFixedSize(self.cnpj_forn.sizeHint())
+            self.edit_cnpj_forn.setInputMask('00.000.000/0000-00;_')
+            self.insc_forn.setText('Insc. Estadual')
+            self.insc_forn.setContentsMargins(2, 0, 0, 0)
+            self.insc_forn.setFixedSize(self.insc_forn.sizeHint())
+
+        elif self.check_fis.isChecked():
+            self.cnpj_forn.setText('CPF')
+            self.cnpj_forn.setContentsMargins(2, 0, 0, 0)
+            self.cnpj_forn.setFixedSize(self.cnpj_forn.sizeHint())
+            self.edit_cnpj_forn.setInputMask('000.000.000-00;_')
+            self.insc_forn.setText('RG')
+            self.insc_forn.setContentsMargins(2, 0, 0, 0)
+            self.insc_forn.setFixedSize(self.insc_forn.sizeHint())
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

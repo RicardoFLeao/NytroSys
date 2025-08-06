@@ -1,11 +1,9 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QIcon, QShortcut, QKeySequence
 from PyQt6.QtCore import Qt
-
 from util.padrao import (
     criar_botao,
     criar_tab_widget,
@@ -15,7 +13,6 @@ from util.padrao import (
     criar_combobox_padrao,
     criar_lineedit_padrao
 )
-
 from util.estilo import gerar_estilo
 from util.fun_basicas import consulta_cep, LineEditComEnter
 
@@ -628,23 +625,23 @@ class CadFuncionarios(QWidget):
 
         # informações adicionais 
 
-        inf_add = criar_label_padrao()
-        inf_add.setText('Informações adicionais')
-        inf_add.setContentsMargins(2, 0, 0, 0)
-        inf_add.setFixedSize(inf_add.sizeHint())
+        inf_add_func = criar_label_padrao()
+        inf_add_func.setText('Informações adicionais')
+        inf_add_func.setContentsMargins(2, 0, 0, 0)
+        inf_add_func.setFixedSize(inf_add_func.sizeHint())
 
-        text_inf_add = QTextEdit()
-        text_inf_add.setFixedSize(875, 70)
-        text_inf_add.setStyleSheet('background-color: white; font-size: 14px')
+        text_inf_add_func = QTextEdit()
+        text_inf_add_func.setFixedSize(875, 70)
+        text_inf_add_func.setStyleSheet('background-color: white; font-size: 14px')
 
-        vbox_inf_add = QVBoxLayout()
-        vbox_inf_add.addWidget(inf_add)
-        vbox_inf_add.addWidget(text_inf_add)
+        vbox_inf_add_func = QVBoxLayout()
+        vbox_inf_add_func.addWidget(inf_add_func)
+        vbox_inf_add_func.addWidget(text_inf_add_func)
  
 
         cad_linha6 = QHBoxLayout()
         cad_linha6.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        cad_linha6.addLayout(vbox_inf_add)
+        cad_linha6.addLayout(vbox_inf_add_func)
         
         vbox_linhas = QVBoxLayout()
         vbox_linhas.addLayout(cad_linha4)

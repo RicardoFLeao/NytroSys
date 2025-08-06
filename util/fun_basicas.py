@@ -1,4 +1,5 @@
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QLineEdit
+from PyQt6.QtCore import Qt
 import requests
 
 
@@ -6,9 +7,6 @@ def centralizar_tela(widget):
     widget.move(QApplication.primaryScreen(
     ).availableGeometry().center() - widget.rect().center())
 
-
-
-import requests
 
 def consulta_cep(cep: str) -> dict | None:
     cep = ''.join(filter(str.isdigit, cep))
@@ -27,9 +25,6 @@ def consulta_cep(cep: str) -> dict | None:
 
     return None
 
-
-from PyQt6.QtWidgets import QLineEdit
-from PyQt6.QtCore import Qt
 
 class LineEditComEnter(QLineEdit):
     def keyPressEvent(self, event):
