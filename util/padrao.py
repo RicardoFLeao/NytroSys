@@ -112,8 +112,6 @@ def criar_combobox_padrao():
     return cbx
 
 # LINEEDIT PADRÃO
-
-
 def criar_lineedit_padrao(classe=QLineEdit):
     lnedit = classe()
     lnedit.setStyleSheet("background-color: white; color: black; font-size: 14px")

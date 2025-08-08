@@ -205,13 +205,11 @@ class CadFornecedor(QWidget):
 
         hbox_label_raz_social = QHBoxLayout()
         hbox_label_raz_social.addWidget(raz_social)
-        hbox_label_raz_social.addStretch()
         hbox_label_raz_social.addLayout(hbox_check)
-        hbox_label_raz_social.setContentsMargins(0, 0, 17, 0)
+        hbox_label_raz_social.setContentsMargins(0, 0, 10, 0)
 
         self.edit_raz_social = criar_lineedit_padrao(LineEditComEnter)
         self.edit_raz_social.setFixedWidth (435)
-        self.edit_raz_social.setFocus()
 
         vbox_raz_social = QVBoxLayout()
         vbox_raz_social.addLayout(hbox_label_raz_social)
@@ -225,6 +223,7 @@ class CadFornecedor(QWidget):
 
         self.edit_fant_forn = criar_lineedit_padrao(LineEditComEnter)
         self.edit_fant_forn.setFixedWidth(400)
+        self.edit_fant_forn.setContentsMargins(0,1,0,0)
 
         vbox_fant_forn = QVBoxLayout()
         vbox_fant_forn.addWidget(fant_forn, alignment=Qt.AlignmentFlag.AlignLeft)
@@ -233,9 +232,9 @@ class CadFornecedor(QWidget):
         #contato 
 
         cont_forn = criar_label_padrao()
-        cont_forn.setText('Contato')
+        cont_forn.setText('Nome Contato')
         cont_forn.setContentsMargins(2, 0, 0, 0)
-        cont_forn.setFixedSize(fant_forn.sizeHint())
+        cont_forn.setFixedSize(cont_forn.sizeHint())
 
         self.edit_cont_forn = criar_lineedit_padrao(LineEditComEnter)
         self.edit_cont_forn.setFixedWidth(180)
@@ -411,6 +410,34 @@ class CadFornecedor(QWidget):
         vbox_insc_mun_forn.addWidget(insc_mun_forn)
         vbox_insc_mun_forn.addWidget(self.edit_insc_mun_forn)
 
+        #data de nascimento
+        self.dt_nasc_forn = criar_label_padrao()
+
+        edit_dt_nasc_forn = criar_lineedit_padrao(LineEditComEnter)
+        edit_dt_nasc_forn.setFixedWidth(100)
+        edit_dt_nasc_forn.setInputMask('00/00/0000;_')
+
+        vbox_dt_nasc_forn = QVBoxLayout()
+        vbox_dt_nasc_forn.addWidget(self.dt_nasc_forn)
+        vbox_dt_nasc_forn.addWidget(edit_dt_nasc_forn)
+
+        #sexo funcionário
+        sexo_forn = criar_label_padrao()
+        sexo_forn.setText('Sexo')
+        sexo_forn.setContentsMargins(2, 0, 0, 0)
+        sexo_forn.setFixedSize(sexo_forn.sizeHint())
+
+        comb_sexo_forn = criar_combobox_padrao()
+        comb_sexo_forn.setFixedWidth(100)
+        comb_sexo_forn.addItem('Selecione')
+        comb_sexo_forn.addItem('Masculino')
+        comb_sexo_forn.addItem('Feminino')
+        comb_sexo_forn.model().item(0).setEnabled(False)
+
+        vbox_sexo_forn = QVBoxLayout()
+        vbox_sexo_forn.addWidget(sexo_forn)
+        vbox_sexo_forn.addWidget(comb_sexo_forn)
+
         #layout linha 3
         forn_linha3 = QHBoxLayout()
         forn_linha3.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -418,6 +445,8 @@ class CadFornecedor(QWidget):
         forn_linha3.addLayout(vbox_cnpj_forn)
         forn_linha3.addLayout(vbox_insc_forn)
         forn_linha3.addLayout(vbox_insc_mun_forn)
+        forn_linha3.addLayout(vbox_dt_nasc_forn)
+        forn_linha3.addLayout(vbox_sexo_forn)
 
         # linha 3 --- fim ---
 
@@ -441,7 +470,8 @@ class CadFornecedor(QWidget):
         forn_linha4.addLayout(vbox_inf_add_forn)
         
         # linha 4 --- fim ---
-
+        
+        # botoes aba 2
         botao_novo_fun = criar_botao()
         botao_novo_fun.setText('F5 - Novo')
 
@@ -501,6 +531,7 @@ class CadFornecedor(QWidget):
 
         self.setLayout(vbox)
 
+
     def preencher_tabela(self):
         # Dados simulados
         dados = [
@@ -515,11 +546,13 @@ class CadFornecedor(QWidget):
             for coluna, valor in enumerate(dados_linha):
                 self.tabela_resultado.setItem(linha, coluna, QTableWidgetItem(valor))
 
+
     def sair(self):
         from entidades.tela_ent import TelaEntidades
         self.janela = TelaEntidades()
         self.janela.show()
         self.close()
+
 
     def buscar_cep(self):
         cep = self.edit_cep_forn.text()
@@ -551,6 +584,9 @@ class CadFornecedor(QWidget):
             self.insc_forn.setText('Insc. Estadual')
             self.insc_forn.setContentsMargins(2, 0, 0, 0)
             self.insc_forn.setFixedSize(self.insc_forn.sizeHint())
+            self.dt_nasc_forn.setText('Abertura')
+            self.dt_nasc_forn.setContentsMargins(2, 0, 0, 0)
+            self.dt_nasc_forn.setFixedSize(self.dt_nasc_forn.sizeHint())
 
         elif self.check_fis.isChecked():
             self.cnpj_forn.setText('CPF')
@@ -560,6 +596,11 @@ class CadFornecedor(QWidget):
             self.insc_forn.setText('RG')
             self.insc_forn.setContentsMargins(2, 0, 0, 0)
             self.insc_forn.setFixedSize(self.insc_forn.sizeHint())
+            self.dt_nasc_forn.setText('Nascimento')
+            self.dt_nasc_forn.setContentsMargins(2, 0, 0, 0)
+            self.dt_nasc_forn.setFixedSize(self.dt_nasc_forn.sizeHint())
+
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

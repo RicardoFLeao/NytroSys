@@ -2,6 +2,12 @@ from PyQt6.QtWidgets import QApplication, QLineEdit
 from PyQt6.QtCore import Qt
 import requests
 
+class LineEditComEnter(QLineEdit):
+    def keyPressEvent(self, event):
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            self.focusNextChild()
+        else:
+            super().keyPressEvent(event)
 
 def centralizar_tela(widget):
     widget.move(QApplication.primaryScreen(
@@ -26,9 +32,3 @@ def consulta_cep(cep: str) -> dict | None:
     return None
 
 
-class LineEditComEnter(QLineEdit):
-    def keyPressEvent(self, event):
-        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-            self.focusNextChild()
-        else:
-            super().keyPressEvent(event)

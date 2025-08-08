@@ -406,7 +406,6 @@ class CadFuncionarios(QWidget):
         # linha 3 --- início
 
         #nome da mae
-
         nome_mae = criar_label_padrao()
         nome_mae.setText('Nome Mãe')
         nome_mae.setContentsMargins(2, 0, 0, 0)
