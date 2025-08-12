@@ -82,26 +82,28 @@ class CadFuncionarios(QWidget):
         check_todos = QCheckBox("Todos")
 
         lnedit_pesq = criar_lineedit_padrao()
-        lnedit_pesq.setFixedWidth(810)
+        lnedit_pesq.setMinimumWidth(810)
+        lnedit_pesq.setContentsMargins(0,0,0,2)
 
         vbox_opc = QVBoxLayout()
-        vbox_opc.addWidget(label_opc, alignment=Qt.AlignmentFlag.AlignLeft)
-        vbox_opc.addWidget(comb_opc, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox_opc.addWidget(label_opc)
+        vbox_opc.addWidget(comb_opc)
 
         vbox_mdl = QVBoxLayout()
-        vbox_mdl.addWidget(label_mdl, alignment=Qt.AlignmentFlag.AlignLeft)
-        vbox_mdl.addWidget(comb_mdl, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox_mdl.addWidget(label_mdl)
+        vbox_mdl.addWidget(comb_mdl)
 
         hbox_pesq = QHBoxLayout()
-        hbox_pesq.addWidget(label_pesq, alignment=Qt.AlignmentFlag.AlignLeft)
+        hbox_pesq.addWidget(label_pesq)
         hbox_pesq.addWidget(check_todos, alignment=Qt.AlignmentFlag.AlignRight)
 
         vbox_pesq = QVBoxLayout()
         vbox_pesq.addLayout(hbox_pesq)
-        vbox_pesq.addWidget(lnedit_pesq, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox_pesq.addWidget(lnedit_pesq)
 
         hbox_linha1 = QHBoxLayout()
         hbox_linha1.addLayout(vbox_opc)
+        # hbox_linha1.addSpacing(5)
         hbox_linha1.addLayout(vbox_mdl)
         hbox_linha1.addLayout(vbox_pesq)
 
@@ -134,7 +136,6 @@ class CadFuncionarios(QWidget):
         self.tabela_resultado.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.tabela_resultado.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.tabela_resultado.setAlternatingRowColors(True)
-        self.tabela_resultado.setMaximumHeight(350)
         self.tabela_resultado.setMinimumHeight(180)
         
 
@@ -199,10 +200,10 @@ class CadFuncionarios(QWidget):
         nome_func.setFixedSize(nome_func.sizeHint())
 
         self.edit_nome_func = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_nome_func.setFixedWidth (435)
+        self.edit_nome_func.setMinimumWidth(435)
 
         vbox_nome_func = QVBoxLayout()
-        vbox_nome_func.addWidget(nome_func, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox_nome_func.addWidget(nome_func)
         vbox_nome_func.addWidget(self.edit_nome_func)
 
         #apelido funcionario
@@ -212,10 +213,11 @@ class CadFuncionarios(QWidget):
         apelido_fun.setFixedSize(apelido_fun.sizeHint())
 
         edit_apelido = criar_lineedit_padrao(LineEditComEnter)
-        edit_apelido.setFixedWidth(200)
+        edit_apelido.setMinimumWidth(200)
+        edit_apelido.setMaximumWidth(300)
 
         vbox_apelido_func = QVBoxLayout()
-        vbox_apelido_func.addWidget(apelido_fun, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox_apelido_func.addWidget(apelido_fun)
         vbox_apelido_func.addWidget(edit_apelido)
 
         #cpf do funcionario
@@ -300,12 +302,25 @@ class CadFuncionarios(QWidget):
         end_func.setFixedSize(end_func.sizeHint())
 
         self.edit_end_func = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_end_func.setFixedWidth(390)
+        self.edit_end_func.setMinimumWidth(390)
+        self.edit_end_func.setMaximumWidth(450)
 
         vbox_end_func = QVBoxLayout()
         vbox_end_func.addWidget(end_func)
         vbox_end_func.addWidget(self.edit_end_func)
 
+        #número
+        num_func = criar_label_padrao()
+        num_func.setText('Número')
+        num_func.setContentsMargins(2, 0, 0, 0)
+        num_func.setFixedSize(num_func.sizeHint())
+
+        edit_num_fun = criar_lineedit_padrao()
+        edit_num_fun.setFixedWidth(80)
+
+        vbox_num_func = QVBoxLayout()
+        vbox_num_func.addWidget(num_func)
+        vbox_num_func.addWidget(edit_num_fun)
 
         #bairro funcionário
         bairro_func = criar_label_padrao()
@@ -314,7 +329,7 @@ class CadFuncionarios(QWidget):
         bairro_func.setFixedSize(bairro_func.sizeHint())
 
         self.edit_bairro_func = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_bairro_func.setFixedWidth(210)
+        self.edit_bairro_func.setMinimumWidth(210)
 
         vbox_bairro_func = QVBoxLayout()
         vbox_bairro_func.addWidget(bairro_func)
@@ -342,7 +357,7 @@ class CadFuncionarios(QWidget):
         cid_func.setFixedSize(cid_func.sizeHint())
 
         self.edit_cid_func = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_cid_func.setFixedWidth(225)
+        self.edit_cid_func.setMinimumWidth(225)
 
         vbox_cid_func = QVBoxLayout()
         vbox_cid_func.addWidget(cid_func)
@@ -395,6 +410,7 @@ class CadFuncionarios(QWidget):
         cad_linha2.setAlignment(Qt.AlignmentFlag.AlignLeft)
         cad_linha2.addLayout(vbox_cep_func)
         cad_linha2.addLayout(vbox_end_func)
+        cad_linha2.addLayout(vbox_num_func)
         cad_linha2.addLayout(vbox_bairro_func)
         cad_linha2.addLayout(vbox_cid_func)
         cad_linha2.addLayout(vbox_est_func)
@@ -412,7 +428,7 @@ class CadFuncionarios(QWidget):
         nome_mae.setFixedSize(nome_mae.sizeHint())
 
         edit_nome_mae = criar_lineedit_padrao(LineEditComEnter)
-        edit_nome_mae.setFixedWidth(270)
+        edit_nome_mae.setMinimumWidth(270)
 
         vbox_nome_mae = QVBoxLayout()
         vbox_nome_mae.addWidget(nome_mae)
@@ -425,7 +441,7 @@ class CadFuncionarios(QWidget):
         nome_pai.setFixedSize(nome_pai.sizeHint())
 
         edit_nome_pai = criar_lineedit_padrao(LineEditComEnter)
-        edit_nome_pai.setFixedWidth(270)
+        edit_nome_pai.setMinimumWidth(270)
 
         vbox_nome_pai = QVBoxLayout()
         vbox_nome_pai.addWidget(nome_pai)
@@ -439,7 +455,7 @@ class CadFuncionarios(QWidget):
         nacion_func.setFixedSize(nacion_func.sizeHint())
 
         edit_nacion_func = criar_lineedit_padrao(LineEditComEnter)
-        edit_nacion_func.setFixedWidth(200)
+        edit_nacion_func.setMinimumWidth(200)
         
         vbox_nacion_func = QVBoxLayout()
         vbox_nacion_func.addWidget(nacion_func)
