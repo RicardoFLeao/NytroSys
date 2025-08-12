@@ -135,7 +135,7 @@ class CadFuncionarios(QWidget):
         self.tabela_resultado.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.tabela_resultado.setAlternatingRowColors(True)
         self.tabela_resultado.setMaximumHeight(350)
-        self.tabela_resultado.setMinimumHeight(300)
+        self.tabela_resultado.setMinimumHeight(180)
         
 
         #botões controle novo, relatório
@@ -161,10 +161,9 @@ class CadFuncionarios(QWidget):
         layout_geral_aba1.addLayout(hbox_linha1)
         layout_geral_aba1.addLayout(vbox_linha2)
         layout_geral_aba1.addWidget(self.tabela_resultado)
-        layout_geral_aba1.addSpacing(73)
+        layout_geral_aba1.addSpacing(10)
         layout_geral_aba1.addLayout(hbox_botoes_rodape)
-        layout_geral_aba1.addStretch()
-
+        layout_geral_aba1.addSpacing(10)
         aba1.setLayout(layout_geral_aba1)
 
         # ----------- ABA 2 (Cadastro) ------------
@@ -546,7 +545,7 @@ class CadFuncionarios(QWidget):
         cart_trab.setFixedSize(cart_trab.sizeHint())
 
         edit_cart_trab = criar_lineedit_padrao(LineEditComEnter)
-        edit_cart_trab.setFixedWidth(200)
+        edit_cart_trab.setFixedWidth(245)
 
         vbox_cart_trab = QVBoxLayout()
         vbox_cart_trab.addWidget(cart_trab)
@@ -561,7 +560,7 @@ class CadFuncionarios(QWidget):
 
 
         edit_pis_func = criar_lineedit_padrao(LineEditComEnter)
-        edit_pis_func.setFixedWidth(250)
+        edit_pis_func.setFixedWidth(290)
 
         vbox_pis_func = QVBoxLayout()
         vbox_pis_func.addWidget(pis_func)
@@ -605,7 +604,7 @@ class CadFuncionarios(QWidget):
         mot_demis.setFixedSize(mot_demis.sizeHint())
 
         edit_mot_demis = criar_lineedit_padrao(LineEditComEnter)
-        edit_mot_demis.setFixedWidth(770)
+        edit_mot_demis.setFixedWidth(855)
 
         vbox_mot_demis = QVBoxLayout()
         vbox_mot_demis.addWidget(mot_demis)
@@ -631,7 +630,8 @@ class CadFuncionarios(QWidget):
         inf_add_func.setFixedSize(inf_add_func.sizeHint())
 
         text_inf_add_func = QTextEdit()
-        text_inf_add_func.setFixedSize(875, 70)
+        text_inf_add_func.setMinimumWidth(750)
+        text_inf_add_func.setMinimumHeight(50)
         text_inf_add_func.setStyleSheet('background-color: white; font-size: 14px')
 
         vbox_inf_add_func = QVBoxLayout()
@@ -660,12 +660,13 @@ class CadFuncionarios(QWidget):
             color: gray;
         """)
 
-
+        vbox_foto = QVBoxLayout()
+        vbox_foto.addWidget(self.lbl_foto)
 
         hbox_linha_foto = QHBoxLayout()
         hbox_linha_foto.addLayout(vbox_linhas)
-        hbox_linha_foto.addStretch()  # antes da foto
-        hbox_linha_foto.addWidget(self.lbl_foto, alignment=Qt.AlignmentFlag.AlignTop)
+        hbox_linha_foto.addSpacing(80)  # antes da foto
+        hbox_linha_foto.addLayout(vbox_foto)
         hbox_linha_foto.addSpacing(80)
 
 
@@ -698,9 +699,9 @@ class CadFuncionarios(QWidget):
         layout_geral_aba2.addLayout(cad_linha3)
         layout_geral_aba2.addWidget(dados_prof)
         layout_geral_aba2.addLayout(hbox_linha_foto)
-        layout_geral_aba2.addSpacing(95)
+        layout_geral_aba2.addSpacing(10)
         layout_geral_aba2.addLayout(hbox_botoes_aba2)
-        layout_geral_aba2.addStretch()
+        layout_geral_aba2.addSpacing(10)
 
 
         aba2.setLayout(layout_geral_aba2)
@@ -727,7 +728,7 @@ class CadFuncionarios(QWidget):
         vbox.addWidget(nometela, alignment=Qt.AlignmentFlag.AlignCenter)
         vbox.addWidget(tab)
         vbox.addLayout(hbox_botoes)
-        vbox.setContentsMargins(110, 20, 110, 0)
+        vbox.setContentsMargins(20, 20, 20, 20)
 
         self.setLayout(vbox)
 
