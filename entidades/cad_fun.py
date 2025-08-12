@@ -38,7 +38,8 @@ class CadFuncionarios(QWidget):
 
     def componentes(self):
         nometela = QLabel("Cadastro Funcionários")
-        nometela.setStyleSheet("color: orange; font-size:38px; font: bold")
+        nometela.setStyleSheet("color: orange; font-size:38px; font: bold;")
+        
 
         tab = criar_tab_widget()
         tab.currentChanged.connect(self.ao_trocar_aba)
@@ -160,7 +161,7 @@ class CadFuncionarios(QWidget):
         layout_geral_aba1.addLayout(hbox_linha1)
         layout_geral_aba1.addLayout(vbox_linha2)
         layout_geral_aba1.addWidget(self.tabela_resultado)
-        layout_geral_aba1.addStretch()
+        layout_geral_aba1.addSpacing(73)
         layout_geral_aba1.addLayout(hbox_botoes_rodape)
         layout_geral_aba1.addStretch()
 
@@ -697,7 +698,7 @@ class CadFuncionarios(QWidget):
         layout_geral_aba2.addLayout(cad_linha3)
         layout_geral_aba2.addWidget(dados_prof)
         layout_geral_aba2.addLayout(hbox_linha_foto)
-        layout_geral_aba2.addSpacing(35)
+        layout_geral_aba2.addSpacing(95)
         layout_geral_aba2.addLayout(hbox_botoes_aba2)
         layout_geral_aba2.addStretch()
 
@@ -726,7 +727,7 @@ class CadFuncionarios(QWidget):
         vbox.addWidget(nometela, alignment=Qt.AlignmentFlag.AlignCenter)
         vbox.addWidget(tab)
         vbox.addLayout(hbox_botoes)
-        vbox.setContentsMargins(110, 50, 110, 50)
+        vbox.setContentsMargins(110, 20, 110, 0)
 
         self.setLayout(vbox)
 
