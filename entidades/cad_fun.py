@@ -302,7 +302,7 @@ class CadFuncionarios(QWidget):
         end_func.setFixedSize(end_func.sizeHint())
 
         self.edit_end_func = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_end_func.setMinimumWidth(390)
+        self.edit_end_func.setMinimumWidth(35)
         self.edit_end_func.setMaximumWidth(450)
 
         vbox_end_func = QVBoxLayout()
@@ -315,7 +315,7 @@ class CadFuncionarios(QWidget):
         num_func.setContentsMargins(2, 0, 0, 0)
         num_func.setFixedSize(num_func.sizeHint())
 
-        edit_num_fun = criar_lineedit_padrao()
+        edit_num_fun = criar_lineedit_padrao(LineEditComEnter)
         edit_num_fun.setFixedWidth(80)
 
         vbox_num_func = QVBoxLayout()
