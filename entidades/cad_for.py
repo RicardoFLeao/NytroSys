@@ -40,7 +40,7 @@ class CadFornecedor(QWidget):
         QShortcut(QKeySequence('Esc'), self).activated.connect(self.sair)
 
     def componentes(self):
-        nometela = QLabel("Cadastro Fornecedores")
+        nometela = QLabel("Cadastro de Fornecedores")
         nometela.setStyleSheet("color: orange; font-size:38px; font: bold")
 
         tab = criar_tab_widget()
@@ -291,7 +291,7 @@ class CadFornecedor(QWidget):
         end_forn.setFixedSize(end_forn.sizeHint())
 
         self.edit_end_forn = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_end_forn.setMinimumWidth(350)
+        self.edit_end_forn.setMinimumWidth(280)
 
         vbox_end_forn = QVBoxLayout()
         vbox_end_forn.addWidget(end_forn)

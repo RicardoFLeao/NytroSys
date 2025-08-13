@@ -38,7 +38,7 @@ class CadCliente(QWidget):
         QShortcut(QKeySequence('Esc'), self).activated.connect(self.sair)
 
     def componentes(self):
-        nometela = QLabel("Cadastro Clientes")
+        nometela = QLabel("Cadastro de Clientes")
         nometela.setStyleSheet("color: orange; font-size:38px; font: bold")
 
         tab = criar_tab_widget()
@@ -294,7 +294,7 @@ class CadCliente(QWidget):
         end_cli.setFixedSize(end_cli.sizeHint())
 
         self.edit_end_cli = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_end_cli.setMinimumWidth(335)
+        self.edit_end_cli.setMinimumWidth(250)
 
         vbox_end_cli = QVBoxLayout()
         vbox_end_cli.addWidget(end_cli)

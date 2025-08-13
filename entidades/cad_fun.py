@@ -37,7 +37,7 @@ class CadFuncionarios(QWidget):
         QShortcut(QKeySequence('Esc'), self).activated.connect(self.sair)
 
     def componentes(self):
-        nometela = QLabel("Cadastro Funcionários")
+        nometela = QLabel("Cadastro de Funcionários")
         nometela.setStyleSheet("color: orange; font-size:38px; font: bold;")
         
 
