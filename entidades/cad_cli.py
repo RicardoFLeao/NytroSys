@@ -74,24 +74,24 @@ class CadCliente(QWidget):
 
         check_todos = QCheckBox("Todos")
 
-        lnedit_pesq = criar_lineedit_padrao()
-        lnedit_pesq.setFixedWidth(810)
+        edit_label_pesq = criar_lineedit_padrao()
+        edit_label_pesq.setMinimumWidth(810)
 
         vbox_opc = QVBoxLayout()
-        vbox_opc.addWidget(label_opc, alignment=Qt.AlignmentFlag.AlignLeft)
-        vbox_opc.addWidget(comb_opc, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox_opc.addWidget(label_opc)
+        vbox_opc.addWidget(comb_opc)
 
         vbox_mdl = QVBoxLayout()
-        vbox_mdl.addWidget(label_mdl, alignment=Qt.AlignmentFlag.AlignLeft)
-        vbox_mdl.addWidget(comb_mdl, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox_mdl.addWidget(label_mdl)
+        vbox_mdl.addWidget(comb_mdl)
 
         hbox_pesq = QHBoxLayout()
-        hbox_pesq.addWidget(label_pesq, alignment=Qt.AlignmentFlag.AlignLeft)
+        hbox_pesq.addWidget(label_pesq)
         hbox_pesq.addWidget(check_todos, alignment=Qt.AlignmentFlag.AlignRight)
 
         vbox_pesq = QVBoxLayout()
         vbox_pesq.addLayout(hbox_pesq)
-        vbox_pesq.addWidget(lnedit_pesq, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox_pesq.addWidget(edit_label_pesq)
 
         hbox_linha1 = QHBoxLayout()
         hbox_linha1.addLayout(vbox_opc)
@@ -127,7 +127,6 @@ class CadCliente(QWidget):
         self.tabela_resultado.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.tabela_resultado.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.tabela_resultado.setAlternatingRowColors(True)
-        self.tabela_resultado.setMaximumHeight(350)
         self.tabela_resultado.setMinimumHeight(300)
         
 
@@ -153,9 +152,9 @@ class CadCliente(QWidget):
         layout_geral_aba1.addLayout(hbox_linha1)
         layout_geral_aba1.addLayout(vbox_linha2)
         layout_geral_aba1.addWidget(self.tabela_resultado)
-        layout_geral_aba1.addStretch()
+        layout_geral_aba1.addSpacing(10)
         layout_geral_aba1.addLayout(hbox_botoes_rodape)
-        layout_geral_aba1.addStretch()
+        layout_geral_aba1.addSpacing(10)
 
         aba1.setLayout(layout_geral_aba1)
 
@@ -211,7 +210,7 @@ class CadCliente(QWidget):
         hbox_label_raz_social.setContentsMargins(0, 0, 10, 0)
 
         self.edit_raz_social = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_raz_social.setFixedWidth (435)
+        self.edit_raz_social.setMinimumWidth(435)
 
         vbox_raz_social = QVBoxLayout()
         vbox_raz_social.addLayout(hbox_label_raz_social)
@@ -224,7 +223,7 @@ class CadCliente(QWidget):
         fant_cli.setFixedSize(fant_cli.sizeHint())
 
         self.edit_fant_cli = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_fant_cli.setFixedWidth(390)
+        self.edit_fant_cli.setMinimumWidth(390)
         self.edit_fant_cli.setContentsMargins(0,1,0,0)
 
         vbox_fant_cli = QVBoxLayout()
@@ -239,7 +238,7 @@ class CadCliente(QWidget):
         cont_cli.setFixedSize(cont_cli.sizeHint())
 
         self.edit_cont_cli = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_cont_cli.setFixedWidth(180)
+        self.edit_cont_cli.setMinimumWidth(180)
 
         vbox_cont_cli = QVBoxLayout()
         vbox_cont_cli.addWidget(cont_cli)
@@ -273,7 +272,7 @@ class CadCliente(QWidget):
 
         # dados linha 2 --- início ---
 
-        #cep fornecedor
+        #cep client
         cep_cli = criar_label_padrao()
         cep_cli.setText('CEP')
         cep_cli.setContentsMargins(2, 0, 0, 0)
@@ -288,18 +287,31 @@ class CadCliente(QWidget):
         vbox_cep_cli.addWidget(cep_cli)
         vbox_cep_cli.addWidget(self.edit_cep_cli)
         
-        #endereço fornecedor 
+        #endereço cliente
         end_cli = criar_label_padrao()
         end_cli.setText('Endereço')
         end_cli.setContentsMargins(2, 0, 0, 0)
         end_cli.setFixedSize(end_cli.sizeHint())
 
         self.edit_end_cli = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_end_cli.setFixedWidth(335)
+        self.edit_end_cli.setMinimumWidth(335)
 
         vbox_end_cli = QVBoxLayout()
         vbox_end_cli.addWidget(end_cli)
         vbox_end_cli.addWidget(self.edit_end_cli)
+
+        #número
+        num_cli = criar_label_padrao()
+        num_cli.setText('Número')
+        num_cli.setContentsMargins(2, 0, 0, 0)
+        num_cli.setFixedSize(num_cli.sizeHint())
+
+        edit_num_cli = criar_lineedit_padrao(LineEditComEnter)
+        edit_num_cli.setFixedWidth(80)
+
+        vbox_num_cli = QVBoxLayout()
+        vbox_num_cli.addWidget(num_cli)
+        vbox_num_cli.addWidget(edit_num_cli)
 
         #bairro funcionário
         bairro_cli = criar_label_padrao()
@@ -308,7 +320,7 @@ class CadCliente(QWidget):
         bairro_cli.setFixedSize(bairro_cli.sizeHint())
 
         self.edit_bairro_cli = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_bairro_cli.setFixedWidth(205)
+        self.edit_bairro_cli.setMinimumWidth(205)
 
         vbox_bairro_cli = QVBoxLayout()
         vbox_bairro_cli.addWidget(bairro_cli)
@@ -321,7 +333,7 @@ class CadCliente(QWidget):
         cid_cli.setFixedSize(cid_cli.sizeHint())
 
         self.edit_cid_cli = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_cid_cli.setFixedWidth(220)
+        self.edit_cid_cli.setMinimumWidth(220)
 
         vbox_cid_cli = QVBoxLayout()
         vbox_cid_cli.addWidget(cid_cli)
@@ -358,6 +370,7 @@ class CadCliente(QWidget):
         dados_cli_linha2.setAlignment(Qt.AlignmentFlag.AlignLeft)
         dados_cli_linha2.addLayout(vbox_cep_cli)
         dados_cli_linha2.addLayout(vbox_end_cli)
+        dados_cli_linha2.addLayout(vbox_num_cli)
         dados_cli_linha2.addLayout(vbox_bairro_cli)
         dados_cli_linha2.addLayout(vbox_cid_cli)
         dados_cli_linha2.addLayout(vbox_est_cli)
@@ -448,7 +461,7 @@ class CadCliente(QWidget):
         nacion_cli.setFixedSize(nacion_cli.sizeHint())
 
         edit_nacion_cli = criar_lineedit_padrao(LineEditComEnter)
-        edit_nacion_cli.setFixedWidth(215)
+        edit_nacion_cli.setMinimumWidth(215)
         
         vbox_nacion_cli = QVBoxLayout()
         vbox_nacion_cli.addWidget(nacion_cli)
@@ -462,7 +475,7 @@ class CadCliente(QWidget):
         natur_cli.setFixedSize(natur_cli.sizeHint())
 
         edit_natur_cli = criar_lineedit_padrao(LineEditComEnter)
-        edit_natur_cli.setFixedWidth(212)
+        edit_natur_cli.setMinimumWidth(212)
 
         vbox_natur_cli = QVBoxLayout()
         vbox_natur_cli.addWidget(natur_cli)
@@ -528,7 +541,8 @@ class CadCliente(QWidget):
         inf_add_cli.setFixedSize(inf_add_cli.sizeHint())
 
         text_inf_add_cli = QTextEdit()
-        text_inf_add_cli.setFixedSize(875, 70)
+        text_inf_add_cli.setMinimumWidth(875)
+        text_inf_add_cli.setMinimumHeight(70)
         text_inf_add_cli.setStyleSheet('background-color: white; font-size: 14px')
 
         vbox_inf_add_cli = QVBoxLayout()
@@ -570,8 +584,9 @@ class CadCliente(QWidget):
         vbox_geral_aba_dados.addLayout(dados_cli_linha3)
         vbox_geral_aba_dados.addLayout(dados_cli_linha4)
         vbox_geral_aba_dados.addLayout(dados_cli_linha5)
-        vbox_geral_aba_dados.addStretch()
+        vbox_geral_aba_dados.addSpacing(10)
         vbox_geral_aba_dados.addLayout(hbox_botoes_dados)
+        vbox_geral_aba_dados.addSpacing(10)
 
 
         # adiciona layout na tela
@@ -580,6 +595,7 @@ class CadCliente(QWidget):
         # criação aba referencia
         aba_ref = QWidget()
 
+        #Referência linha 1 
         dad_prof = criar_label_padrao()
         dad_prof.setText('Dados Profissionais')
         dad_prof.setStyleSheet('font: bold;')
@@ -587,24 +603,190 @@ class CadCliente(QWidget):
         dad_prof.setFixedSize(dad_prof.sizeHint())
 
         vbox_dad_prof = QVBoxLayout()
-        vbox_dad_prof.addWidget(dad_prof)
+        vbox_dad_prof.addWidget(dad_prof, alignment=Qt.AlignmentFlag.AlignLeft)
 
         hbox_ref_linha1 = QHBoxLayout()
         hbox_ref_linha1.addLayout(vbox_dad_prof)
 
+        #Referência linha 2
 
+        #local de trabalho
+        loc_trab = criar_label_padrao()
+        loc_trab.setText('Local Trabalho')
+        loc_trab.setContentsMargins(2, 0, 0, 0)
+        loc_trab.setFixedSize(loc_trab.sizeHint())
+
+        edit_loc_trab = criar_lineedit_padrao(LineEditComEnter)
+        edit_loc_trab.setMinimumWidth(180)
+
+        vbox_loc_trab = QVBoxLayout()
+        vbox_loc_trab.addWidget(loc_trab)
+        vbox_loc_trab.addWidget(edit_loc_trab)
+
+        #cargo
+        carg_trab = criar_label_padrao()
+        carg_trab.setText('Cargo')
+        carg_trab.setContentsMargins(2, 0, 0, 0)
+        carg_trab.setFixedSize(carg_trab.sizeHint())
+
+        edit_carg_trab = criar_lineedit_padrao(LineEditComEnter)
+        edit_carg_trab.setMinimumWidth(180)
+
+        vbox_carg_trab = QVBoxLayout()
+        vbox_carg_trab.addWidget(carg_trab)
+        vbox_carg_trab.addWidget(edit_carg_trab)
+
+        #tempo serviço
+        temp_serv = criar_label_padrao()
+        temp_serv.setText('Tempo Serv.')
+        temp_serv.setContentsMargins(2, 0, 0, 0)
+        temp_serv.setFixedSize(temp_serv.sizeHint())
+
+        edit_temp_serv = criar_lineedit_padrao(LineEditComEnter)
+        edit_temp_serv.setFixedWidth(160)
+
+        vbox_temp_serv = QVBoxLayout()
+        vbox_temp_serv.addWidget(temp_serv)
+        vbox_temp_serv.addWidget(edit_temp_serv)
+
+        #salário 
+        salario = criar_label_padrao()
+        salario.setText('Salário')
+        salario.setContentsMargins(2, 0, 0, 0)
+        salario.setFixedSize(salario.sizeHint())
+
+        edit_salario = criar_lineedit_padrao(LineEditComEnter)
+        edit_salario.setFixedWidth(100)
+
+        vbox_salario = QVBoxLayout()
+        vbox_salario.addWidget(salario)
+        vbox_salario.addWidget(edit_salario)
+
+        #telefone trabalho
+
+        tel_trab = criar_label_padrao()
+        tel_trab.setText('Telefone')
+        tel_trab.setContentsMargins(2, 0, 0, 0)
+        tel_trab.setFixedSize(tel_trab.sizeHint())
+
+        edit_tel_trab = criar_lineedit_padrao(LineEditComEnter)
+        edit_tel_trab.setFixedWidth(130)
+        edit_tel_trab.setInputMask('(00)00000-0000;_')
+
+        vbox_tel_trab = QVBoxLayout()
+        vbox_tel_trab.addWidget(tel_trab)
+        vbox_tel_trab.addWidget(edit_tel_trab)
+
+        #layout referencias linha 2
+        hbox_ref_linha2 = QHBoxLayout()
+        hbox_ref_linha2.addLayout(vbox_loc_trab)
+        hbox_ref_linha2.addLayout(vbox_carg_trab)
+        hbox_ref_linha2.addLayout(vbox_temp_serv)
+        hbox_ref_linha2.addLayout(vbox_salario)
+        hbox_ref_linha2.addLayout(vbox_tel_trab)
+
+        #referencias linha 3
+
+        
+        #cep trabalho
+        cep_trab = criar_label_padrao()
+        cep_trab.setText('CEP')
+        cep_trab.setContentsMargins(2, 0, 0, 0)
+        cep_trab.setFixedSize(cep_trab.sizeHint())
+
+        self.edit_cep_trab = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_cep_trab.setFixedWidth(90)
+        self.edit_cep_trab.setInputMask('00.000-000;_')
+        self.edit_cep_trab.editingFinished.connect(self.buscar_cep)
+
+        vbox_cep_trab = QVBoxLayout()
+        vbox_cep_trab.addWidget(cep_trab)
+        vbox_cep_trab.addWidget(self.edit_cep_trab)
+        
+        #endereço fornecedor 
+        end_trab = criar_label_padrao()
+        end_trab.setText('Endereço')
+        end_trab.setContentsMargins(2, 0, 0, 0)
+        end_trab.setFixedSize(end_trab.sizeHint())
+
+        self.edit_end_trab = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_end_trab.setMinimumWidth(335)
+
+        vbox_end_trab = QVBoxLayout()
+        vbox_end_trab.addWidget(end_trab)
+        vbox_end_trab.addWidget(self.edit_end_trab)
+
+        #número
+        num_trab = criar_label_padrao()
+        num_trab.setText('Número')
+        num_trab.setContentsMargins(2, 0, 0, 0)
+        num_trab.setFixedSize(num_trab.sizeHint())
+
+        edit_num_trab = criar_lineedit_padrao(LineEditComEnter)
+        edit_num_trab.setFixedWidth(80)
+
+        vbox_num_trab = QVBoxLayout()
+        vbox_num_trab.addWidget(num_trab)
+        vbox_num_trab.addWidget(edit_num_trab)
+
+        #bairro funcionário
+        bairro_trab = criar_label_padrao()
+        bairro_trab.setText('Bairro')
+        bairro_trab.setContentsMargins(2, 0, 0, 0)
+        bairro_trab.setFixedSize(bairro_trab.sizeHint())
+
+        self.edit_bairro_trab = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_bairro_trab.setMinimumWidth(205)
+
+        vbox_bairro_trab = QVBoxLayout()
+        vbox_bairro_trab.addWidget(bairro_trab)
+        vbox_bairro_trab.addWidget(self.edit_bairro_trab)
+
+        #cidade fornecedor
+        cid_trab = criar_label_padrao()
+        cid_trab.setText('Cidade')
+        cid_trab.setContentsMargins(2, 0, 0, 0)
+        cid_trab.setFixedSize(cid_trab.sizeHint())
+
+        self.edit_cid_trab = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_cid_trab.setMinimumWidth(220)
+
+        vbox_cid_trab = QVBoxLayout()
+        vbox_cid_trab.addWidget(cid_trab)
+        vbox_cid_trab.addWidget(self.edit_cid_trab)
+
+        #estado fornecetrab
+        est_trab = criar_label_padrao()
+        est_trab.setText('UF')
+        est_trab.setContentsMargins(2, 0, 0, 0)
+        est_trab.setFixedSize(est_trab.sizeHint())
+
+        self.edit_est_trab = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_est_trab.setFixedWidth(60)
+
+        vbox_est_trab = QVBoxLayout()
+        vbox_est_trab.addWidget(est_trab)
+        vbox_est_trab.addWidget(self.edit_est_trab)
+
+        #layout linha 3
+
+        hbox_ref_linha3 = QHBoxLayout()
+        hbox_ref_linha3.addLayout(vbox_cep_trab)
+        hbox_ref_linha3.addLayout(vbox_end_trab)
+        hbox_ref_linha3.addLayout(vbox_num_trab)
+        hbox_ref_linha3.addLayout(vbox_bairro_trab)
+        hbox_ref_linha3.addLayout(vbox_cid_trab)
+        hbox_ref_linha3.addLayout(vbox_est_trab)
 
         # layout geral aba referencias
         vbox_geral_aba_ref = QVBoxLayout()
         vbox_geral_aba_ref.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         vbox_geral_aba_ref.addLayout(hbox_ref_linha1)
+        vbox_geral_aba_ref.addLayout(hbox_ref_linha2)
+        vbox_geral_aba_ref.addLayout(hbox_ref_linha3)
 
 
         aba_ref.setLayout(vbox_geral_aba_ref)
-
-
-
-
 
         # --------------------------------------------------
 
@@ -663,7 +845,7 @@ class CadCliente(QWidget):
         vbox.addWidget(nometela, alignment=Qt.AlignmentFlag.AlignCenter)
         vbox.addWidget(tab)
         vbox.addLayout(hbox_botoes)
-        vbox.setContentsMargins(110, 50, 110, 50)
+        vbox.setContentsMargins(20, 20, 20, 20)
 
         self.setLayout(vbox)
 
@@ -717,17 +899,47 @@ class CadCliente(QWidget):
 
 
     def buscar_cep(self):
-        cep = self.edit_cep_cli.text()
+        # Descobre quem disparou o sinal
+        origem = self.sender()
+        if origem is None:
+            return
+
+        # Lê o CEP da origem e normaliza (somente dígitos)
+        cep = ''.join(ch for ch in origem.text() if ch.isdigit())
+
         dados = consulta_cep(cep)
+
+        # Seleciona widgets de destino conforme a origem
+        if origem is self.edit_cep_cli:
+            destino_end   = self.edit_end_cli
+            destino_bairro= self.edit_bairro_cli
+            destino_cidade= self.edit_cid_cli
+            destino_uf    = self.edit_est_cli
+        elif origem is self.edit_cep_trab:
+            destino_end   = self.edit_end_trab
+            destino_bairro= self.edit_bairro_trab
+            destino_cidade= self.edit_cid_trab
+            destino_uf    = self.edit_est_trab
+        else:
+            return
 
         if dados is None:
             QMessageBox.warning(self, "CEP inválido", "CEP não encontrado ou mal formatado.")
-        elif dados:
-            self.edit_end_cli.setText(dados.get('logradouro', '').upper())
-            self.edit_bairro_cli.setText(dados.get('bairro', '').upper())
-            self.edit_cid_cli.setText(dados.get('localidade', '').upper())
-            self.edit_est_cli.setText(dados.get('uf', '').upper())
-        # Se dados == {}, significa sem internet → não faz nada
+            # limpa os destinos e volta o foco
+            destino_end.clear()
+            destino_bairro.clear()
+            destino_cidade.clear()
+            destino_uf.clear()
+            origem.setFocus()
+            return
+
+        if dados:  # veio resposta da API
+            destino_end.setText(dados.get('logradouro', '').upper())
+            destino_bairro.setText(dados.get('bairro', '').upper())
+            destino_cidade.setText(dados.get('localidade', '').upper())
+            destino_uf.setText(dados.get('uf', '').upper())
+        # se dados == {}, você já tratou como "sem internet": não altera nada
+
 
 
     def ao_trocar_aba(self, index):

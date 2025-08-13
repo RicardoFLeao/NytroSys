@@ -165,6 +165,7 @@ class CadFuncionarios(QWidget):
         layout_geral_aba1.addSpacing(10)
         layout_geral_aba1.addLayout(hbox_botoes_rodape)
         layout_geral_aba1.addSpacing(10)
+        
         aba1.setLayout(layout_geral_aba1)
 
         # ----------- ABA 2 (Cadastro) ------------
@@ -561,7 +562,7 @@ class CadFuncionarios(QWidget):
         cart_trab.setFixedSize(cart_trab.sizeHint())
 
         edit_cart_trab = criar_lineedit_padrao(LineEditComEnter)
-        edit_cart_trab.setFixedWidth(245)
+        edit_cart_trab.setMinimumWidth(245)
 
         vbox_cart_trab = QVBoxLayout()
         vbox_cart_trab.addWidget(cart_trab)
@@ -576,7 +577,7 @@ class CadFuncionarios(QWidget):
 
 
         edit_pis_func = criar_lineedit_padrao(LineEditComEnter)
-        edit_pis_func.setFixedWidth(290)
+        edit_pis_func.setMinimumWidth(290)
 
         vbox_pis_func = QVBoxLayout()
         vbox_pis_func.addWidget(pis_func)
@@ -620,7 +621,7 @@ class CadFuncionarios(QWidget):
         mot_demis.setFixedSize(mot_demis.sizeHint())
 
         edit_mot_demis = criar_lineedit_padrao(LineEditComEnter)
-        edit_mot_demis.setFixedWidth(855)
+        edit_mot_demis.setMinimumWidth(855)
 
         vbox_mot_demis = QVBoxLayout()
         vbox_mot_demis.addWidget(mot_demis)
@@ -663,7 +664,6 @@ class CadFuncionarios(QWidget):
         vbox_linhas.addLayout(cad_linha4)
         vbox_linhas.addLayout(cad_linha5)
         vbox_linhas.addLayout(cad_linha6)
-
 
         # Foto do funcionário
         self.lbl_foto = QLabel("Foto")

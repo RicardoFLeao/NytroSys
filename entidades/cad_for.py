@@ -77,23 +77,23 @@ class CadFornecedor(QWidget):
         check_todos = QCheckBox("Todos")
 
         lnedit_pesq = criar_lineedit_padrao()
-        lnedit_pesq.setFixedWidth(810)
+        lnedit_pesq.setMinimumWidth(810)
 
         vbox_opc = QVBoxLayout()
-        vbox_opc.addWidget(label_opc, alignment=Qt.AlignmentFlag.AlignLeft)
-        vbox_opc.addWidget(comb_opc, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox_opc.addWidget(label_opc)
+        vbox_opc.addWidget(comb_opc)
 
         vbox_mdl = QVBoxLayout()
-        vbox_mdl.addWidget(label_mdl, alignment=Qt.AlignmentFlag.AlignLeft)
-        vbox_mdl.addWidget(comb_mdl, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox_mdl.addWidget(label_mdl)
+        vbox_mdl.addWidget(comb_mdl)
 
         hbox_pesq = QHBoxLayout()
-        hbox_pesq.addWidget(label_pesq, alignment=Qt.AlignmentFlag.AlignLeft)
-        hbox_pesq.addWidget(check_todos, alignment=Qt.AlignmentFlag.AlignRight)
+        hbox_pesq.addWidget(label_pesq)
+        hbox_pesq.addWidget(check_todos)
 
         vbox_pesq = QVBoxLayout()
         vbox_pesq.addLayout(hbox_pesq)
-        vbox_pesq.addWidget(lnedit_pesq, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox_pesq.addWidget(lnedit_pesq)
 
         hbox_linha1 = QHBoxLayout()
         hbox_linha1.addLayout(vbox_opc)
@@ -129,7 +129,6 @@ class CadFornecedor(QWidget):
         self.tabela_resultado.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.tabela_resultado.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.tabela_resultado.setAlternatingRowColors(True)
-        self.tabela_resultado.setMaximumHeight(350)
         self.tabela_resultado.setMinimumHeight(300)
         
 
@@ -155,9 +154,9 @@ class CadFornecedor(QWidget):
         layout_geral_aba1.addLayout(hbox_linha1)
         layout_geral_aba1.addLayout(vbox_linha2)
         layout_geral_aba1.addWidget(self.tabela_resultado)
-        layout_geral_aba1.addStretch()
+        layout_geral_aba1.addSpacing(10)
         layout_geral_aba1.addLayout(hbox_botoes_rodape)
-        layout_geral_aba1.addStretch()
+        layout_geral_aba1.addSpacing(10)
 
         aba1.setLayout(layout_geral_aba1)
 
@@ -209,7 +208,7 @@ class CadFornecedor(QWidget):
         hbox_label_raz_social.setContentsMargins(0, 0, 10, 0)
 
         self.edit_raz_social = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_raz_social.setFixedWidth (435)
+        self.edit_raz_social.setMinimumWidth(435)
 
         vbox_raz_social = QVBoxLayout()
         vbox_raz_social.addLayout(hbox_label_raz_social)
@@ -222,7 +221,7 @@ class CadFornecedor(QWidget):
         fant_forn.setFixedSize(fant_forn.sizeHint())
 
         self.edit_fant_forn = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_fant_forn.setFixedWidth(400)
+        self.edit_fant_forn.setMinimumWidth(400)
         self.edit_fant_forn.setContentsMargins(0,1,0,0)
 
         vbox_fant_forn = QVBoxLayout()
@@ -237,7 +236,7 @@ class CadFornecedor(QWidget):
         cont_forn.setFixedSize(cont_forn.sizeHint())
 
         self.edit_cont_forn = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_cont_forn.setFixedWidth(180)
+        self.edit_cont_forn.setMinimumWidth(180)
 
         vbox_cont_forn = QVBoxLayout()
         vbox_cont_forn.addWidget(cont_forn)
@@ -292,11 +291,25 @@ class CadFornecedor(QWidget):
         end_forn.setFixedSize(end_forn.sizeHint())
 
         self.edit_end_forn = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_end_forn.setFixedWidth(350)
+        self.edit_end_forn.setMinimumWidth(350)
 
         vbox_end_forn = QVBoxLayout()
         vbox_end_forn.addWidget(end_forn)
         vbox_end_forn.addWidget(self.edit_end_forn)
+
+        #Número Funcionário
+
+        num_for = criar_label_padrao()
+        num_for.setText('Número')
+        num_for.setContentsMargins(2, 0, 0, 0)
+        num_for.setFixedSize(num_for.sizeHint())
+
+        edit_num_for = criar_lineedit_padrao(LineEditComEnter)
+        edit_num_for.setFixedWidth(80)
+
+        vbox_num_for = QVBoxLayout()
+        vbox_num_for.addWidget(num_for)
+        vbox_num_for.addWidget(edit_num_for)
 
         #bairro funcionário
         bairro_forn = criar_label_padrao()
@@ -305,7 +318,7 @@ class CadFornecedor(QWidget):
         bairro_forn.setFixedSize(bairro_forn.sizeHint())
 
         self.edit_bairro_forn = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_bairro_forn.setFixedWidth(205)
+        self.edit_bairro_forn.setMinimumWidth(205)
 
         vbox_bairro_forn = QVBoxLayout()
         vbox_bairro_forn.addWidget(bairro_forn)
@@ -318,7 +331,7 @@ class CadFornecedor(QWidget):
         cid_forn.setFixedSize(cid_forn.sizeHint())
 
         self.edit_cid_forn = criar_lineedit_padrao(LineEditComEnter)
-        self.edit_cid_forn.setFixedWidth(220)
+        self.edit_cid_forn.setMinimumWidth(220)
 
         vbox_cid_forn = QVBoxLayout()
         vbox_cid_forn.addWidget(cid_forn)
@@ -355,6 +368,7 @@ class CadFornecedor(QWidget):
         forn_linha2.setAlignment(Qt.AlignmentFlag.AlignLeft)
         forn_linha2.addLayout(vbox_cep_forn)
         forn_linha2.addLayout(vbox_end_forn)
+        forn_linha2.addLayout(vbox_num_for)
         forn_linha2.addLayout(vbox_bairro_forn)
         forn_linha2.addLayout(vbox_cid_forn)
         forn_linha2.addLayout(vbox_est_forn)
@@ -458,7 +472,8 @@ class CadFornecedor(QWidget):
         inf_add_forn.setFixedSize(inf_add_forn.sizeHint())
 
         text_inf_add_forn = QTextEdit()
-        text_inf_add_forn.setFixedSize(875, 70)
+        text_inf_add_forn.setMinimumWidth(875)
+        text_inf_add_forn.setMinimumHeight(70)
         text_inf_add_forn.setStyleSheet('background-color: white; font-size: 14px')
 
         vbox_inf_add_forn = QVBoxLayout()
@@ -498,9 +513,9 @@ class CadFornecedor(QWidget):
         layout_geral_aba2.addLayout(forn_linha2)
         layout_geral_aba2.addLayout(forn_linha3)
         layout_geral_aba2.addLayout(forn_linha4)
-        layout_geral_aba2.addStretch()
+        layout_geral_aba2.addSpacing(10)
         layout_geral_aba2.addLayout(hbox_botoes_aba2)
-        layout_geral_aba2.addSpacing(30)
+        layout_geral_aba2.addSpacing(10)
 
 
         aba2.setLayout(layout_geral_aba2)
@@ -527,7 +542,7 @@ class CadFornecedor(QWidget):
         vbox.addWidget(nometela, alignment=Qt.AlignmentFlag.AlignCenter)
         vbox.addWidget(tab)
         vbox.addLayout(hbox_botoes)
-        vbox.setContentsMargins(110, 50, 110, 50)
+        vbox.setContentsMargins(20, 20, 20, 20)
 
         self.setLayout(vbox)
 
