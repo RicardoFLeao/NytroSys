@@ -3,7 +3,7 @@ from PyQt6.QtGui import QAction,  QShortcut, QKeySequence
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from util.estilo import gerar_estilo
-from util.fun_telas import tela_ent, tela_cad_fun, tela_cad_cli, tela_cad_for
+from util.fun_telas import tela_ent, tela_cad_fun, tela_cad_cli, tela_cad_for, tela_cad_prod
 import sys
 
 
@@ -19,6 +19,8 @@ class telaPrincipal(QMainWindow):
 
         QShortcut(QKeySequence('Esc'), self).activated.connect(self.close)
         QShortcut(QKeySequence(Qt.Key.Key_B), self).activated.connect(lambda: tela_ent(self))
+        QShortcut(QKeySequence(Qt.Key.Key_A), self).activated.connect(lambda: tela_cad_prod(self))
+
 
 
     def menu(self):
@@ -39,9 +41,25 @@ class telaPrincipal(QMainWindow):
         barra_menu.addMenu(menu_cont)
         barra_menu.addMenu(menu_util)
 
+
+        # criação de ações no menu produtos
+        act_prod = QAction('Cad. Produtos', self)
+        act_prod.triggered.connect(lambda: tela_cad_prod(self))
+
+        menu_prod.addAction(act_prod)
+        menu_prod.addSeparator()
+
+
+
+        # criação de ações no menu entidades
         act_func = QAction('Cad. Funcionários', self)
+        act_func.triggered.connect(lambda: tela_cad_fun(self))
+
         act_clie = QAction('Cad. Clientes', self)
+        act_clie.triggered.connect(lambda: tela_cad_cli(self))
+
         act_forn = QAction('Cad. Fornecedores', self)
+        act_forn.triggered.connect(lambda: tela_cad_for(self))
 
         menu_enti.addAction(act_func)
         menu_enti.addSeparator()
@@ -51,10 +69,9 @@ class telaPrincipal(QMainWindow):
 
 
         #ações dos menus
-        act_func.triggered.connect(lambda: tela_cad_fun(self))
-        act_clie.triggered.connect(lambda: tela_cad_cli(self))
-        act_forn.triggered.connect(lambda: tela_cad_for(self))
         
+
+        #ações no menu sair
         menu_sair = QAction('Sair', self)
         menu_sair.triggered.connect(self.close)
         barra_menu.addAction(menu_sair)
@@ -97,9 +114,13 @@ class telaPrincipal(QMainWindow):
         layout_botoes.addWidget(btnC, 2, 0)
         layout_botoes.addWidget(btnF, 2, 1)
 
-        #Ações botões
+        #Ações clique dos botões
 
+        btnA.clicked.connect(lambda: tela_cad_prod(self))
         btnB.clicked.connect(lambda: tela_ent(self))
+
+
+        #criação bloco de notas
 
         bloco_notas = QTextEdit()
         bloco_notas.setPlaceholderText("bloco de notas...")

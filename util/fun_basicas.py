@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QApplication, QLineEdit
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QLocale
+from PyQt6.QtGui import QDoubleValidator
 import requests
 
 class LineEditComEnter(QLineEdit):
@@ -32,3 +33,25 @@ def consulta_cep(cep: str) -> dict | None:
     return None
 
 
+def validador_preco():
+    validador = QDoubleValidator(0.0, 999999.99, 2)
+    validador.setNotation(QDoubleValidator.Notation.StandardNotation)
+    validador.setLocale(QLocale(QLocale.Language.English, QLocale.Country.UnitedStates))
+    return validador
+
+def texto_para_float(texto):
+    texto = texto.strip()
+
+    if not texto:
+        return 0.0
+
+    # troca vírgula por ponto
+    texto = texto.replace(",", ".")
+
+    try:
+        return float(texto)
+    except ValueError:
+        return 0.0
+
+def formatar_preco(valor):
+    return f"{valor:.2f}".replace(".", ",")

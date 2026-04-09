@@ -24,3 +24,10 @@ def tela_cad_for(self):
     self.janela.show()
     self.close()
 
+def tela_cad_prod(self):
+    from adm_prod.cad_prod import CadProd
+    self.janela = CadProd()
+    self.janela.show()
+    self.close()
+
+

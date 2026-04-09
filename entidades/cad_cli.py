@@ -778,12 +778,297 @@ class CadCliente(QWidget):
         hbox_ref_linha3.addLayout(vbox_cid_trab)
         hbox_ref_linha3.addLayout(vbox_est_trab)
 
+        #layout linha 4
+
+        #referencias pessoais 
+        ref_pessoais = criar_label_padrao()
+        ref_pessoais.setText('Referências Pessoais')
+        ref_pessoais.setStyleSheet('font: bold;')
+        ref_pessoais.setContentsMargins(2, 0, 0, 0)
+        ref_pessoais.setFixedSize(ref_pessoais.sizeHint())
+
+        vbox_ref_pess = QVBoxLayout()
+        vbox_ref_pess.addWidget(ref_pessoais, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        #layout linha 5
+        nome_ref_pess = criar_label_padrao()
+        nome_ref_pess.setText('Nome')
+        nome_ref_pess.setContentsMargins(2, 0, 0, 0)
+        nome_ref_pess.setFixedSize(nome_ref_pess.sizeHint())
+
+        edit_nome_ref_pess1 = criar_lineedit_padrao(LineEditComEnter)
+        edit_nome_ref_pess2 = criar_lineedit_padrao(LineEditComEnter)
+        edit_nome_ref_pess3 = criar_lineedit_padrao(LineEditComEnter)
+
+        nomes_ref_pessoais = (edit_nome_ref_pess1, edit_nome_ref_pess2, edit_nome_ref_pess3)
+
+        for nome in nomes_ref_pessoais:
+            nome.setFixedWidth(350)
+
+        tel_ref_pess = criar_label_padrao()
+        tel_ref_pess.setText('Telefone')
+        tel_ref_pess.setContentsMargins(2, 0, 0, 0)
+        tel_ref_pess.setFixedSize(tel_ref_pess.sizeHint())
+
+        edit_tel_ref_pess1 = criar_lineedit_padrao(LineEditComEnter)
+        edit_tel_ref_pess2 = criar_lineedit_padrao(LineEditComEnter)
+        edit_tel_ref_pess3 = criar_lineedit_padrao(LineEditComEnter)
+
+        tels_ref_pess = (edit_tel_ref_pess1, edit_tel_ref_pess2, edit_tel_ref_pess3)
+
+        for telef in tels_ref_pess:
+            telef.setFixedWidth(130)
+            telef.setInputMask('(00)00000-0000;_')
+
+        inf_ref_pess = criar_label_padrao()
+        inf_ref_pess.setText('Informação')
+        inf_ref_pess.setContentsMargins(2, 0, 0, 0)
+        inf_ref_pess.setFixedSize(inf_ref_pess.sizeHint())
+
+        edit_inf_pess1 = criar_lineedit_padrao(LineEditComEnter)
+        edit_inf_pess2 = criar_lineedit_padrao(LineEditComEnter)
+        edit_inf_pess3 = criar_lineedit_padrao(LineEditComEnter)
+
+        edits_inf_pess = (edit_inf_pess1, edit_inf_pess2, edit_inf_pess3)
+
+        for infor in edits_inf_pess:
+            infor.setMinimumWidth(550)
+        
+
+        vbox_nome_ref_pess = QVBoxLayout()
+        vbox_nome_ref_pess.addWidget(nome_ref_pess)
+        vbox_nome_ref_pess.addWidget(edit_nome_ref_pess1)
+        
+        vbox_tel_ref_pess = QVBoxLayout()
+        vbox_tel_ref_pess.addWidget(tel_ref_pess)
+        vbox_tel_ref_pess.addWidget(edit_tel_ref_pess1)
+
+        vbox_inf_ref_pess = QVBoxLayout()
+        vbox_inf_ref_pess.addWidget(inf_ref_pess)
+        vbox_inf_ref_pess.addWidget(edit_inf_pess1)
+
+        hbox_ref_pess_linha1 = QHBoxLayout()
+        hbox_ref_pess_linha1.addLayout(vbox_nome_ref_pess)
+        hbox_ref_pess_linha1.addLayout(vbox_tel_ref_pess)
+        hbox_ref_pess_linha1.addLayout(vbox_inf_ref_pess)
+
+        hbox_ref_pess_linha2 = QHBoxLayout()
+        hbox_ref_pess_linha2.addWidget(edit_nome_ref_pess2)
+        hbox_ref_pess_linha2.addWidget(edit_tel_ref_pess2)
+        hbox_ref_pess_linha2.addWidget(edit_inf_pess2)
+
+        hbox_ref_pess_linha3 = QHBoxLayout()
+        hbox_ref_pess_linha3.addWidget(edit_nome_ref_pess3)
+        hbox_ref_pess_linha3.addWidget(edit_tel_ref_pess3)
+        hbox_ref_pess_linha3.addWidget(edit_inf_pess3)
+
+        # referências comerciais 
+
+        ref_comerc = criar_label_padrao()
+        ref_comerc.setText('Referêcias Comerciais')
+        ref_comerc.setStyleSheet('font: bold;')
+        ref_comerc.setContentsMargins(2, 0, 0, 0)
+        ref_comerc.setFixedSize(ref_comerc.sizeHint())
+
+        vbox_ref_comerc = QVBoxLayout()
+        vbox_ref_comerc.addWidget(ref_comerc, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        loja_ref_comerc = criar_label_padrao()
+        loja_ref_comerc.setText('Loja')
+        loja_ref_comerc.setContentsMargins(2, 0, 0, 0)
+        loja_ref_comerc.setFixedSize(loja_ref_comerc.sizeHint())
+
+        edit_loja_ref_comerc1 = criar_lineedit_padrao(LineEditComEnter)
+        edit_loja_ref_comerc2 = criar_lineedit_padrao(LineEditComEnter)
+        edit_loja_ref_comerc3 = criar_lineedit_padrao(LineEditComEnter)
+
+        edits_loja_ref_comerc = (edit_loja_ref_comerc1, edit_loja_ref_comerc2, edit_loja_ref_comerc3)
+
+        for lojas in edits_loja_ref_comerc:
+            lojas.setFixedWidth(350)
+
+        tel_ref_comerc = criar_label_padrao()
+        tel_ref_comerc.setText('Telefone')
+        tel_ref_comerc.setContentsMargins(2, 0, 0, 0)
+        tel_ref_comerc.setFixedSize(tel_ref_comerc.sizeHint())
+
+        edit_tel_ref_comerc1 = criar_lineedit_padrao(LineEditComEnter)
+        edit_tel_ref_comerc2 = criar_lineedit_padrao(LineEditComEnter)
+        edit_tel_ref_comerc3 = criar_lineedit_padrao(LineEditComEnter)
+
+        edits_tel_ref_comerc = (edit_tel_ref_comerc1, edit_tel_ref_comerc2, edit_tel_ref_comerc3)
+
+        for telef in edits_tel_ref_comerc:
+            telef.setFixedWidth(130)
+            telef.setInputMask('(00)00000-0000;_')
+
+        inic_comp_comerc = criar_label_padrao()
+        inic_comp_comerc.setText('Cliente desde')
+        inic_comp_comerc.setContentsMargins(2, 0, 0, 0)
+        inic_comp_comerc.setFixedSize(inic_comp_comerc.sizeHint())
+
+        edit_inic_comp_comerc1 = criar_lineedit_padrao(LineEditComEnter)
+        edit_inic_comp_comerc2 = criar_lineedit_padrao(LineEditComEnter)
+        edit_inic_comp_comerc3 = criar_lineedit_padrao(LineEditComEnter)
+
+        edits_inic_comp_comerc = (edit_inic_comp_comerc1, edit_inic_comp_comerc2, edit_inic_comp_comerc3)
+
+        for inic_comp in edits_inic_comp_comerc:
+            inic_comp.setFixedWidth(100)
+            inic_comp.setInputMask('00/00/0000.;_')
+
+        val_ult_comp = criar_label_padrao()
+        val_ult_comp.setText('V. ult. comp.')
+        val_ult_comp.setContentsMargins(2, 0, 0, 0)
+        val_ult_comp.setFixedSize(val_ult_comp.sizeHint())
+
+        edit_val_ult_comp1 = criar_lineedit_padrao(LineEditComEnter)
+        edit_val_ult_comp2 = criar_lineedit_padrao(LineEditComEnter)
+        edit_val_ult_comp3 = criar_lineedit_padrao(LineEditComEnter)
+
+        edits_val_ult_compr = (edit_val_ult_comp1, edit_val_ult_comp2, edit_val_ult_comp3)
+
+        for valor in edits_val_ult_compr:
+            valor.setFixedWidth(110)
+        
+        data_ult_comp = criar_label_padrao()
+        data_ult_comp.setText('D. ult. comp.')
+        data_ult_comp.setContentsMargins(2, 0, 0, 0)
+        data_ult_comp.setFixedSize(data_ult_comp.sizeHint())
+
+        edit_data_ult_comp1 = criar_lineedit_padrao(LineEditComEnter)
+        edit_data_ult_comp2 = criar_lineedit_padrao(LineEditComEnter)
+        edit_data_ult_comp3 = criar_lineedit_padrao(LineEditComEnter)
+
+        edits_data_ult_comp = (edit_data_ult_comp1, edit_data_ult_comp2, edit_data_ult_comp3)
+
+        for datas in edits_data_ult_comp:
+            datas.setFixedWidth(100)
+            datas.setInputMask('00/00/0000.;_')
+            
+        val_maior_comp = criar_label_padrao()
+        val_maior_comp.setText('V. maior comp.')
+        val_maior_comp.setContentsMargins(2, 0, 0, 0)
+        val_maior_comp.setFixedSize(val_maior_comp.sizeHint())
+
+        edit_val_maior_comp1 = criar_lineedit_padrao(LineEditComEnter)
+        edit_val_maior_comp2 = criar_lineedit_padrao(LineEditComEnter)
+        edit_val_maior_comp3 = criar_lineedit_padrao(LineEditComEnter)
+
+        edits_val_maior_compr = (edit_val_maior_comp1, edit_val_maior_comp2, edit_val_maior_comp3)
+
+        for valor in edits_val_maior_compr:
+            valor.setFixedWidth(110)
+
+
+        data_maior_comp = criar_label_padrao()
+        data_maior_comp.setText('D. ult. comp.')
+        data_maior_comp.setContentsMargins(2, 0, 0, 0)
+        data_maior_comp.setFixedSize(data_maior_comp.sizeHint())
+
+        edit_data_maior_comp1 = criar_lineedit_padrao(LineEditComEnter)
+        edit_data_maior_comp2 = criar_lineedit_padrao(LineEditComEnter)
+        edit_data_maior_comp3 = criar_lineedit_padrao(LineEditComEnter)
+
+        edits_data_maior_comp = (edit_data_maior_comp1, edit_data_maior_comp2, edit_data_maior_comp3)
+
+        for datas in edits_data_maior_comp:
+            datas.setFixedWidth(100)
+            datas.setInputMask('00/00/0000.;_')
+            
+        inf_comercial = criar_label_padrao()
+        inf_comercial.setText('Informação')
+        inf_comercial.setContentsMargins(2, 0, 0, 0)
+        inf_comercial.setFixedSize(inf_comercial.sizeHint())
+
+        edit_inf_comercial1 = criar_lineedit_padrao(LineEditComEnter)
+        edit_inf_comercial2 = criar_lineedit_padrao(LineEditComEnter)
+        edit_inf_comercial3 = criar_lineedit_padrao(LineEditComEnter)
+
+        edits_inf_comercial = (edit_inf_comercial1, edit_inf_comercial2, edit_inf_comercial3)
+
+        for inform in edits_inf_comercial:
+            inform.setMinimumWidth(200)
+        
+        
+        vbox_loja_ref_comerc = QVBoxLayout()
+        vbox_loja_ref_comerc.addWidget(loja_ref_comerc)
+        vbox_loja_ref_comerc.addWidget(edit_loja_ref_comerc1)
+
+        vbox_tel_ref_comerc = QVBoxLayout()
+        vbox_tel_ref_comerc.addWidget(tel_ref_comerc)
+        vbox_tel_ref_comerc.addWidget(edit_tel_ref_comerc1)
+
+        vbox_inic_comp_comerc = QVBoxLayout()
+        vbox_inic_comp_comerc.addWidget(inic_comp_comerc)
+        vbox_inic_comp_comerc.addWidget(edit_inic_comp_comerc1)
+
+        vbox_val_ult_comp = QVBoxLayout()
+        vbox_val_ult_comp.addWidget(val_ult_comp)
+        vbox_val_ult_comp.addWidget(edit_val_ult_comp1)
+
+        vbox_data_ult_comp = QVBoxLayout()
+        vbox_data_ult_comp.addWidget(data_ult_comp)
+        vbox_data_ult_comp.addWidget(edit_data_ult_comp1)
+
+        vbox_val_maior_comp = QVBoxLayout()
+        vbox_val_maior_comp.addWidget(val_maior_comp)
+        vbox_val_maior_comp.addWidget(edit_val_maior_comp1)
+
+        vbox_data_maior_comp = QVBoxLayout()
+        vbox_data_maior_comp.addWidget(data_maior_comp)
+        vbox_data_maior_comp.addWidget(edit_data_maior_comp1)
+
+        vbox_inf_comerc = QVBoxLayout()
+        vbox_inf_comerc.addWidget(inf_comercial)
+        vbox_inf_comerc.addWidget(edit_inf_comercial1)
+
+        hbox_ref_comerc_linha1 = QHBoxLayout()
+        hbox_ref_comerc_linha1.addLayout(vbox_loja_ref_comerc)
+        hbox_ref_comerc_linha1.addLayout(vbox_tel_ref_comerc)
+        hbox_ref_comerc_linha1.addLayout(vbox_inic_comp_comerc)
+        hbox_ref_comerc_linha1.addLayout(vbox_val_ult_comp)
+        hbox_ref_comerc_linha1.addLayout(vbox_data_ult_comp)
+        hbox_ref_comerc_linha1.addLayout(vbox_val_maior_comp)
+        hbox_ref_comerc_linha1.addLayout(vbox_data_maior_comp)
+        hbox_ref_comerc_linha1.addLayout(vbox_inf_comerc)
+
+        hbox_ref_comerc_linha2 = QHBoxLayout()
+        hbox_ref_comerc_linha2.addWidget(edit_loja_ref_comerc2)
+        hbox_ref_comerc_linha2.addWidget(edit_tel_ref_comerc2)
+        hbox_ref_comerc_linha2.addWidget(edit_inic_comp_comerc2)
+        hbox_ref_comerc_linha2.addWidget(edit_val_ult_comp2)
+        hbox_ref_comerc_linha2.addWidget(edit_data_ult_comp2)
+        hbox_ref_comerc_linha2.addWidget(edit_val_maior_comp2)
+        hbox_ref_comerc_linha2.addWidget(edit_data_maior_comp2)
+        hbox_ref_comerc_linha2.addWidget(edit_inf_comercial2)
+
+        
+        hbox_ref_comerc_linha3 = QHBoxLayout()
+        hbox_ref_comerc_linha3.addWidget(edit_loja_ref_comerc3)
+        hbox_ref_comerc_linha3.addWidget(edit_tel_ref_comerc3)
+        hbox_ref_comerc_linha3.addWidget(edit_inic_comp_comerc3)
+        hbox_ref_comerc_linha3.addWidget(edit_val_ult_comp3)
+        hbox_ref_comerc_linha3.addWidget(edit_data_ult_comp3)
+        hbox_ref_comerc_linha3.addWidget(edit_val_maior_comp3)
+        hbox_ref_comerc_linha3.addWidget(edit_data_maior_comp3)
+        hbox_ref_comerc_linha3.addWidget(edit_inf_comercial3)
+
+
         # layout geral aba referencias
         vbox_geral_aba_ref = QVBoxLayout()
         vbox_geral_aba_ref.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         vbox_geral_aba_ref.addLayout(hbox_ref_linha1)
         vbox_geral_aba_ref.addLayout(hbox_ref_linha2)
         vbox_geral_aba_ref.addLayout(hbox_ref_linha3)
+        vbox_geral_aba_ref.addLayout(vbox_ref_pess)
+        vbox_geral_aba_ref.addLayout(hbox_ref_pess_linha1)
+        vbox_geral_aba_ref.addLayout(hbox_ref_pess_linha2)
+        vbox_geral_aba_ref.addLayout(hbox_ref_pess_linha3)
+        vbox_geral_aba_ref.addLayout(vbox_ref_comerc)
+        vbox_geral_aba_ref.addLayout(hbox_ref_comerc_linha1)
+        vbox_geral_aba_ref.addLayout(hbox_ref_comerc_linha2)
+        vbox_geral_aba_ref.addLayout(hbox_ref_comerc_linha3)
 
 
         aba_ref.setLayout(vbox_geral_aba_ref)
