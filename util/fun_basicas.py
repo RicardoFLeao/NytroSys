@@ -55,3 +55,48 @@ def texto_para_float(texto):
 
 def formatar_preco(valor):
     return f"{valor:.2f}".replace(".", ",")
+
+
+def validar_cpf(cpf):
+    cpf = ''.join(filter(str.isdigit, cpf))
+
+    if len(cpf) != 11:
+        return False
+
+    if cpf == cpf[0] * 11:
+        return False
+
+    # 1º dígito
+    soma = sum(int(cpf[i]) * (10 - i) for i in range(9))
+    dig1 = (soma * 10 % 11) % 10
+
+    # 2º dígito
+    soma = sum(int(cpf[i]) * (11 - i) for i in range(10))
+    dig2 = (soma * 10 % 11) % 10
+
+    return cpf[-2:] == f"{dig1}{dig2}"
+
+
+def validar_cnpj(cnpj):
+    cnpj = ''.join(filter(str.isdigit, cnpj))
+
+    if len(cnpj) != 14:
+        return False
+
+    if cnpj == cnpj[0] * 14:
+        return False
+
+    pesos1 = [5,4,3,2,9,8,7,6,5,4,3,2]
+    pesos2 = [6] + pesos1
+
+    # 1º dígito
+    soma = sum(int(cnpj[i]) * pesos1[i] for i in range(12))
+    resto = soma % 11
+    dig1 = 0 if resto < 2 else 11 - resto
+
+    # 2º dígito
+    soma = sum(int(cnpj[i]) * pesos2[i] for i in range(13))
+    resto = soma % 11
+    dig2 = 0 if resto < 2 else 11 - resto
+
+    return cnpj[-2:] == f"{dig1}{dig2}"

@@ -1,9 +1,8 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout, QGridLayout, QMenuBar, QMenu
-from PyQt6.QtGui import QAction,  QShortcut, QKeySequence
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QShortcut, QKeySequence, QKeyEvent, QAction
 from util.estilo import gerar_estilo
-from util.fun_telas import tela_ent, tela_cad_fun, tela_cad_cli, tela_cad_for, tela_cad_prod
+from util.fun_telas import tela_ent, tela_cad_fun, tela_cad_cli, tela_cad_for, tela_cad_prod, tela_acerto_estoque 
 import sys
 
 
@@ -43,13 +42,14 @@ class telaPrincipal(QMainWindow):
 
 
         # criação de ações no menu produtos
-        act_prod = QAction('Cad. Produtos', self)
+        act_prod = QAction('Cadastro Produtos', self)
         act_prod.triggered.connect(lambda: tela_cad_prod(self))
+        act_estoque = QAction('Acerto Estoque', self)
+        act_estoque.triggered.connect(lambda: tela_acerto_estoque(self))
 
         menu_prod.addAction(act_prod)
+        menu_prod.addAction(act_estoque)
         menu_prod.addSeparator()
-
-
 
         # criação de ações no menu entidades
         act_func = QAction('Cad. Funcionários', self)
@@ -69,8 +69,6 @@ class telaPrincipal(QMainWindow):
 
 
         #ações dos menus
-        
-
         #ações no menu sair
         menu_sair = QAction('Sair', self)
         menu_sair.triggered.connect(self.close)

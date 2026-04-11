@@ -30,4 +30,10 @@ def tela_cad_prod(self):
     self.janela.show()
     self.close()
 
+def tela_acerto_estoque(self):
+    from estoque.tela_acerto_estoque import TelaAcertoEstoque
+    self.janela = TelaAcertoEstoque()
+    self.janela.showMaximized()
+    self.close()
+
 

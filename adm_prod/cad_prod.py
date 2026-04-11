@@ -15,9 +15,8 @@ from util.padrao import (
     criar_combobox_padrao,
     criar_lineedit_padrao)
 from util.fun_basicas import(LineEditComEnter)
-from util.fun_basicas import validador_preco
 from util.fun_basicas import texto_para_float, formatar_preco
-from bd import salvar_produto, listar_produtos, atualizar_produto, pesquisar_produtos
+from bd import salvar_produto, listar_produtos, atualizar_produto, pesquisar_produtos_avancado, excluir_produto as excluir_produto_bd
 
 
 class CadProd(QWidget):
@@ -29,6 +28,7 @@ class CadProd(QWidget):
         self.showMaximized()
         QShortcut(QKeySequence('Esc'), self).activated.connect(self.sair)
         QShortcut(QKeySequence('F5'), self).activated.connect(self.limpar_campos)
+        QShortcut(QKeySequence('F8'), self).activated.connect(self.preencher_tabela)
 
         self.setTabOrder(self.edit_preco_custo, self.edit_preco_venda)
         self.setTabOrder(self.edit_preco_venda, self.edit_preco_promocao)
@@ -52,7 +52,7 @@ class CadProd(QWidget):
         label_opc.setFixedSize(label_opc.sizeHint())
 
         self.comb_opc = criar_combobox_padrao()
-        self.comb_opc.addItem("Nome")
+        self.comb_opc.addItems(["Descrição", "Código", "Cód. Barras", "Referências"])
         self.comb_opc.setFixedWidth(220)
 
         label_mdl = criar_label_padrao()
@@ -70,10 +70,11 @@ class CadProd(QWidget):
         label_pesq.setFixedSize(label_pesq.sizeHint())
 
         self.check_todos = QCheckBox("Todos")
+        self.check_todos.toggled.connect(self.acao_check_todos)
 
         self.edit_label_pesq = criar_lineedit_padrao()
         self.edit_label_pesq.setMinimumWidth(810)
-        self.edit_label_pesq.textChanged.connect(self.preencher_tabela)
+        self.edit_label_pesq.textChanged.connect(self.acao_digitar_pesquisa)
 
         vbox_opc = QVBoxLayout()
         vbox_opc.addWidget(label_opc)
@@ -121,11 +122,27 @@ class CadProd(QWidget):
         self.tabela_resultado = QTableWidget()
         self.tabela_resultado.setColumnCount(4)
         self.tabela_resultado.setHorizontalHeaderLabels(["Código", "Descrição", "Quant.", "Preço"])
-        self.tabela_resultado.setStyleSheet("background-color: white; font-size: 13px")
+        self.tabela_resultado.setStyleSheet("""
+            QTableWidget {
+                background-color: white;
+                font-size: 13px;
+            }
+
+            QTableWidget::item:selected {
+                background-color: #031740;
+                color: white;
+                font-weight: bold;
+            }
+
+            QTableWidget::item {
+                padding: 5px;
+            }
+        """)
         self.tabela_resultado.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.tabela_resultado.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.tabela_resultado.setAlternatingRowColors(True)
         self.tabela_resultado.setMinimumHeight(300)
+        self.tabela_resultado.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
         
 
         header = self.tabela_resultado.horizontalHeader()
@@ -145,12 +162,18 @@ class CadProd(QWidget):
         self.botao_relat = criar_botao()
         self.botao_relat.setText('Relatórios')
 
+        self.botao_excluir = criar_botao()
+        self.botao_excluir.setText("Excluir")
+        self.botao_excluir.clicked.connect(self.excluir_produto)
+
         hbox_botoes_rodape = QHBoxLayout()
         hbox_botoes_rodape.setAlignment(Qt.AlignmentFlag.AlignCenter )
         hbox_botoes_rodape.addWidget(self.botao_novo)
         hbox_botoes_rodape.addSpacing(5)
         hbox_botoes_rodape.addWidget(self.botao_relat)
         hbox_botoes_rodape.addStretch()
+        hbox_botoes_rodape.addWidget(self.botao_excluir)
+        # hbox_botoes_rodape.addSpacing()
 
 
         layout_geral_aba1 = QVBoxLayout()
@@ -406,12 +429,12 @@ class CadProd(QWidget):
 
         aba_abastecimento.setLayout(hbox_aba_abastecimento)
 
-
-
         # criação da aba unidade dentro da apresentação
         aba_unidade = QWidget()
 
         # unidade compra
+        unidade = ["UN", "CX", "LT", "PCT", "GL", "TB"]
+        
         un_compra = criar_label_padrao()
         un_compra.setText('Un. Compra')
         un_compra.setContentsMargins(2, 0, 0, 0)
@@ -419,6 +442,7 @@ class CadProd(QWidget):
 
         self.comb_un_compra = criar_combobox_padrao()
         self.comb_un_compra.setFixedWidth(80)
+        self.comb_un_compra.addItems(unidade)
 
         vbox_unid_compra = QVBoxLayout()
         vbox_unid_compra.addWidget(un_compra)
@@ -445,6 +469,7 @@ class CadProd(QWidget):
 
         self.comb_un_venda = criar_combobox_padrao()
         self.comb_un_venda.setFixedWidth(80)
+        self.comb_un_venda.addItems(unidade)
 
         vbox_unid_venda = QVBoxLayout()
         vbox_unid_venda.addWidget(un_venda)
@@ -463,6 +488,21 @@ class CadProd(QWidget):
         vbox_quant_venda.addWidget(quant_venda)
         vbox_quant_venda.addWidget(self.edit_quant_venda)
 
+
+        #combo tipo inteiro / decimal
+        label_tipo = criar_label_padrao()
+        label_tipo.setText("Tipo Quantidade")
+        label_tipo.setContentsMargins(2, 0, 0, 0)
+        label_tipo.setFixedSize(label_tipo.sizeHint())
+
+        self.combo_tipo_quant = criar_combobox_padrao()
+        self.combo_tipo_quant.addItems(["Inteiro", "Decimal"])
+        self.combo_tipo_quant.setFixedWidth(150)        
+
+        vbox_tipo = QVBoxLayout()
+        vbox_tipo.addWidget(label_tipo)
+        vbox_tipo.addWidget(self.combo_tipo_quant)
+
         # hbox aba unidade
         hbox_aba_unidade = QHBoxLayout()
         hbox_aba_unidade.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -470,6 +510,7 @@ class CadProd(QWidget):
         hbox_aba_unidade.addLayout(vbox_quant_compra)
         hbox_aba_unidade.addLayout(vbox_unid_venda)
         hbox_aba_unidade.addLayout(vbox_quant_venda)
+        hbox_aba_unidade.addLayout(vbox_tipo)
 
 
         aba_unidade.setLayout(hbox_aba_unidade)
@@ -1118,24 +1159,33 @@ class CadProd(QWidget):
         self.edit_ref_similar.setText(produto["ref_similar"])
         self.edit_aplic.setText(produto["aplicacao"])
 
+        self.edit_estoque_minimo.setText(str(produto["estoque_minimo"] or ""))
+        self.edit_cod_forn.setText(str(produto["cod_fornecedor"] or ""))
+        self.edit_nome_forn.setText(str(produto["nome_fornecedor"] or ""))
+        self.edit_repositor.setText(str(produto["repositor"] or ""))
+
         self.edit_preco_custo.setText(str(produto["preco_custo"]))
         self.edit_preco_venda.setText(str(produto["preco_venda"]))
         self.edit_preco_promocao.setText(str(produto["preco_promocao"]))
         self.edit_margem_lucro.setText(str(produto["margem_lucro"]))
         self.edit_desconto.setText(str(produto["desconto"]))
+        self.combo_tipo_quant.setCurrentText(produto["tipo_quantidade"])
 
         # Vai pra aba cadastro
         self.tab.setCurrentIndex(1)
 
     def preencher_tabela(self, texto=None):
         texto_pesquisa = self.edit_label_pesq.text().strip().upper()
+        opcao = self.comb_opc.currentText()
+
+        self.tabela_resultado.setRowCount(0)
 
         if self.check_todos.isChecked():
             dados = listar_produtos()
         else:
-            dados = pesquisar_produtos(texto_pesquisa)
-
-        self.tabela_resultado.setRowCount(0)
+            if not texto_pesquisa:
+                return
+            dados = pesquisar_produtos_avancado(opcao, texto_pesquisa)
 
         if not dados:
             return
@@ -1196,6 +1246,7 @@ class CadProd(QWidget):
 
     def salvar(self):
         descricao = self.edit_desc.text().strip().upper()
+        tipo_quant = self.combo_tipo_quant.currentText()
 
         if not descricao:
             QMessageBox.warning(self, "Aviso", "Descrição é obrigatória.")
@@ -1211,11 +1262,18 @@ class CadProd(QWidget):
             "ref_orig": self.edit_ref_orig.text().strip().upper(),
             "ref_similar": self.edit_ref_similar.text().strip().upper(),
             "aplicacao": self.edit_aplic.text().strip().upper(),
+
+            "estoque_minimo": self.edit_estoque_minimo.text().strip(),
+            "cod_fornecedor": self.edit_cod_forn.text().strip(),
+            "nome_fornecedor": self.edit_nome_forn.text().strip().upper(),
+            "repositor": self.edit_repositor.text().strip().upper(),
+
             "preco_custo": self.edit_preco_custo.text().strip(),
             "preco_venda": self.edit_preco_venda.text().strip(),
             "preco_promocao": self.edit_preco_promocao.text().strip(),
             "margem_lucro": self.edit_margem_lucro.text().strip(),
-            "desconto": self.edit_desconto.text().strip()
+            "desconto": self.edit_desconto.text().strip(),
+            "tipo_quantidade": tipo_quant,
         }
 
         if dados["codigo"]:
@@ -1259,6 +1317,69 @@ class CadProd(QWidget):
         self.edit_desconto.clear()
 
         self.edit_desc.setFocus()
+
+    def excluir_produto(self):
+        linha = self.tabela_resultado.currentRow()
+
+        if linha < 0:
+            QMessageBox.warning(self, "Aviso", "Selecione um produto na tabela para excluir.")
+            return
+
+        item_codigo = self.tabela_resultado.item(linha, 0)
+        item_descricao = self.tabela_resultado.item(linha, 1)
+
+        if item_codigo is None:
+            QMessageBox.warning(self, "Aviso", "Não foi possível identificar o produto.")
+            return
+
+        codigo = item_codigo.text().strip()
+        descricao = item_descricao.text().strip() if item_descricao else ""
+
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Confirmar exclusão")
+        msg.setIcon(QMessageBox.Icon.Question)
+        msg.setText(
+            f"Deseja excluir o produto?\n\n"
+            f"Código: {codigo}\n"
+            f"Descrição: {descricao}"
+        )
+
+        btn_sim = msg.addButton("Sim", QMessageBox.ButtonRole.YesRole)
+        btn_nao = msg.addButton("Não", QMessageBox.ButtonRole.NoRole)
+
+        msg.setDefaultButton(btn_nao)
+
+        msg.exec()
+
+        if msg.clickedButton() != btn_sim:
+            return
+
+        sucesso = excluir_produto_bd(codigo)
+
+        if sucesso:
+            QMessageBox.information(self, "Sucesso", "Produto excluído com sucesso!")
+            self.preencher_tabela()
+            
+            if self.edit_cod.text().strip() == codigo:
+                self.limpar_campos()
+
+        else:
+            QMessageBox.critical(self, "Erro", "Erro ao excluir produto.")
+
+
+    def acao_check_todos(self, marcado):
+        if marcado:
+            self.edit_label_pesq.clear()
+            self.preencher_tabela()
+
+    def acao_digitar_pesquisa(self, texto):
+        if texto.strip():
+            if self.check_todos.isChecked():
+                self.check_todos.blockSignals(True)
+                self.check_todos.setChecked(False)
+                self.check_todos.blockSignals(False)
+
+        self.preencher_tabela()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
