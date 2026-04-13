@@ -48,6 +48,7 @@ class telaPrincipal(QMainWindow):
         act_estoque.triggered.connect(lambda: tela_acerto_estoque(self))
 
         menu_prod.addAction(act_prod)
+        menu_prod.addSeparator()
         menu_prod.addAction(act_estoque)
         menu_prod.addSeparator()
 

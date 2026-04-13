@@ -2,25 +2,24 @@ import os
 import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout,
-    QMessageBox, QTableWidget, QTableWidgetItem, QHeaderView)
-from bd import atualizar_quantidade_produto
+    QMessageBox, QTableWidget, QTableWidgetItem, QHeaderView
+)
 from PyQt6.QtGui import QIcon, QShortcut, QKeySequence
 from PyQt6.QtCore import Qt
-QHeaderView
+
 from util.estilo import gerar_estilo
 from util.padrao import (
     criar_botao,
     criar_botao_sair,
     criar_label_padrao,
     criar_lineedit_padrao,
-    criar_tab_widget,
     criar_combobox_padrao
 )
 from util.fun_basicas import LineEditComEnter
-
-from bd import pesquisar_produtos_estoque, salvar_historico_estoque
+from estoque.estoque_service import EstoqueService
 
 class LineEditBusca(LineEditComEnter):
     def keyPressEvent(self, event):
@@ -39,6 +38,7 @@ class TelaAcertoEstoque(QWidget):
         super().__init__()
         self.setWindowTitle("Estoque Manual")
         self.setWindowIcon(QIcon("imagens/icone.png"))
+        self.service = EstoqueService()
         # self.showMaximized()
         self.componentes()
 
@@ -315,44 +315,29 @@ class TelaAcertoEstoque(QWidget):
         self.selecionar_produto(0, 0)
         self.edit_nova_quant.setFocus()
 
+
     def registrar_acerto(self):
         codigo = self.line_edit_codigo.text().strip()
         descricao = self.edit_descricao.text().strip()
         quant_antiga = self.edit_quantidade.text().strip()
         quant_nova = self.edit_nova_quant.text().strip()
 
-        # valida vazio
-        if not codigo or not quant_nova:
-            return
+        resultado = self.service.registrar_acerto(
+            codigo,
+            descricao,
+            quant_antiga,
+            quant_nova,
+            getattr(self, "tipo_quantidade", ""),
+            usuario="admin",
+        )
 
-        # valida texto inválido primeiro
-        try:
-            teste = quant_nova.replace(",", ".")
-            float(teste)
-        except:
-            QMessageBox.warning(self, "Erro", "Digite uma quantidade válida.")
+        if not resultado["sucesso"]:
+            QMessageBox.warning(self, "Erro", resultado["mensagem"])
             self.edit_nova_quant.setFocus()
             self.edit_nova_quant.selectAll()
             return
 
-        # valida inteiro
-        quant_nova = float(quant_nova.replace(",", "."))
-
-        if hasattr(self, "tipo_quantidade"):
-            if self.tipo_quantidade.strip().lower() == "inteiro":
-                if not quant_nova.is_integer():
-                    QMessageBox.warning(self, "Erro", "Apenas quantidade inteira.")
-                    self.edit_nova_quant.setFocus()
-                    self.edit_nova_quant.selectAll()
-                    return
-                quant_nova = int(quant_nova)
-
-        if not atualizar_quantidade_produto(codigo, quant_nova):
-            QMessageBox.warning(self, "Erro", "Não foi possível atualizar o estoque.")
-            return
-
-        salvar_historico_estoque(codigo, descricao, quant_antiga, quant_nova, "admin")
-
+        quant_nova = resultado["quantidade_nova"]
         linha = self.tabela_alterados.rowCount()
         self.tabela_alterados.insertRow(linha)
 
@@ -368,7 +353,9 @@ class TelaAcertoEstoque(QWidget):
         self.edit_dados_pesquisar.clear()
         self.tabela_resultado.setRowCount(0)
         self.edit_dados_pesquisar.setFocus()
-   
+
+
+
    
     def buscar_produto(self, *args):
         texto = self.edit_dados_pesquisar.text().strip()
@@ -378,21 +365,20 @@ class TelaAcertoEstoque(QWidget):
             self.tabela_resultado.setRowCount(0)
             return
 
-        mapa_opcoes = {
-            "Descrição": "descricao",
-            "Código": "codigo",
-            "Referências": "referencia"
-        }
-
-        campo_busca = mapa_opcoes.get(opcao, "descricao")
-
-        resultados = pesquisar_produtos_estoque(opcao, texto)
+        resultados = self.service.buscar_produtos(opcao, texto)
 
         self.tabela_resultado.setRowCount(len(resultados))
 
         for linha, produto in enumerate(resultados):
-            for coluna, valor in enumerate(produto):
-                self.tabela_resultado.setItem(linha, coluna, QTableWidgetItem(str(valor)))
+            codigo = str(produto.get("codigo", ""))
+            descricao = str(produto.get("descricao", ""))
+            quantidade = str(produto.get("quantidade", ""))
+            tipo_quantidade = str(produto.get("tipo_quantidade", ""))
+
+            self.tabela_resultado.setItem(linha, 0, QTableWidgetItem(codigo))
+            self.tabela_resultado.setItem(linha, 1, QTableWidgetItem(descricao))
+            self.tabela_resultado.setItem(linha, 2, QTableWidgetItem(quantidade))
+            self.tabela_resultado.setItem(linha, 3, QTableWidgetItem(tipo_quantidade))
 
     def sair(self):
         from telaMain import telaPrincipal

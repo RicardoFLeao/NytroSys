@@ -2,10 +2,9 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from PyQt6.QtWidgets import *
-from PyQt6.QtGui import QIcon, QShortcut, QKeySequence
-from PyQt6.QtCore import Qt
-
+from entidades.fornecedor.fornecedor_service import FornecedorService
+from util.fun_basicas import consulta_cep, LineEditComEnter
+from util.estilo import gerar_estilo
 from util.padrao import (
     criar_botao,
     criar_tab_widget,
@@ -15,22 +14,24 @@ from util.padrao import (
     criar_combobox_padrao,
     criar_lineedit_padrao
 )
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon, QShortcut, QKeySequence
+from PyQt6.QtWidgets import *
 
-from util.estilo import gerar_estilo
-from util.fun_basicas import consulta_cep, LineEditComEnter, validar_cnpj, validar_cpf
 
 class CadFornecedor(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Cadastro Fornecedores")
-        
-        # Ícone seguro com verificação de caminho
-        icon_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'imagens', 'icone.png'))
+        self.service = FornecedorService()
+
+        # Icone seguro com verificação de caminho
+        icon_path = os.path.abspath(os.path.join(
+            os.path.dirname(__file__), '..', 'imagens', 'icone.png'))
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
         else:
-            print(f"[ERRO] Ícone não encontrado: {icon_path}")
-
+            print(f"[ERRO] Icone não encontrado: {icon_path}")
 
         self.componentes()
 
@@ -38,6 +39,7 @@ class CadFornecedor(QWidget):
 
         # teclas atalhos
         QShortcut(QKeySequence('Esc'), self).activated.connect(self.sair)
+        QShortcut(QKeySequence('F8'), self).activated.connect(self.acao_buscar_fornecedor)
 
     def componentes(self):
         nometela = QLabel("Cadastro de Fornecedores")
@@ -56,8 +58,10 @@ class CadFornecedor(QWidget):
         label_opc.setContentsMargins(2, 0, 0, 0)
         label_opc.setFixedSize(label_opc.sizeHint())
 
+        opcoes_consulta = ['Código', 'Nome / Razão Social', 'CPF / CNPJ','WhatsApp', 'Email']
         self.comb_opc = criar_combobox_padrao()
-        self.comb_opc.addItem("Nome/Razão Sócial")
+        self.comb_opc.addItems(opcoes_consulta)
+        self.comb_opc.setCurrentText("Nome / Razão Social")
         self.comb_opc.setFixedWidth(220)
 
         label_mdl = criar_label_padrao()
@@ -78,6 +82,7 @@ class CadFornecedor(QWidget):
 
         self.lnedit_pesq = criar_lineedit_padrao()
         self.lnedit_pesq.setMinimumWidth(810)
+        self.lnedit_pesq.textChanged.connect(self.acao_buscar_fornecedor)
 
         vbox_opc = QVBoxLayout()
         vbox_opc.addWidget(label_opc)
@@ -101,56 +106,92 @@ class CadFornecedor(QWidget):
         hbox_linha1.addLayout(vbox_pesq)
 
         label_ativo = criar_label_padrao()
-        label_ativo.setText('Ativo')
+        label_ativo.setText('Status')
         label_ativo.setContentsMargins(2, 0, 0, 0)
         label_ativo.setFixedSize(label_ativo.sizeHint())
 
         self.combo_ativo = criar_combobox_padrao()
-        self.combo_ativo.addItems(["Todos", "Ativo", "Inativo"])
+        self.combo_ativo.addItems(["Ativos", "Excluídos", "Todos"])
         self.combo_ativo.setFixedWidth(220)
 
         self.btn_pesq = criar_botao()
         self.btn_pesq.setText("F8 - Pesquisa")
-        self.btn_pesq.clicked.connect(self.preencher_tabela)  # chama função ao clicar
+        self.btn_pesq.clicked.connect(self.acao_buscar_fornecedor)  
+
 
         hbox_linha2 = QHBoxLayout()
-        hbox_linha2.addWidget(self.combo_ativo, alignment=Qt.AlignmentFlag.AlignLeft)
+        hbox_linha2.addWidget(
+            self.combo_ativo, alignment=Qt.AlignmentFlag.AlignLeft)
         hbox_linha2.addWidget(self.btn_pesq)
 
         vbox_linha2 = QVBoxLayout()
-        vbox_linha2.addWidget(label_ativo, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox_linha2.addWidget(
+            label_ativo, alignment=Qt.AlignmentFlag.AlignLeft)
         vbox_linha2.addLayout(hbox_linha2)
 
         # ---------- TABELA DE RESULTADOS ----------
         self.tabela_resultado = QTableWidget()
-        self.tabela_resultado.setColumnCount(4)
-        self.tabela_resultado.setHorizontalHeaderLabels(["Código", "Nome / Razão Sócial", "Contato", "Status"])
-        self.tabela_resultado.setStyleSheet("background-color: white; font-size: 13px")
-        self.tabela_resultado.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        self.tabela_resultado.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.tabela_resultado.setColumnCount(6)
+        self.tabela_resultado.setHorizontalHeaderLabels([
+            'Código',
+            'Nome / Razão Social',
+            'CPF / CNPJ',
+            'WhatsApp',
+            'E-mail',
+            'Status'
+        ])
+        self.tabela_resultado.setStyleSheet("""
+            QTableWidget {
+                background-color: white;
+                font-size: 13px;
+            }
+
+            QTableWidget::item:selected {
+                background-color: #031740;
+                color: white;
+                font-weight: bold;
+            }
+
+            QTableWidget::item {
+                padding: 5px;
+            }
+        """)
+        self.tabela_resultado.setEditTriggers(
+            QTableWidget.EditTrigger.NoEditTriggers)
+        self.tabela_resultado.setSelectionBehavior(
+            QTableWidget.SelectionBehavior.SelectRows)
         self.tabela_resultado.setAlternatingRowColors(True)
         self.tabela_resultado.setMinimumHeight(300)
-        
+        self.tabela_resultado.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
+        self.tabela_resultado.verticalHeader().setVisible(False)
+        self.tabela_resultado.itemDoubleClicked.connect(self.abrir_fornecedor_selecionado)
 
-        #botões controle novo, relatório
+        self.tabela_resultado.setColumnWidth(0, 70)    # Código
+        self.tabela_resultado.setColumnWidth(1, 360)   # Nome / Razão Social
+        self.tabela_resultado.setColumnWidth(2, 170)   # CPF / CNPJ
+        self.tabela_resultado.setColumnWidth(3, 140)   # Telefone
+        self.tabela_resultado.setColumnWidth(4, 220)   # E-mail
+        self.tabela_resultado.setColumnWidth(5, 100)   # Status
+                # botÃµes controle novo, relatÃ³rio
 
         self.botao_novo = criar_botao()
         self.botao_novo.setText('F5 - Novo')
+        self.botao_novo.clicked.connect(self.novo_fornecedor)
 
         self.botao_relat = criar_botao()
         self.botao_relat.setText('Relatórios')
 
         hbox_botoes_rodape = QHBoxLayout()
-        hbox_botoes_rodape.setAlignment(Qt.AlignmentFlag.AlignCenter )
+        hbox_botoes_rodape.setAlignment(Qt.AlignmentFlag.AlignCenter)
         hbox_botoes_rodape.addWidget(self.botao_novo)
         hbox_botoes_rodape.addSpacing(5)
         hbox_botoes_rodape.addWidget(self.botao_relat)
         hbox_botoes_rodape.addStretch()
 
-
         layout_geral_aba1 = QVBoxLayout()
         layout_geral_aba1.setContentsMargins(20, 20, 20, 0)
-        layout_geral_aba1.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        layout_geral_aba1.setAlignment(
+            Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         layout_geral_aba1.addLayout(hbox_linha1)
         layout_geral_aba1.addLayout(vbox_linha2)
         layout_geral_aba1.addWidget(self.tabela_resultado)
@@ -166,7 +207,7 @@ class CadFornecedor(QWidget):
 
         # linha 1 --- inicio ---
 
-        # código fornecedor
+        # cÃ³digo fornecedor
         cod_for = criar_label_padrao()
         cod_for.setText('Código')
         cod_for.setContentsMargins(2, 0, 0, 0)
@@ -180,28 +221,30 @@ class CadFornecedor(QWidget):
         vbox_cod_for.addWidget(cod_for)
         vbox_cod_for.addWidget(self.edit_cod_for)
 
-        # Razão social 
+        # RazÃ£o social
 
         raz_social = criar_label_padrao()
         raz_social.setText('Razão Social/Nome')
         raz_social.setContentsMargins(2, 0, 0, 0)
         raz_social.setFixedSize(raz_social.sizeHint())
 
-        # check física / jurídica
-        
-        self.check_jur = QCheckBox('Jurídica')
+        # check fÃ­sica / jurÃ­dica
+
+        self.check_jur = QCheckBox('Jurí­dica')
         self.check_jur.stateChanged.connect(self.atualiza_form)
-        self.check_fis = QCheckBox('Física')
+        self.check_fis = QCheckBox('Fí­sica')
         self.check_fis.stateChanged.connect(self.atualiza_form)
 
         self.grupo_tipo_pessoa = QButtonGroup(self)
-        self.grupo_tipo_pessoa.setExclusive(True)  # Permite só um marcado
+        self.grupo_tipo_pessoa.setExclusive(True)  # Permite sÃ³ um marcado
         self.grupo_tipo_pessoa.addButton(self.check_jur)
         self.grupo_tipo_pessoa.addButton(self.check_fis)
 
         hbox_check = QHBoxLayout()
-        hbox_check.addWidget(self.check_jur, alignment=Qt.AlignmentFlag.AlignRight)
-        hbox_check.addWidget(self.check_fis, alignment=Qt.AlignmentFlag.AlignRight)
+        hbox_check.addWidget(
+            self.check_jur, alignment=Qt.AlignmentFlag.AlignRight)
+        hbox_check.addWidget(
+            self.check_fis, alignment=Qt.AlignmentFlag.AlignRight)
 
         hbox_label_raz_social = QHBoxLayout()
         hbox_label_raz_social.addWidget(raz_social)
@@ -215,7 +258,7 @@ class CadFornecedor(QWidget):
         vbox_raz_social.addLayout(hbox_label_raz_social)
         vbox_raz_social.addWidget(self.edit_raz_social)
 
-        # Nome fantasia 
+        # Nome fantasia
         fant_forn = criar_label_padrao()
         fant_forn.setText('Nome Fantasia/Apelido')
         fant_forn.setContentsMargins(2, 0, 0, 0)
@@ -223,13 +266,14 @@ class CadFornecedor(QWidget):
 
         self.edit_fant_forn = criar_lineedit_padrao(LineEditComEnter)
         self.edit_fant_forn.setMinimumWidth(400)
-        self.edit_fant_forn.setContentsMargins(0,1,0,0)
+        self.edit_fant_forn.setContentsMargins(0, 1, 0, 0)
 
         vbox_fant_forn = QVBoxLayout()
-        vbox_fant_forn.addWidget(fant_forn, alignment=Qt.AlignmentFlag.AlignLeft)
+        vbox_fant_forn.addWidget(
+            fant_forn, alignment=Qt.AlignmentFlag.AlignLeft)
         vbox_fant_forn.addWidget(self.edit_fant_forn)
 
-        #contato 
+        # contato
 
         cont_forn = criar_label_padrao()
         cont_forn.setText('Nome Contato')
@@ -243,7 +287,7 @@ class CadFornecedor(QWidget):
         vbox_cont_forn.addWidget(cont_forn)
         vbox_cont_forn.addWidget(self.edit_cont_forn)
 
-        #WhatsApp
+        # WhatsApp
         zap_forn = criar_label_padrao()
         zap_forn.setText('WhatsApp')
         zap_forn.setContentsMargins(2, 0, 0, 0)
@@ -269,8 +313,8 @@ class CadFornecedor(QWidget):
         # linha 1 --- fim ---
 
         # linha 2 --- inicio ---
-        
-        #cep fornecedor
+
+        # cep fornecedor
         cep_forn = criar_label_padrao()
         cep_forn.setText('CEP')
         cep_forn.setContentsMargins(2, 0, 0, 0)
@@ -284,8 +328,8 @@ class CadFornecedor(QWidget):
         vbox_cep_forn = QVBoxLayout()
         vbox_cep_forn.addWidget(cep_forn)
         vbox_cep_forn.addWidget(self.edit_cep_forn)
-        
-        #endereço fornecedor 
+
+        # endereÃ§o fornecedor
         end_forn = criar_label_padrao()
         end_forn.setText('Endereço')
         end_forn.setContentsMargins(2, 0, 0, 0)
@@ -298,7 +342,7 @@ class CadFornecedor(QWidget):
         vbox_end_forn.addWidget(end_forn)
         vbox_end_forn.addWidget(self.edit_end_forn)
 
-        #Número Funcionário
+        # NÃºmero FuncionÃ¡rio
 
         num_for = criar_label_padrao()
         num_for.setText('Número')
@@ -312,7 +356,7 @@ class CadFornecedor(QWidget):
         vbox_num_for.addWidget(num_for)
         vbox_num_for.addWidget(self.edit_num_for)
 
-        #bairro funcionário
+        # bairro funcionÃ¡rio
         bairro_forn = criar_label_padrao()
         bairro_forn.setText('Bairro')
         bairro_forn.setContentsMargins(2, 0, 0, 0)
@@ -325,7 +369,7 @@ class CadFornecedor(QWidget):
         vbox_bairro_forn.addWidget(bairro_forn)
         vbox_bairro_forn.addWidget(self.edit_bairro_forn)
 
-        #cidade fornecedor
+        # cidade fornecedor
         cid_forn = criar_label_padrao()
         cid_forn.setText('Cidade')
         cid_forn.setContentsMargins(2, 0, 0, 0)
@@ -338,7 +382,7 @@ class CadFornecedor(QWidget):
         vbox_cid_forn.addWidget(cid_forn)
         vbox_cid_forn.addWidget(self.edit_cid_forn)
 
-        #estado fornecedor
+        # estado fornecedor
         est_forn = criar_label_padrao()
         est_forn.setText('UF')
         est_forn.setContentsMargins(2, 0, 0, 0)
@@ -351,10 +395,10 @@ class CadFornecedor(QWidget):
         vbox_est_forn.addWidget(est_forn)
         vbox_est_forn.addWidget(self.edit_est_forn)
 
-        #e-mail fornecedor
+        # Email fornecedor
         email_forn = criar_label_padrao()
-        email_forn.setText('e-mail')
-        email_forn.setContentsMargins(2, 0 , 0, 0)
+        email_forn.setText('Email')
+        email_forn.setContentsMargins(2, 0, 0, 0)
         email_forn.setFixedSize(email_forn.sizeHint())
 
         self.edit_email_forn = criar_lineedit_padrao(LineEditComEnter)
@@ -364,7 +408,7 @@ class CadFornecedor(QWidget):
         vbox_email_forn.addWidget(email_forn)
         vbox_email_forn.addWidget(self.edit_email_forn)
 
-        #layout linha 2
+        # layout linha 2
         forn_linha2 = QHBoxLayout()
         forn_linha2.setAlignment(Qt.AlignmentFlag.AlignLeft)
         forn_linha2.addLayout(vbox_cep_forn)
@@ -377,7 +421,7 @@ class CadFornecedor(QWidget):
 
         # linha 2 --- fim ---
 
-        # linha 3 --- início ---
+        # linha 3 --- inÃ­cio ---
 
         # telefone
         tel_forn = criar_label_padrao()
@@ -393,12 +437,11 @@ class CadFornecedor(QWidget):
         vbox_tel_forn.addWidget(tel_forn)
         vbox_tel_forn.addWidget(self.edit_tel_forn)
 
-        #CNPJ / CPF
+        # CNPJ / CPF
         self.cnpj_forn = criar_label_padrao()
         self.edit_cnpj_forn = criar_lineedit_padrao(LineEditComEnter)
         self.edit_cnpj_forn.setFixedWidth(150)
         self.edit_cnpj_forn.editingFinished.connect(self.validar_documento)
-
 
         vbox_cnpj_forn = QVBoxLayout()
         vbox_cnpj_forn.addWidget(self.cnpj_forn)
@@ -408,7 +451,7 @@ class CadFornecedor(QWidget):
         self.insc_forn = criar_label_padrao()
         self.edit_insc_forn = criar_lineedit_padrao(LineEditComEnter)
         self.edit_insc_forn.setFixedWidth(150)
-        
+
         vbox_insc_forn = QVBoxLayout()
         vbox_insc_forn.addWidget(self.insc_forn)
         vbox_insc_forn.addWidget(self.edit_insc_forn)
@@ -421,12 +464,12 @@ class CadFornecedor(QWidget):
 
         self.edit_insc_mun_forn = criar_lineedit_padrao(LineEditComEnter)
         self.edit_insc_mun_forn.setFixedWidth(150)
-        
+
         vbox_insc_mun_forn = QVBoxLayout()
         vbox_insc_mun_forn.addWidget(insc_mun_forn)
         vbox_insc_mun_forn.addWidget(self.edit_insc_mun_forn)
 
-        #data de nascimento
+        # data de nascimento
         self.dt_nasc_forn = criar_label_padrao()
 
         self.edit_dt_nasc_forn = criar_lineedit_padrao(LineEditComEnter)
@@ -437,7 +480,7 @@ class CadFornecedor(QWidget):
         vbox_dt_nasc_forn.addWidget(self.dt_nasc_forn)
         vbox_dt_nasc_forn.addWidget(self.edit_dt_nasc_forn)
 
-        #sexo funcionário
+        # sexo funcionÃ¡rio
         sexo_forn = criar_label_padrao()
         sexo_forn.setText('Sexo')
         sexo_forn.setContentsMargins(2, 0, 0, 0)
@@ -454,7 +497,7 @@ class CadFornecedor(QWidget):
         vbox_sexo_forn.addWidget(sexo_forn)
         vbox_sexo_forn.addWidget(self.comb_sexo_forn)
 
-        #layout linha 3
+        # layout linha 3
         forn_linha3 = QHBoxLayout()
         forn_linha3.setAlignment(Qt.AlignmentFlag.AlignLeft)
         forn_linha3.addLayout(vbox_tel_forn)
@@ -466,7 +509,7 @@ class CadFornecedor(QWidget):
 
         # linha 3 --- fim ---
 
-        # linha 4 --- início ---
+        # linha 4 --- inÃ­cio ---
 
         inf_add_forn = criar_label_padrao()
         inf_add_forn.setText('Informações adicionais')
@@ -476,30 +519,35 @@ class CadFornecedor(QWidget):
         self.text_inf_add_forn = QTextEdit()
         self.text_inf_add_forn.setMinimumWidth(875)
         self.text_inf_add_forn.setMinimumHeight(70)
-        self.text_inf_add_forn.setStyleSheet('background-color: white; font-size: 14px')
+        self.text_inf_add_forn.setStyleSheet(
+            'background-color: white; font-size: 14px')
 
         vbox_inf_add_forn = QVBoxLayout()
         vbox_inf_add_forn.addWidget(inf_add_forn)
         vbox_inf_add_forn.addWidget(self.text_inf_add_forn)
- 
+
         forn_linha4 = QHBoxLayout()
         forn_linha4.setAlignment(Qt.AlignmentFlag.AlignLeft)
         forn_linha4.addLayout(vbox_inf_add_forn)
-        
+
         # linha 4 --- fim ---
-        
+
         # botoes aba 2
         self.botao_novo_fornecedor = criar_botao()
         self.botao_novo_fornecedor.setText('F5 - Novo')
+        self.botao_novo_fornecedor.clicked.connect(self.novo_fornecedor)
 
         self.botao_canc_fornecedor = criar_botao()
         self.botao_canc_fornecedor.setText('Cancelar')
+        self.botao_canc_fornecedor.clicked.connect(self.cancelar)
 
         self.botao_excl_fornecedor = criar_botao()
-        self.botao_excl_fornecedor.setText('Excluir')
+        self.botao_excl_fornecedor.setText('Excluir / Ativar')
+        self.botao_excl_fornecedor.clicked.connect(self.alterar_status_fornecedor)
+
 
         hbox_botoes_aba2 = QHBoxLayout()
-        hbox_botoes_aba2.setAlignment(Qt.AlignmentFlag.AlignCenter )
+        hbox_botoes_aba2.setAlignment(Qt.AlignmentFlag.AlignCenter)
         hbox_botoes_aba2.addWidget(self.botao_novo_fornecedor)
         hbox_botoes_aba2.addSpacing(5)
         hbox_botoes_aba2.addWidget(self.botao_canc_fornecedor)
@@ -510,7 +558,8 @@ class CadFornecedor(QWidget):
         # layout geral aba 2
         layout_geral_aba2 = QVBoxLayout()
         layout_geral_aba2.setContentsMargins(20, 20, 20, 0)
-        layout_geral_aba2.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        layout_geral_aba2.setAlignment(
+            Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         layout_geral_aba2.addLayout(forn_linha1)
         layout_geral_aba2.addLayout(forn_linha2)
         layout_geral_aba2.addLayout(forn_linha3)
@@ -519,14 +568,13 @@ class CadFornecedor(QWidget):
         layout_geral_aba2.addLayout(hbox_botoes_aba2)
         layout_geral_aba2.addSpacing(10)
 
-
         aba2.setLayout(layout_geral_aba2)
 
         # ----------- Tabs ----------
         tab.addTab(aba1, "Consulta")
         tab.addTab(aba2, "Cadastro")
 
-        # Botões parte inferior da tela
+        # BotÃµes parte inferior da tela
         self.btn_sair = criar_botao_sair()
         self.btn_sair.clicked.connect(self.sair)
 
@@ -549,96 +597,73 @@ class CadFornecedor(QWidget):
 
         self.setLayout(vbox)
 
-
-
     def salvar(self):
-        razao_social = self.edit_raz_social.text().strip().upper()
-        cpf_cnpj = self.edit_cnpj_forn.text().strip()
+        dados = self.coletar_dados_formulario()
 
-        if not razao_social:
-            QMessageBox.warning(self, "Aviso", "Razão social / nome é obrigatório.")
+        # 🔥 Se tem código → atualizar
+        if dados["codigo"]:
+            resultado = self.service.atualizar_fornecedor(dados)
+
+            if resultado["sucesso"]:
+                QMessageBox.information(self, "Sucesso", resultado["mensagem"])
+                self.limpar_campos()
+                self.tab.setCurrentIndex(0)  # volta para consulta
+                return
+
+        else:
+            # 🔥 Se não tem código → novo cadastro
+            resultado = self.service.salvar_fornecedor(dados)
+
+            if resultado["sucesso"]:
+                QMessageBox.information(self, "Sucesso", resultado["mensagem"])
+                self.limpar_campos()
+                return
+
+        # 🔻 Se deu erro
+        QMessageBox.warning(self, "Aviso", resultado["mensagem"])
+
+        if "Raz" in resultado["mensagem"]:
             self.edit_raz_social.setFocus()
             return
 
+        if any(texto in resultado["mensagem"] for texto in ("CPF", "CNPJ", "cadastrado")):
+            self.edit_cnpj_forn.setFocus()
+            self.edit_cnpj_forn.selectAll()
+
+
+    def coletar_dados_formulario(self):
         if self.check_jur.isChecked():
             tipo_pessoa = "J"
         elif self.check_fis.isChecked():
             tipo_pessoa = "F"
         else:
-            QMessageBox.warning(self, "Aviso", "Selecione Jurídica ou Física.")
-            return
-
-        numeros_doc = "".join(filter(str.isdigit, cpf_cnpj))
-
-        if numeros_doc:
-            if tipo_pessoa == "J":
-                if len(numeros_doc) != 14:
-                    QMessageBox.warning(self, "Aviso", "CNPJ inválido.")
-                    self.edit_cnpj_forn.setFocus()
-                    self.edit_cnpj_forn.selectAll()
-                    return
-
-                # troque validar_cnpj pela sua função
-                if not validar_cnpj(numeros_doc):
-                    QMessageBox.warning(self, "Aviso", "CNPJ inválido.")
-                    self.edit_cnpj_forn.setFocus()
-                    self.edit_cnpj_forn.selectAll()
-                    return
-
-            elif tipo_pessoa == "F":
-                if len(numeros_doc) != 11:
-                    QMessageBox.warning(self, "Aviso", "CPF inválido.")
-                    self.edit_cnpj_forn.setFocus()
-                    self.edit_cnpj_forn.selectAll()
-                    return
-
-                # troque validar_cpf pela sua função
-                if not validar_cpf(numeros_doc):
-                    QMessageBox.warning(self, "Aviso", "CPF inválido.")
-                    self.edit_cnpj_forn.setFocus()
-                    self.edit_cnpj_forn.selectAll()
-                    return
+            tipo_pessoa = ""
 
         ativo = "S" if self.combo_ativo.currentText() != "Inativo" else "N"
 
-        dados = {
+        return {
             "codigo": self.edit_cod_for.text().strip(),
             "tipo_pessoa": tipo_pessoa,
-            "razao_social": self.edit_raz_social.text().strip().upper(),
-            "nome_fantasia": self.edit_fant_forn.text().strip().upper(),
-            "contato": self.edit_cont_forn.text().strip().upper(),
+            "razao_social": self.edit_raz_social.text().strip(),
+            "nome_fantasia": self.edit_fant_forn.text().strip(),
+            "contato": self.edit_cont_forn.text().strip(),
             "whatsapp": self.edit_zap_forn.text().strip(),
             "telefone": self.edit_tel_forn.text().strip(),
-            "email": self.edit_email_forn.text().strip().lower(),
+            "email": self.edit_email_forn.text().strip(),
             "cep": self.edit_cep_forn.text().strip(),
-            "endereco": self.edit_end_forn.text().strip().upper(),
+            "endereco": self.edit_end_forn.text().strip(),
             "numero": self.edit_num_for.text().strip(),
-            "bairro": self.edit_bairro_forn.text().strip().upper(),
-            "cidade": self.edit_cid_forn.text().strip().upper(),
-            "uf": self.edit_est_forn.text().strip().upper(),
-            "cpf_cnpj": cpf_cnpj,
-            "inscricao_estadual": self.edit_insc_forn.text().strip().upper(),
-            "inscricao_municipal": self.edit_insc_mun_forn.text().strip().upper(),
+            "bairro": self.edit_bairro_forn.text().strip(),
+            "cidade": self.edit_cid_forn.text().strip(),
+            "uf": self.edit_est_forn.text().strip(),
+            "cpf_cnpj": self.edit_cnpj_forn.text().strip(),
+            "inscricao_estadual": self.edit_insc_forn.text().strip(),
+            "inscricao_municipal": self.edit_insc_mun_forn.text().strip(),
             "data_referencia": self.edit_dt_nasc_forn.text().strip(),
             "sexo": self.comb_sexo_forn.currentText() if self.comb_sexo_forn.currentText() != "Selecione" else "",
-            "info_adicional": self.text_inf_add_forn.toPlainText().strip().upper(),
+            "info_adicional": self.text_inf_add_forn.toPlainText().strip(),
             "ativo": ativo
         }
-
-        from bd import salvar_fornecedor
-        resultado = salvar_fornecedor(dados)
-
-        if resultado == "existe":
-            QMessageBox.warning(self, "Aviso", "Fornecedor já cadastrado.")
-            self.edit_cnpj_forn.setFocus()
-            self.edit_cnpj_forn.selectAll()
-
-        elif resultado:
-            QMessageBox.information(self, "Sucesso", "Fornecedor salvo com sucesso!")
-            self.limpar_campos()
-
-        else:
-            QMessageBox.critical(self, "Erro", "Erro ao salvar fornecedor.")
 
     def limpar_campos(self):
         self.edit_cod_for.clear()
@@ -670,20 +695,107 @@ class CadFornecedor(QWidget):
 
         self.edit_raz_social.setFocus()
 
-    def preencher_tabela(self):
-        # Dados simulados
-        dados = [
-            ["1", "João da Silva", "Analista", "Ativo"],
-            ["2", "Maria Souza", "Gerente", "Inativo"],
-            ["3", "Carlos Oliveira", "Supervisor", "Ativo"]
-        ]
+    def acao_buscar_fornecedor(self, *args):
+        texto = self.lnedit_pesq.text().strip()
+        opcao = self.comb_opc.currentText()
+        ativo = self.combo_ativo.currentText()
+        buscar_todos = self.check_todos.isChecked()
 
-        self.tabela_resultado.setRowCount(len(dados))
+        if not texto and not buscar_todos:
+            QMessageBox.warning(self, "Aviso", "Digite um dado para pesquisar.")
+            self.lnedit_pesq.setFocus()
+            self.tabela_resultado.setRowCount(0)
+            return
 
-        for linha, dados_linha in enumerate(dados):
-            for coluna, valor in enumerate(dados_linha):
-                self.tabela_resultado.setItem(linha, coluna, QTableWidgetItem(valor))
+        resultados = self.service.buscar_fornecedor(opcao, texto, ativo, buscar_todos)
 
+        self.tabela_resultado.setRowCount(len(resultados))
+
+        for linha, fornecedor in enumerate(resultados):
+            for coluna, valor in enumerate(fornecedor):
+
+                item = QTableWidgetItem(str(valor) if valor is not None else "")
+
+                if coluna == 5:
+                    if valor == "A":
+                        item.setText("Ativo")
+
+                    elif valor == "E":
+                        item.setText("Excluído")
+                        item.setForeground(Qt.GlobalColor.red)  # 🔴 aqui é o segredo
+
+                self.tabela_resultado.setItem(linha, coluna, item)
+
+    def abrir_fornecedor_selecionado(self):
+        linha = self.tabela_resultado.currentRow()
+
+        if linha == -1:
+            return
+
+        codigo_item = self.tabela_resultado.item(linha, 0)
+
+        if codigo_item is None:
+            return
+
+        codigo = codigo_item.text()
+
+        fornecedor = self.service.buscar_por_codigo(codigo)
+
+        if not fornecedor:
+            return
+
+        self.carregar_fornecedor_no_formulario(fornecedor)
+        self.tab.setCurrentIndex(1)
+
+    def carregar_fornecedor_no_formulario(self, fornecedor):
+        if not fornecedor:
+            return
+
+        self.edit_cod_for.setText(str(fornecedor[1]) if fornecedor[1] is not None else "")
+
+        tipo_pessoa = fornecedor[2] if fornecedor[2] is not None else ""
+        self.edit_raz_social.setText(fornecedor[3] if fornecedor[3] is not None else "")
+        self.edit_fant_forn.setText(fornecedor[4] if fornecedor[4] is not None else "")
+        self.edit_cont_forn.setText(fornecedor[5] if fornecedor[5] is not None else "")
+        self.edit_zap_forn.setText(fornecedor[6] if fornecedor[6] is not None else "")
+        self.edit_tel_forn.setText(fornecedor[7] if fornecedor[7] is not None else "")
+        self.edit_email_forn.setText(fornecedor[8] if fornecedor[8] is not None else "")
+        self.edit_cep_forn.setText(fornecedor[9] if fornecedor[9] is not None else "")
+        self.edit_end_forn.setText(fornecedor[10] if fornecedor[10] is not None else "")
+        self.edit_num_for.setText(fornecedor[11] if fornecedor[11] is not None else "")
+        self.edit_bairro_forn.setText(fornecedor[12] if fornecedor[12] is not None else "")
+        self.edit_cid_forn.setText(fornecedor[13] if fornecedor[13] is not None else "")
+        self.edit_est_forn.setText(fornecedor[14] if fornecedor[14] is not None else "")
+        self.edit_cnpj_forn.setText(fornecedor[15] if fornecedor[15] is not None else "")
+        self.edit_insc_forn.setText(fornecedor[16] if fornecedor[16] is not None else "")
+        self.edit_insc_mun_forn.setText(fornecedor[17] if fornecedor[17] is not None else "")
+
+        if fornecedor[18] is not None:
+            data = str(fornecedor[18])
+            if "-" in data:
+                partes = data.split("-")
+                if len(partes) == 3:
+                    data = f"{partes[2]}/{partes[1]}/{partes[0]}"
+            self.edit_dt_nasc_forn.setText(data)
+        else:
+            self.edit_dt_nasc_forn.clear()
+
+        sexo = fornecedor[19] if fornecedor[19] is not None else ""
+        if sexo:
+            indice = self.comb_sexo_forn.findText(sexo)
+            if indice >= 0:
+                self.comb_sexo_forn.setCurrentIndex(indice)
+            else:
+                self.comb_sexo_forn.setCurrentIndex(0)
+        else:
+            self.comb_sexo_forn.setCurrentIndex(0)
+
+        self.text_inf_add_forn.setPlainText(fornecedor[20] if fornecedor[20] is not None else "")
+
+        if tipo_pessoa == "J":
+            self.check_jur.setChecked(True)
+        elif tipo_pessoa == "F":
+            self.check_fis.setChecked(True)
 
     def sair(self):
         from entidades.tela_ent import TelaEntidades
@@ -691,28 +803,26 @@ class CadFornecedor(QWidget):
         self.janela.show()
         self.close()
 
-
     def buscar_cep(self):
         cep = self.edit_cep_forn.text()
         dados = consulta_cep(cep)
 
         if dados is None:
-            QMessageBox.warning(self, "CEP inválido", "CEP não encontrado ou mal formatado.")
+            QMessageBox.warning(self, "CEP inválido",
+                                "CEP não encontrado ou mal formatado.")
         elif dados:
             self.edit_end_forn.setText(dados.get('logradouro', '').upper())
             self.edit_bairro_forn.setText(dados.get('bairro', '').upper())
             self.edit_cid_forn.setText(dados.get('localidade', '').upper())
             self.edit_est_forn.setText(dados.get('uf', '').upper())
-        # Se dados == {}, significa sem internet → não faz nada
-
+        # Se dados == {}, significa sem internet â†’ nÃ£o faz nada
 
     def ao_trocar_aba(self, index):
-    # Aba 2 é a de Cadastro
+        # Aba 2 Ã© a de Cadastro
         if index == 1:
             self.edit_raz_social.setFocus()
             self.check_jur.setChecked(True)
 
-        
     def atualiza_form(self):
         if self.check_jur.isChecked():
             self.cnpj_forn.setText('CNPJ')
@@ -738,32 +848,104 @@ class CadFornecedor(QWidget):
             self.dt_nasc_forn.setContentsMargins(2, 0, 0, 0)
             self.dt_nasc_forn.setFixedSize(self.dt_nasc_forn.sizeHint())
 
+
+
+    def alterar_status_fornecedor(self):
+        codigo = self.edit_cod_for.text().strip()
+
+        if not codigo:
+            QMessageBox.warning(
+                self,
+                "Aviso",
+                "Nenhum fornecedor selecionado."
+            )
+            return
+
+        fornecedor = self.service.buscar_por_codigo(codigo)
+
+        if not fornecedor:
+            QMessageBox.warning(
+                self,
+                "Erro",
+                "Fornecedor não encontrado."
+            )
+            return
+
+        status_atual = fornecedor[21]
+
+        if status_atual == "A":
+            novo_status = "E"
+            acao = "EXCLUIR"
+            mensagem = (
+                "Deseja realmente <b>EXCLUIR</b><br>"
+                "este fornecedor?"
+            )
+        else:
+            novo_status = "A"
+            acao = "ATIVAR"
+            mensagem = (
+                "Deseja realmente <b>ATIVAR</b><br>"
+                "este fornecedor?"
+            )
+
+        confirmacao = QMessageBox.question(
+            self,
+            "Confirmação",
+            mensagem,
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+
+        if confirmacao != QMessageBox.StandardButton.Yes:
+            return
+
+        resultado = self.service.alterar_status(codigo, novo_status)
+
+        if resultado["sucesso"]:
+            QMessageBox.information(
+                self,
+                "Sucesso",
+                f"Fornecedor {acao.lower()} com sucesso!"
+            )
+            self.limpar_campos()
+            self.tab.setCurrentIndex(0)
+            self.acao_buscar_fornecedor()
+        else:
+            QMessageBox.warning(
+                self,
+                "Erro",
+                resultado["mensagem"]
+            )
+
+
+    def novo_fornecedor(self):
+        self.limpar_campos()
+        self.tab.setCurrentIndex(1)
+        self.check_jur.setChecked(True)
+        self.edit_raz_social.setFocus()
+
+    def cancelar(self):
+        self.limpar_campos()
+        self.tab.setCurrentIndex(0)
+
     def validar_documento(self):
-        from util.fun_basicas import validar_cpf, validar_cnpj
-
         doc = self.edit_cnpj_forn.text().strip()
-        numeros = ''.join(filter(str.isdigit, doc))
-
-        if not numeros:
-            return  # campo vazio passa
 
         if self.check_jur.isChecked():
-            if len(numeros) != 14 or not validar_cnpj(numeros):
-                QMessageBox.warning(self, "Aviso", "CNPJ inválido.")
-                self.edit_cnpj_forn.setFocus()
-                self.edit_cnpj_forn.selectAll()
-                return
-
+            tipo_pessoa = "J"
         elif self.check_fis.isChecked():
-            if len(numeros) != 11 or not validar_cpf(numeros):
-                QMessageBox.warning(self, "Aviso", "CPF inválido.")
-                self.edit_cnpj_forn.setFocus()
-                self.edit_cnpj_forn.selectAll()
-                return
-
+            tipo_pessoa = "F"
         else:
             QMessageBox.warning(self, "Aviso", "Selecione Jurídica ou Física.")
             self.check_jur.setFocus()
+            return
+
+        resultado = self.service.validar_documento(tipo_pessoa, doc)
+        if not resultado["sucesso"]:
+            QMessageBox.warning(self, "Aviso", resultado["mensagem"])
+            self.edit_cnpj_forn.setFocus()
+            self.edit_cnpj_forn.selectAll()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

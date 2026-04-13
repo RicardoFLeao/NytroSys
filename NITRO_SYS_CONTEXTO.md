@@ -1,202 +1,358 @@
+# NITRO SYS — MÓDULO FORNECEDOR (PROGRESSO)
 
+## 📌 VISÃO GERAL
+Implementação completa do CRUD de fornecedores com arquitetura em camadas:
 
-
-# NITRO SYS — CONTEXTO COMPLETO DO PROJETO
-
-## VISÃO DO PROJETO
-O **Nitro Sys** é um sistema comercial desktop desenvolvido em:
-
-- Python
-- PyQt6 (interface gráfica)
-- MySQL + PyMySQL (banco de dados)
-
-Objetivo:
-Construir um sistema profissional, modular, escalável e com boa experiência de uso, enquanto evolui como desenvolvedor.
+- Interface → cad_for.py
+- Regras → fornecedor_service.py
+- Banco → fornecedor_repository.py
 
 ---
 
-# ARQUITETURA DO SISTEMA
+# 🧱 ARQUITETURA IMPLEMENTADA
 
-## Separação de responsabilidades
+## Fluxo padrão
 
-- Interface → telas (PyQt6)
-- Lógica → métodos das telas
-- Banco → `bd.py`
-
-Regra importante:
-A interface **não deve conter SQL direto**.
+Tela → Service → Repository → Banco → retorno
 
 ---
 
-## Estrutura atual do projeto
+## 🔹 cad_for.py (Tela)
 
-```text
-projeto/
- ├── adm_prod/        # módulo produtos
- ├── entidades/       # clientes, fornecedores, etc
- ├── estoque/         # movimentação de estoque
- │    └── tela_estoque_manual.py
- ├── util/
- │    ├── estilo.py
- │    ├── fun_telas.py
- │    ├── padrao.py
- │    └── fun_basicas.py
- ├── bd.py
- ├── telaMain.py
+Responsável por:
+
+- Interface gráfica
+- Captura de dados
+- Preenchimento de tabela
+- Navegação entre abas
+
+### Funcionalidades implementadas:
+
+- Cadastro de fornecedor
+- Consulta com filtro dinâmico
+- Busca automática ao digitar
+- Duplo clique na tabela → carregar cadastro
+- Botão "Novo" (F5)
+- Botão "Cancelar"
+- Alternância entre abas
+
+---
+
+## 🔹 fornecedor_service.py (Service)
+
+Responsável por:
+
+- Validação de dados (CPF/CNPJ)
+- Regras de negócio
+- Tratamento de dados (upper, lower, datas, etc)
+- Comunicação com repository
+
+### Métodos principais:
+
+- salvar_fornecedor()
+- atualizar_fornecedor()
+- buscar_fornecedor()
+- buscar_por_codigo()
+
+---
+
+## 🔹 fornecedor_repository.py (Repository)
+
+Responsável por:
+
+- SQL
+- Conexão com banco
+- Execução de queries
+
+### Métodos implementados:
+
+- salvar()
+- atualizar()
+- buscar_fornecedor()
+- buscar_por_codigo()
+
+---
+
+# 🔍 FUNCIONALIDADES IMPLEMENTADAS
+
+## ✔️ Cadastro
+- Inserção de novos fornecedores
+- Validação de campos obrigatórios
+- Validação de CPF/CNPJ
+
+---
+
+## ✔️ Consulta
+- Busca por:
+  - Código
+  - Nome / Razão Social
+  - CPF / CNPJ
+  - WhatsApp
+  - E-mail
+
+- Filtro por:
+  - Ativo
+  - Inativo
+  - Todos
+
+- Busca automática ao digitar
+
+---
+
+## ✔️ Tabela
+- Colunas ajustadas:
+  - Código (menor)
+  - Nome (maior)
+  - CPF/CNPJ
+  - WhatsApp
+  - E-mail
+
+- Estilização aplicada
+- Seleção por linha
+- Duplo clique habilitado
+
+---
+
+## ✔️ Edição (UPDATE)
+- Duplo clique carrega fornecedor
+- Dados preenchidos automaticamente no formulário
+- Salvar detecta:
+  - Com código → UPDATE
+  - Sem código → INSERT
+
+---
+
+## ✔️ Navegação
+- Botão F5 → novo fornecedor
+- Botão cancelar:
+  - limpa campos
+  - retorna para consulta
+
+---
+
+# 🔧 AJUSTES IMPORTANTES REALIZADOS
+
+- Correção de encoding (acentos quebrados)
+- Separação de responsabilidades (Service / Repository)
+- Tratamento de máscara (CPF/CNPJ e telefone)
+- Padronização de campos
+- Ajuste de fluxo de navegação
+
+---
+
+# 🧠 BOAS PRÁTICAS APLICADAS
+
+- Arquitetura em camadas
+- Separação de responsabilidades
+- Código reutilizável
+- Validação centralizada
+- Interface desacoplada do banco
+
+---
+
+# 🚀 PRÓXIMOS PASSOS
+
+## 🔴 1. Implementar EXCLUSÃO de fornecedor
+
+Funcionalidade:
+
+- Botão "Excluir"
+- Seleção de registro
+- Confirmação antes de excluir
+
+---
+
+## 🟡 2. Criar banco de EXCLUÍDOS (soft delete)
+
+Ao invés de apagar:
+
+- mover para tabela:
+  - fornecedores_excluidos
+
+ou
+
+- adicionar campo:
+  - status = 'E' (excluído)
+
+Benefícios:
+
+- recuperação de dados
+- histórico
+- segurança
+
+---
+
+## 🟢 3. Melhorias futuras
+
+- Atualizar tabela automaticamente após salvar
+- Máscara automática para telefone/whatsapp
+- Confirmação ao cancelar com dados preenchidos
+- Edição com duplo clique + foco automático
+- Validação visual (cores / bordas)
+
+---
+
+# 📌 STATUS DO MÓDULO
+
+✔️ CRUD quase completo  
+✔️ Sistema funcional  
+✔️ Estrutura profissional  
+
+👉 Falta apenas EXCLUSÃO para fechar o ciclo completo
+
+---
+
+# 💬 OBSERVAÇÃO FINAL
+
+Este módulo já representa um nível profissional de desenvolvimento, com arquitetura correta, organização de código e fluxo consistente.
+
+Próximo foco: **controle de exclusão com segurança (soft delete)**.
 
 
- MÓDULO PRODUTOS (CONCLUÍDO)
-Funcionalidades
+## ✔ Módulo Fornecedor - FINALIZADO
 
-✔ Cadastro de produtos (INSERT)
-✔ Edição automática (UPDATE)
-✔ Exclusão com confirmação (Sim/Não)
-✔ Consulta com tabela real
-✔ Duplo clique para edição
-✔ Separação correta entre tela e banco
+Funcionalidades concluídas:
 
-Sistema de busca (AVANÇADO)
-Tipos de busca
-Descrição
-Código
-Código de barras
-Referências
-Busca inteligente
+- Cadastro completo
+- Consulta com filtros
+- Edição (update)
+- Exclusão lógica (status A/E)
+- Botão inteligente (ativar/excluir)
+- Validação CPF/CNPJ
+- Status exibido na tabela
+- Feedback visual (excluído em vermelho)
 
-Entrada do usuário:
+Status: ✔ Concluído
 
-vela saveiro
+# 📦 MÓDULO PRODUTO + ESTOQUE - FINALIZADO
 
-Transformação:
+## 📌 VISÃO GERAL
 
-%vela%saveiro%
-Busca cruzada (IMPORTANTE)
+Refatoração completa dos módulos de **Produto (adm_prod)** e **Estoque**, seguindo o padrão arquitetural do Nitro Sys:
 
-Permite combinar descrição + aplicação:
+- Interface (UI)
+- Service (regras de negócio)
+- Repository (acesso ao banco)
 
-(descricao LIKE %termo% OR aplicacao LIKE %termo%)
+---
 
-Exemplo real:
+# 🧱 ARQUITETURA IMPLEMENTADA
 
-cabo uno
-vela saveiro
-freio gol
-UX implementada
+## 🔹 Produto
 
-✔ Busca em tempo real
-✔ Checkbox “Todos” inteligente
-✔ Destaque de linha selecionada
-✔ Interface limpa
+- Interface → cad_prod.py
+- Regras → produto_service.py
+- Banco → produto_repository.py
 
-EXCLUSÃO DE PRODUTOS
+## 🔹 Estoque
 
-✔ Confirmação personalizada
-✔ Botões em português
-✔ Sem atalho (decisão de segurança)
+- Interface → tela_acerto_estoque.py
+- Regras → estoque_service.py
+- Banco → estoque_repository.py
 
-Futuro:
+---
 
-implementar ativo/inativo (exclusão lógica)
-ESTOQUE (EM DESENVOLVIMENTO)
-Banco de dados
+# 🔄 INTEGRAÇÃO ENTRE MÓDULOS
 
-Campo criado:
+- Produto integrado com Fornecedor (validação por código)
+- Estoque integrado com Produto (controle de quantidade)
+- Regras centralizadas nos services
 
-quantidade DECIMAL(10,2) NOT NULL DEFAULT 0
+---
 
-✔ Tabela já mostra quantidade real
-✔ Base pronta para movimentação
+# 🔍 FUNCIONALIDADES IMPLEMENTADAS
 
-Decisão de arquitetura
+## ✔ Produto
 
-Estoque será separado do cadastro de produtos:
+- Cadastro de produto
+- Edição (update)
+- Consulta com busca dinâmica
+- Integração com fornecedor
+- Validação de campos
+- Cálculo de preço e margem
 
-estoque/tela_estoque_manual.py
+---
 
-Motivo:
+## ✔ Estoque
 
-controle de acesso futuro
-organização
-escalabilidade
-TELA ESTOQUE MANUAL
-Estrutura atual
-título centralizado
-quadro cinza (container principal)
-área de pesquisa
-tabela de produtos
-campos de edição
-tabela de itens alterados
-botão imprimir alinhado à direita
-botão sair
-Padrão visual
-uso de QWidget como container
-layout com QVBoxLayout e QHBoxLayout
-sem uso de abas (decisão correta)
-CONCEITOS DOMINADOS
-Layout
-tamanho controlado pelo layout
-uso de stretch
-organização por blocos
-Container
-QWidget substitui abas quando necessário
-Alinhamento
-QHBoxLayout controla alinhamento horizontal
-uso de stretch ou alignment
-DECISÕES IMPORTANTES
+- Busca de produtos
+- Seleção via teclado (Enter / ↓)
+- Acerto manual de estoque
+- Validação de quantidade:
+  - Inteiro / Decimal
+  - Bloqueio de valores inválidos
+  - Bloqueio de valores negativos
 
-✔ Não usar atalho para excluir
-✔ Separar módulos
-✔ Não misturar cadastro com estoque
-✔ Construir funcional antes de sofisticar
-✔ Interface limpa e objetiva
+---
 
-FUNCIONALIDADES FUTURAS
-Produtos
-campo ativo/inativo
-campo validade (IMPORTANTE)
-Estoque
-entrada manual
-saída manual
-histórico de movimentações
-controle por usuário
-controle por lote (validade)
-ONDE O PROJETO PAROU
+## ✔ Histórico de Estoque
 
-Tela de estoque manual está pronta visualmente.
+- Registro automático de alterações
+- Armazena:
+  - Código do produto
+  - Descrição
+  - Quantidade anterior
+  - Nova quantidade
+  - Usuário
 
-Falta implementar:
+---
 
-busca de produto pelo código
-preencher descrição automaticamente
-carregar quantidade atual
-lançar entrada no banco
-atualizar tabela de itens alterados
-PRÓXIMOS PASSOS
-Fase atual — ESTOQUE
-Implementar busca de produto
-Preencher campos automaticamente
-Implementar entrada manual
-Atualizar tabela de alterações
-OBJETIVO FINAL
+# 🔧 MELHORIAS TÉCNICAS
 
-Criar um sistema ERP completo com:
+- Remoção de SQL da interface
+- Separação total de responsabilidades
+- Padronização de retorno (dict)
+- Uso de DictCursor no banco
+- Validações centralizadas no service
+- Código limpo e organizado
 
-produtos
-estoque
-vendas
-financeiro
-controle de usuários
-MODO DE TRABALHO
-evoluir passo a passo
-validar cada etapa
-evitar pular fases
-priorizar entendimento
-INSTRUÇÃO PARA NOVO CHAT
+---
 
-Continuar o desenvolvimento do Nitro Sys a partir do módulo de estoque.
+# 🛡️ SEGURANÇA E CONSISTÊNCIA
 
-Foco:
+- Acerto de estoque com transação única:
+  - UPDATE quantidade
+  - INSERT histórico
+  - Commit único
+  - Rollback em caso de erro
 
-busca de produto
-integração com banco
-entrada de estoque manual
+---
+
+# 🧠 BOAS PRÁTICAS APLICADAS
+
+- Arquitetura em camadas
+- Baixo acoplamento
+- Alta coesão
+- Código reutilizável
+- Validação no lugar correto
+- Interface desacoplada do banco
+
+---
+
+# 📊 STATUS DO SISTEMA
+
+| Módulo      | Status |
+|------------|--------|
+| Fornecedor | ✔ Finalizado |
+| Produto    | ✔ Finalizado |
+| Estoque    | ✔ Finalizado |
+
+---
+
+# 🚀 PRÓXIMOS PASSOS
+
+## 🔹 Melhorias futuras
+
+- Ajustes na consulta de fornecedor
+- Relatório de movimentação de estoque
+- Filtro por período no histórico
+- Integração com módulo de vendas
+- Controle de entrada e saída automático
+
+---
+
+# 💬 OBSERVAÇÃO FINAL
+
+Os módulos Produto e Estoque foram completamente refatorados e agora seguem o padrão profissional do Nitro Sys.
+
+O sistema já possui base sólida para evolução e pode ser considerado um **sistema comercial funcional em nível profissional**.

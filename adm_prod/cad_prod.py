@@ -16,7 +16,7 @@ from util.padrao import (
     criar_lineedit_padrao)
 from util.fun_basicas import(LineEditComEnter)
 from util.fun_basicas import texto_para_float, formatar_preco
-from bd import salvar_produto, listar_produtos, atualizar_produto, pesquisar_produtos_avancado, excluir_produto as excluir_produto_bd
+from adm_prod.produto_service import ProdutoService
 
 
 class CadProd(QWidget):
@@ -24,6 +24,7 @@ class CadProd(QWidget):
         super().__init__()
         self.setWindowTitle('Cadastro de Produtos')
         self.setWindowIcon(QIcon('imagens/icone.png'))
+        self.service = ProdutoService()
         self.componentes()
         self.showMaximized()
         QShortcut(QKeySequence('Esc'), self).activated.connect(self.sair)
@@ -1142,34 +1143,33 @@ class CadProd(QWidget):
         if not codigo or codigo == "None":
             return
 
-        from bd import buscar_produto_por_codigo
-        produto = buscar_produto_por_codigo(codigo)
+        produto = self.service.buscar_produto_por_codigo(codigo)
 
         if not produto:
             QMessageBox.warning(self, "Aviso", "Produto não encontrado.")
             return
 
         # Preenchendo campos
-        self.edit_cod.setText(str(produto["codigo"]))
-        self.edit_cod_barras.setText(produto["cod_barras"])
-        self.edit_cod_barras2.setText(produto["cod_barras_2"])
-        self.edit_desc.setText(produto["descricao"])
-        self.edit_ref_forn.setText(produto["ref_fornecedor"])
-        self.edit_ref_orig.setText(produto["ref_original"])
-        self.edit_ref_similar.setText(produto["ref_similar"])
-        self.edit_aplic.setText(produto["aplicacao"])
+        self.edit_cod.setText(str(produto.get("codigo") or ""))
+        self.edit_cod_barras.setText(produto.get("cod_barras") or "")
+        self.edit_cod_barras2.setText(produto.get("cod_barras_2") or "")
+        self.edit_desc.setText(produto.get("descricao") or "")
+        self.edit_ref_forn.setText(produto.get("ref_fornecedor") or "")
+        self.edit_ref_orig.setText(produto.get("ref_original") or "")
+        self.edit_ref_similar.setText(produto.get("ref_similar") or "")
+        self.edit_aplic.setText(produto.get("aplicacao") or "")
 
-        self.edit_estoque_minimo.setText(str(produto["estoque_minimo"] or ""))
-        self.edit_cod_forn.setText(str(produto["cod_fornecedor"] or ""))
-        self.edit_nome_forn.setText(str(produto["nome_fornecedor"] or ""))
-        self.edit_repositor.setText(str(produto["repositor"] or ""))
+        self.edit_estoque_minimo.setText(str(produto.get("estoque_minimo") or ""))
+        self.edit_cod_forn.setText(str(produto.get("cod_fornecedor") or ""))
+        self.edit_nome_forn.setText(str(produto.get("nome_fornecedor") or ""))
+        self.edit_repositor.setText(str(produto.get("repositor") or ""))
 
-        self.edit_preco_custo.setText(str(produto["preco_custo"]))
-        self.edit_preco_venda.setText(str(produto["preco_venda"]))
-        self.edit_preco_promocao.setText(str(produto["preco_promocao"]))
-        self.edit_margem_lucro.setText(str(produto["margem_lucro"]))
-        self.edit_desconto.setText(str(produto["desconto"]))
-        self.combo_tipo_quant.setCurrentText(produto["tipo_quantidade"])
+        self.edit_preco_custo.setText(str(produto.get("preco_custo") or ""))
+        self.edit_preco_venda.setText(str(produto.get("preco_venda") or ""))
+        self.edit_preco_promocao.setText(str(produto.get("preco_promocao") or ""))
+        self.edit_margem_lucro.setText(str(produto.get("margem_lucro") or ""))
+        self.edit_desconto.setText(str(produto.get("desconto") or ""))
+        self.combo_tipo_quant.setCurrentText(produto.get("tipo_quantidade") or "Inteiro")
 
         # Vai pra aba cadastro
         self.tab.setCurrentIndex(1)
@@ -1180,12 +1180,12 @@ class CadProd(QWidget):
 
         self.tabela_resultado.setRowCount(0)
 
-        if self.check_todos.isChecked():
-            dados = listar_produtos()
-        else:
-            if not texto_pesquisa:
-                return
-            dados = pesquisar_produtos_avancado(opcao, texto_pesquisa)
+        dados = self.service.pesquisar_produtos_para_consulta(
+            opcao,
+            texto_pesquisa,
+            buscar_todos=self.check_todos.isChecked(),
+            status=self.combo_ativo.currentText(),
+        )
 
         if not dados:
             return
@@ -1193,13 +1193,20 @@ class CadProd(QWidget):
         self.tabela_resultado.setRowCount(len(dados))
 
         for linha, dados_linha in enumerate(dados):
-            for coluna, valor in enumerate(dados_linha):
-                if coluna == 3:
-                    valor = f"{float(valor):.2f}".replace(".", ",")
-                else:
-                    valor = str(valor)
+            codigo = str(dados_linha.get("codigo", ""))
+            descricao = str(dados_linha.get("descricao", ""))
+            quantidade = str(dados_linha.get("quantidade", ""))
 
-                self.tabela_resultado.setItem(linha, coluna, QTableWidgetItem(valor))
+            preco = dados_linha.get("preco_venda", 0)
+            try:
+                preco = f"{float(preco):.2f}".replace(".", ",")
+            except (ValueError, TypeError):
+                preco = "0,00"
+
+            self.tabela_resultado.setItem(linha, 0, QTableWidgetItem(codigo))
+            self.tabela_resultado.setItem(linha, 1, QTableWidgetItem(descricao))
+            self.tabela_resultado.setItem(linha, 2, QTableWidgetItem(quantidade))
+            self.tabela_resultado.setItem(linha, 3, QTableWidgetItem(preco))
                     
     def formatar_preco_campo(self, campo):
         try:
@@ -1211,13 +1218,10 @@ class CadProd(QWidget):
 
     def calcular_preco_venda(self):
         try:
-            preco_custo = texto_para_float(self.edit_preco_custo.text())
-            margem = texto_para_float(self.edit_margem_lucro.text())
-
-            if preco_custo <= 0:
-                return
-
-            preco_venda = preco_custo + (preco_custo * margem / 100)
+            preco_venda = self.service.calcular_preco_venda(
+                self.edit_preco_custo.text(),
+                self.edit_margem_lucro.text(),
+            )
             self.edit_preco_venda.setText(formatar_preco(preco_venda))
         except ValueError:
             pass
@@ -1225,13 +1229,10 @@ class CadProd(QWidget):
 
     def calcular_margem_lucro(self):
         try:
-            preco_custo = texto_para_float(self.edit_preco_custo.text())
-            preco_venda = texto_para_float(self.edit_preco_venda.text())
-
-            if preco_custo <= 0:
-                return
-
-            margem = ((preco_venda - preco_custo) / preco_custo) * 100
+            margem = self.service.calcular_margem_lucro(
+                self.edit_preco_custo.text(),
+                self.edit_preco_venda.text(),
+            )
             self.edit_margem_lucro.setText(formatar_preco(margem))
 
         except ValueError:
@@ -1245,50 +1246,20 @@ class CadProd(QWidget):
             self.calcular_margem_lucro()
 
     def salvar(self):
-        descricao = self.edit_desc.text().strip().upper()
-        tipo_quant = self.combo_tipo_quant.currentText()
-
-        if not descricao:
-            QMessageBox.warning(self, "Aviso", "Descrição é obrigatória.")
-            self.edit_desc.setFocus()
-            return
-
-        dados = {
-            "codigo": self.edit_cod.text().strip(),
-            "cod_barras": self.edit_cod_barras.text().strip(),
-            "cod_barras2": self.edit_cod_barras2.text().strip(),
-            "descricao": self.edit_desc.text().strip().upper(),
-            "ref_forn": self.edit_ref_forn.text().strip().upper(),
-            "ref_orig": self.edit_ref_orig.text().strip().upper(),
-            "ref_similar": self.edit_ref_similar.text().strip().upper(),
-            "aplicacao": self.edit_aplic.text().strip().upper(),
-
-            "estoque_minimo": self.edit_estoque_minimo.text().strip(),
-            "cod_fornecedor": self.edit_cod_forn.text().strip(),
-            "nome_fornecedor": self.edit_nome_forn.text().strip().upper(),
-            "repositor": self.edit_repositor.text().strip().upper(),
-
-            "preco_custo": self.edit_preco_custo.text().strip(),
-            "preco_venda": self.edit_preco_venda.text().strip(),
-            "preco_promocao": self.edit_preco_promocao.text().strip(),
-            "margem_lucro": self.edit_margem_lucro.text().strip(),
-            "desconto": self.edit_desconto.text().strip(),
-            "tipo_quantidade": tipo_quant,
-        }
+        dados = self.coletar_dados_formulario()
 
         if dados["codigo"]:
-            sucesso = atualizar_produto(dados)
-            mensagem = "Produto atualizado com sucesso!"
+            resultado = self.service.atualizar_produto(dados)
         else:
-            sucesso = salvar_produto(dados)
-            mensagem = "Produto salvo com sucesso!"
+            resultado = self.service.salvar_produto(dados)
 
-        if sucesso:
-            QMessageBox.information(self, "Sucesso", mensagem)
+        if resultado["sucesso"]:
+            QMessageBox.information(self, "Sucesso", resultado["mensagem"])
             self.limpar_campos()
             self.preencher_tabela()
         else:
-            QMessageBox.critical(self, "Erro", "Erro ao salvar produto.")
+            QMessageBox.warning(self, "Aviso", resultado["mensagem"])
+            self.edit_desc.setFocus()
                     
     def sair(self):
         from telaMain import telaPrincipal
@@ -1315,6 +1286,11 @@ class CadProd(QWidget):
         self.edit_margem_lucro.clear()
         self.edit_preco_promocao.clear()
         self.edit_desconto.clear()
+        self.edit_estoque_minimo.clear()
+        self.edit_cod_forn.clear()
+        self.edit_nome_forn.clear()
+        self.edit_repositor.clear()
+        self.combo_tipo_quant.setCurrentText("Inteiro")
 
         self.edit_desc.setFocus()
 
@@ -1354,9 +1330,9 @@ class CadProd(QWidget):
         if msg.clickedButton() != btn_sim:
             return
 
-        sucesso = excluir_produto_bd(codigo)
+        resultado = self.service.excluir_produto(codigo)
 
-        if sucesso:
+        if resultado["sucesso"]:
             QMessageBox.information(self, "Sucesso", "Produto excluído com sucesso!")
             self.preencher_tabela()
             
@@ -1364,7 +1340,7 @@ class CadProd(QWidget):
                 self.limpar_campos()
 
         else:
-            QMessageBox.critical(self, "Erro", "Erro ao excluir produto.")
+            QMessageBox.critical(self, "Erro", resultado["mensagem"])
 
 
     def acao_check_todos(self, marcado):
@@ -1380,6 +1356,28 @@ class CadProd(QWidget):
                 self.check_todos.blockSignals(False)
 
         self.preencher_tabela()
+
+    def coletar_dados_formulario(self):
+        return {
+            "codigo": (self.edit_cod.text() or "").strip(),
+            "cod_barras": (self.edit_cod_barras.text() or "").strip(),
+            "cod_barras2": (self.edit_cod_barras2.text() or "").strip(),
+            "descricao": (self.edit_desc.text() or "").strip(),
+            "ref_forn": (self.edit_ref_forn.text() or "").strip(),
+            "ref_orig": (self.edit_ref_orig.text() or "").strip(),
+            "ref_similar": (self.edit_ref_similar.text() or "").strip(),
+            "aplicacao": (self.edit_aplic.text() or "").strip(),
+            "estoque_minimo": (self.edit_estoque_minimo.text() or "").strip(),
+            "cod_fornecedor": (self.edit_cod_forn.text() or "").strip(),
+            "nome_fornecedor": (self.edit_nome_forn.text() or "").strip(),
+            "repositor": (self.edit_repositor.text() or "").strip(),
+            "preco_custo": (self.edit_preco_custo.text() or "").strip(),
+            "preco_venda": (self.edit_preco_venda.text() or "").strip(),
+            "preco_promocao": (self.edit_preco_promocao.text() or "").strip(),
+            "margem_lucro": (self.edit_margem_lucro.text() or "").strip(),
+            "desconto": (self.edit_desconto.text() or "").strip(),
+            "tipo_quantidade": self.combo_tipo_quant.currentText(),
+        }
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
