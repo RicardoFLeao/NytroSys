@@ -12,20 +12,32 @@ def conectar():
 
 
 def verificar_login(usuario, senha):
-    print(f">>> Verificando login para: {usuario} / {senha}")
+    conexao = None
+
     try:
         conexao = conectar()
 
         with conexao.cursor() as cursor:
-            sql = "SELECT * FROM funcionarios WHERE usuario = %s AND senha = %s"
-            cursor.execute(sql, (usuario, senha))
+            sql = """
+                SELECT id
+                FROM funcionarios
+                WHERE usuario = %s
+                  AND senha = %s
+                  AND status = %s
+                LIMIT 1
+            """
+            cursor.execute(sql, (usuario, senha, "A"))
             resultado = cursor.fetchone()
-            return resultado
+            return resultado is not None
 
     except Exception as erro:
         import traceback
         traceback.print_exc()
-        return None
+        return False
+
+    finally:
+        if conexao is not None:
+            conexao.close()
 
 
 def salvar_produto(dados):

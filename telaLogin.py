@@ -84,9 +84,20 @@ class Ui_Form(object):
         usuario = self.lineEdit.text().strip()
         senha = self.lineEdit_2.text().strip()
 
+        if not usuario:
+            QtWidgets.QMessageBox.warning(None, "Aviso", "Informe o usuario.")
+            self.lineEdit.setFocus()
+            return
+
+        if not senha:
+            QtWidgets.QMessageBox.warning(None, "Aviso", "Informe a senha.")
+            self.lineEdit_2.setFocus()
+            return
+
         self.thread = WorkerThread(usuario, senha)
         self.thread.login_result.connect(lambda resultado: self.processar_login(resultado, login_window))
         self.thread.start()
+
 
     def processar_login(self, resultado, login_window):
         if resultado:

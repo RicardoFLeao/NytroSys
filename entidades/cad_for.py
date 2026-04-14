@@ -169,7 +169,7 @@ class CadFornecedor(QWidget):
         self.tabela_resultado.setColumnWidth(0, 70)    # Código
         self.tabela_resultado.setColumnWidth(1, 360)   # Nome / Razão Social
         self.tabela_resultado.setColumnWidth(2, 170)   # CPF / CNPJ
-        self.tabela_resultado.setColumnWidth(3, 140)   # Telefone
+        self.tabela_resultado.setColumnWidth(3, 140)   # WhatsApp
         self.tabela_resultado.setColumnWidth(4, 220)   # E-mail
         self.tabela_resultado.setColumnWidth(5, 100)   # Status
                 # botÃµes controle novo, relatÃ³rio
