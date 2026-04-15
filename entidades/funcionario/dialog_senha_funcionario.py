@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
-from bd import conectar
+from entidades.funcionario.funcionario_service import FuncionarioService
 import os
 
 
@@ -9,6 +9,7 @@ class DialogSenhaFuncionario(QDialog):
     def __init__(self, codigo):
         super().__init__()
         self.codigo = codigo
+        self.service = FuncionarioService()
 
         self.setWindowTitle("Cadastrar Senha")
         self.setFixedSize(380, 320)
@@ -100,38 +101,22 @@ class DialogSenhaFuncionario(QDialog):
         confirmar = self.edit_conf.text().strip()
 
         if not usuario:
-            QMessageBox.warning(self, "Aviso", "Informe o usuário.")
-            self.edit_user.setFocus()
+            QMessageBox.warning(self, "Atenção", "Informe o usuário.")
             return
 
         if not senha:
-            QMessageBox.warning(self, "Aviso", "Informe a senha.")
-            self.edit_senha.setFocus()
+            QMessageBox.warning(self, "Atenção", "Informe a senha.")
             return
 
         if senha != confirmar:
-            QMessageBox.warning(self, "Aviso", "As senhas estão diferentes.")
-            self.edit_conf.setFocus()
-            self.edit_conf.selectAll()
+            QMessageBox.warning(self, "Atenção", "As senhas não coincidem.")
             return
 
-        try:
-            conexao = conectar()
-            with conexao.cursor() as cursor:
-                cursor.execute(
-                    """
-                    UPDATE funcionarios
-                    SET usuario = %s, senha = %s
-                    WHERE codigo = %s
-                    """,
-                    (usuario, senha, self.codigo),
-                )
+        # 👇 AQUI entra o service
+        resultado = self.service.salvar_usuario_senha(self.codigo, usuario, senha)
 
-            conexao.commit()
-
+        if resultado:
             QMessageBox.information(self, "Sucesso", "Usuário e senha SALVOS.")
             self.accept()
-
-        except Exception as erro:
-            print("ERRO AO SALVAR SENHA:", erro)
+        else:
             QMessageBox.warning(self, "Erro", "Erro ao salvar usuário e senha.")

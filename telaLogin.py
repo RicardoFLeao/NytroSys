@@ -2,7 +2,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtGui import QShortcut, QKeySequence
 from telaMain import telaPrincipal
 from util.estilo import gerar_estilo
-from bd import verificar_login
+from entidades.funcionario.funcionario_service import FuncionarioService
 
 
 class WorkerThread(QtCore.QThread):
@@ -12,10 +12,11 @@ class WorkerThread(QtCore.QThread):
         super().__init__()
         self.usuario = usuario
         self.senha = senha
+        self.service = FuncionarioService()
 
     def run(self):
         print(f">>> [Thread] Verificando login para: {self.usuario} / {self.senha}")
-        resultado = verificar_login(self.usuario, self.senha)
+        resultado = self.service.autenticar(self.usuario, self.senha)
         print(f">>> [Thread] Resultado: {resultado}")
         self.login_result.emit(resultado)
 
@@ -51,7 +52,7 @@ class Ui_Form(object):
         self.lineEdit.setFont(QtGui.QFont("Segoe UI", 12))
         self.lineEdit.setPlaceholderText("Nome de Usuário")
         self.lineEdit.setStyleSheet('background-color: white;')
-
+        
         self.lineEdit_2 = QtWidgets.QLineEdit(parent=Form)
         self.lineEdit_2.setGeometry(QtCore.QRect(150, 373, 301, 61))
         self.lineEdit_2.setFont(QtGui.QFont("Segoe UI", 12))
@@ -59,6 +60,8 @@ class Ui_Form(object):
         self.lineEdit_2.setPlaceholderText("Senha")
         self.lineEdit_2.setStyleSheet('background-color: white;')
         self.lineEdit_2.returnPressed.connect(lambda: self.validar_login(Form))
+
+        self.lineEdit.returnPressed.connect(self.lineEdit_2.setFocus)
 
 
         self.pushButton = QtWidgets.QPushButton(parent=Form)

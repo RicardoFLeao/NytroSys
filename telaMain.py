@@ -46,11 +46,18 @@ class telaPrincipal(QMainWindow):
         act_prod.triggered.connect(lambda: tela_cad_prod(self))
         act_estoque = QAction('Acerto Estoque', self)
         act_estoque.triggered.connect(lambda: tela_acerto_estoque(self))
+        act_marca = QAction('Marca Produto', self)
+        act_marca.triggered.connect(self.abrir_cad_marca)
+        
+
 
         menu_prod.addAction(act_prod)
         menu_prod.addSeparator()
         menu_prod.addAction(act_estoque)
         menu_prod.addSeparator()
+        menu_prod.addAction(act_marca)
+        menu_prod.addSeparator()
+
 
         # criação de ações no menu entidades
         act_func = QAction('Cad. Funcionários', self)
@@ -74,7 +81,6 @@ class telaPrincipal(QMainWindow):
         menu_sair = QAction('Sair', self)
         menu_sair.triggered.connect(self.close)
         barra_menu.addAction(menu_sair)
-
 
     def conteudo(self):
         conteudo = QWidget()
@@ -146,6 +152,8 @@ class telaPrincipal(QMainWindow):
         conteudo.setContentsMargins(0, 75, 0, 0)
         self.setCentralWidget(conteudo)
 
+    def abrir_cad_marca(self):
+        print("Abrir cadastro de marca")
 
 # Teste isolado (executar tela principal sem login)
 if __name__ == "__main__":

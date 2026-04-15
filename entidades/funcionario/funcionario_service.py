@@ -129,3 +129,9 @@ class FuncionarioService:
         if not texto:
             return None
         return texto_para_float(texto)
+    
+    def autenticar(self, usuario, senha):
+        return self.repository.buscar_login(usuario, senha)
+    
+    def salvar_usuario_senha(self, codigo, usuario, senha):
+        return self.repository.salvar_usuario_senha(codigo, usuario, senha)

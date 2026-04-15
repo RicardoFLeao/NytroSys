@@ -411,3 +411,56 @@ class FuncionarioRepository:
         finally:
             if conexao is not None:
                 conexao.close()
+
+    def buscar_login(self, usuario, senha):
+        conexao = None
+
+        try:
+            conexao = conectar()
+            with conexao.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(
+                    """
+                    SELECT codigo, nome, usuario, status
+                    FROM funcionarios
+                    WHERE usuario = %s
+                    AND senha = %s
+                    AND status = %s
+                    LIMIT 1
+                    """,
+                    (usuario, senha, "A"),
+                )
+                return cursor.fetchone()
+
+        except Exception as erro:
+            print("ERRO AO VALIDAR LOGIN DE FUNCIONARIO:", erro)
+            return None
+
+        finally:
+            if conexao is not None:
+                conexao.close()
+
+
+    def salvar_usuario_senha(self, codigo, usuario, senha):
+        conexao = None
+
+        try:
+            conexao = conectar()
+            with conexao.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE funcionarios
+                    SET usuario = %s, senha = %s
+                    WHERE codigo = %s
+                    """,
+                    (usuario, senha, codigo),
+                )
+            conexao.commit()
+            return True
+
+        except Exception as erro:
+            print("ERRO AO SALVAR USUARIO E SENHA:", erro)
+            return False
+
+        finally:
+            if conexao is not None:
+                conexao.close()

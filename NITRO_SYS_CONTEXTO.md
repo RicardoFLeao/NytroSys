@@ -26,7 +26,273 @@ Pensar como sistema real
 OBJETIVO: Ajudar a construir um sistema comercial completo e evoluir
 como desenvolvedor.
 
-NITRO SYS — CONTINUAÇÃO DO DESENVOLVIMENTO ## 📍 STATUS ATUAL DO PROJETO ### ✅ Módulos já consolidados - **Clientes** - Cadastro ✔ - Consulta ✔ - Edição ✔ - Exclusão lógica ✔ - Validações ✔ --- ### ⚙️ Funcionários (quase finalizado) - Cadastro funcionando ✔ - Edição funcionando ✔ - Exclusão / ativação ✔ - Validação de CPF ✔ - Dialog de senha ✔ - Salvando usuário e senha ✔ 🔸 Observação: - Cadastro de senha só após salvar funcionário (correto) - Fluxo simples e funcional --- ### 🔐 Login - Tela funcionando ✔ - Integração com banco ✔ - Autenticação funcionando ✔ - Bloqueio por status (A/E) ✔ 🔸 Observação: - Senha ainda em texto simples (decisão temporária) --- ### 📦 Produtos - Estrutura com service/repository ✔ - Cadastro funcionando ✔ --- ### 📊 Estoque - Tela de acerto manual funcionando ✔ - Atualização de quantidade ✔ --- ## ⚠️ SITUAÇÃO DA ARQUITETURA - Projeto está em fase de transição - Parte usa: - service + repository ✔ - Parte ainda usa: - funções no `bd.py` ❗ 🔸 Importante: - NÃO fazer refatoração grande agora - Fazer ajustes pequenos e controlados --- ## 🧠 LIÇÕES IMPORTANTES (HOJE) - Não aplicar refatoração automática sem revisar - Codex pode gerar código quebrado - Sempre trabalhar: - passo a passo - testando a cada mudança - Backup salvou o projeto hoje ✔ --- ## 🎯 PLANO PARA AMANHÃ ### 🔹 ETAPA 1 — Revisão leve (sem refatorar tudo) - Conferir fluxo completo de funcionários: - salvar - editar - excluir / ativar - cadastrar senha - login --- ### 🔹 ETAPA 2 — Consolidação controlada (IMPORTANTE) Focar apenas em: - `funcionario_repository.py` - `funcionario_service.py` - `dialog_senha_funcionario.py` - `telaLogin.py` Objetivo: - garantir que tudo está: - limpo - sem duplicação - seguindo padrão ❗ Não mexer ainda em produto/estoque --- ### 🔹 ETAPA 3 — Revisão do bd.py - Identificar funções que já não estão sendo usadas - NÃO remover tudo de uma vez - Apenas mapear --- ### 🔹 ETAPA 4 — Próximo módulo Definir próximo foco: 👉 provável: - melhoria do estoque ou - início de movimentação (entrada/saída) --- ## 🚫 REGRAS PARA EVITAR PROBLEMA - Não refatorar tudo de uma vez - Não confiar 100% em IA - Não substituir arquivos inteiros sem revisar - Sempre testar antes de continuar --- ## 💬 OBJETIVO DO DIA 👉 Sair com: - Funcionários 100% confiável - Login sólido - Base pronta para evoluir --- ##
+# 🚀 NITRO SYS — CONTEXTO GERAL (15/04/2026)
+
+---
+
+# 🧠 VISÃO DO PROJETO
+
+Sistema comercial desktop desenvolvido com:
+
+- Python
+- PyQt6
+- MySQL (PyMySQL)
+
+Objetivo:
+Construir um sistema **profissional, modular, organizado e escalável**, seguindo boas práticas.
+
+---
+
+# 🏗️ ARQUITETURA PADRÃO
+
+Separação clara:
+
+- Interface → telas (PyQt)
+- Service → regras de negócio
+- Repository → acesso ao banco
+- bd.py → apenas conexão
+
+✔ Tela NÃO faz SQL direto  
+✔ Repository NÃO tem regra de negócio  
+✔ Service controla fluxo  
+
+---
+
+# 📦 PADRÃO DE STATUS (IMPORTANTE)
+
+Padronizado em todo o sistema:
+
+| Valor | Significado |
+|------|-----------|
+| A    | Ativo     |
+| E    | Excluído  |
+
+✔ Já aplicado em:
+- Marcas
+- Produtos
+- Fornecedores
+
+---
+
+# 📦 MÓDULOS
+
+---
+
+## 🟢 MÓDULO MARCAS
+
+### ✔ Implementado
+
+- Tela completa (Consulta + Cadastro)
+- Repository:
+  - salvar()
+  - atualizar()
+  - listar()
+  - alterar_status()
+- Service:
+  - salvar_marca()
+  - atualizar_marca()
+  - listar_marcas()
+  - alterar_status_marca()
+
+### ✔ Funcionalidades
+
+- Cadastro
+- Alteração
+- Exclusão lógica (A ↔ E)
+- Filtro por:
+  - Ativo
+  - Excluído
+  - Todos
+- Pesquisa dinâmica (digitando)
+- F8 → busca geral
+- Status exibido como:
+  - Ativo
+  - Excluído (vermelho)
+
+### ✔ UX
+
+- Botão dinâmico:
+  - Excluir ↔ Ativar
+- Tabela limpa ao iniciar
+
+---
+
+## 🟢 MÓDULO PRODUTOS
+
+### ✔ Banco ajustado
+
+- Coluna:
+  - ativo → status
+- Valores:
+  - S → A
+
+---
+
+### ✔ Repository
+
+- salvar()
+- atualizar()
+- listar_para_consulta()
+- pesquisar_para_consulta()
+- buscar_por_codigo()
+- alterar_status()
+
+🚫 Removido:
+- delete físico
+
+---
+
+### ✔ Service
+
+- salvar_produto()
+- atualizar_produto()
+- pesquisar_produtos_para_consulta()
+- buscar_produto_por_codigo()
+- alterar_status_produto()
+
+---
+
+### ✔ Tela (`cad_prod`)
+
+#### Consulta
+- Pesquisa por:
+  - descrição
+  - código
+  - código de barras
+  - referências
+- F8 → busca
+- Combo status:
+  - Ativo
+  - Excluído
+  - Todos
+- Checkbox "Todos" (redundante, manter por enquanto)
+
+#### Tabela
+- Código
+- Descrição
+- Quantidade
+- Preço
+- Status
+
+✔ Status:
+- Ativo normal
+- Excluído vermelho
+
+---
+
+### ✔ Cadastro
+
+- Todos os campos principais funcionando
+- Cálculo automático:
+  - preço venda
+  - margem
+- Validações básicas
+- Integração com fornecedor
+
+---
+
+### ✔ Exclusão lógica
+
+- Botão dinâmico:
+  - Excluir ↔ Ativar
+- Funciona direto pela tabela
+- Não depende do cadastro carregado
+
+---
+
+# 🟡 NOVO: INTEGRAÇÃO COM MARCA
+
+## ✔ UI criada
+
+Na aba **Abastecimento**:
+
+- edit_nome_marca
+- edit_cod_marca (não usado manualmente por enquanto)
+
+---
+
+## ✔ F8 no campo marca
+
+Funcionando:
+
+- foco no campo marca
+- F8 abre TelaMarcaProd
+
+---
+
+# 🔥 ONDE PARAMOS
+
+## 🎯 PONTO ATUAL
+
+Precisamos implementar:
+
+### 👉 seleção de marca na TelaMarcaProd
+
+Regra:
+
+- Se abrir normal → NÃO faz nada
+- Se abrir pelo cad_prod → seleciona marca
+
+---
+
+# 🚀 PRÓXIMO PASSO
+
+## 1. TelaMarcaProd precisa:
+
+### ✔ receber tela origem
+```python
+def __init__(self, tela_origem=None):
+✔ detectar duplo clique
+self.tabela_resultado.cellDoubleClicked.connect(self.selecionar_marca)
+✔ criar função:
+def selecionar_marca(self):
+    if self.tela_origem is None:
+        return
+✔ comportamento:
+pega linha selecionada
+valida status (não permitir excluído)
+devolve:
+código
+nome
+fecha tela
+2. cad_prod
+
+Na abertura:
+
+TelaMarcaProd(self)
+🔮 PRÓXIMOS PASSOS FUTUROS
+🔹 Marca
+carregar marca no produto
+salvar corretamente no banco
+mostrar na consulta (opcional)
+🔹 Produto
+filtro mais avançado
+integração com estoque
+melhorar UX
+🔹 Sistema geral
+padronizar todos módulos
+criar tela padrão de pesquisa (genérica)
+criar relatórios
+🧠 APRENDIZADO IMPORTANTE
+
+✔ sistema deixou de ser "tela"
+✔ agora existe padrão de arquitetura
+✔ fluxo consistente entre módulos
+✔ reutilização de lógica
+
+🧠 FRASE DO MOMENTO
+
+"Agora não estamos mais fazendo telas… estamos construindo um sistema."
+
+🔚 OBS FINAL
+
+Projeto está em excelente evolução:
+
+✔ estrutura profissional
+✔ padrões definidos
+✔ código cada vez mais limpo
+
+👉 próximo passo (marca ↔ produto) é um dos mais importantes do sistema.
 
 
 

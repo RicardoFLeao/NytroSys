@@ -79,6 +79,7 @@ class ProdutoRepository:
             if conexao is not None:
                 conexao.close()
 
+
     def atualizar(self, dados):
         conexao = None
 
@@ -145,20 +146,27 @@ class ProdutoRepository:
             if conexao is not None:
                 conexao.close()
 
-    def listar_para_consulta(self):
+
+    def listar_para_consulta(self, status="Ativo"):
         conexao = None
 
         try:
             conexao = conectar()
 
             with conexao.cursor(pymysql.cursors.DictCursor) as cursor:
-                cursor.execute(
-                    """
-                    SELECT codigo, descricao, quantidade, preco_venda
+                sql = """
+                    SELECT codigo, descricao, quantidade, preco_venda, status
                     FROM produtos
-                    ORDER BY descricao
-                    """
-                )
+                """
+
+                if status == "Ativo":
+                    sql += " WHERE status = 'A'"
+                elif status == "Excluído":
+                    sql += " WHERE status = 'E'"
+
+                sql += " ORDER BY descricao"
+
+                cursor.execute(sql)
                 return cursor.fetchall()
 
         except Exception as erro:
@@ -171,7 +179,8 @@ class ProdutoRepository:
             if conexao is not None:
                 conexao.close()
 
-    def pesquisar_para_consulta(self, opcao, valor):
+
+    def pesquisar_para_consulta(self, opcao, valor, status="Ativo"):
         conexao = None
 
         try:
@@ -189,8 +198,14 @@ class ProdutoRepository:
                         parametros.extend([filtro, filtro])
 
                     where = " AND ".join(condicoes)
+
+                    if status == "Ativo":
+                        where += " AND status = 'A'"
+                    elif status == "Excluído":
+                        where += " AND status = 'E'"
+
                     sql = f"""
-                        SELECT codigo, descricao, quantidade, preco_venda
+                        SELECT codigo, descricao, quantidade, preco_venda, status
                         FROM produtos
                         WHERE {where}
                         ORDER BY descricao
@@ -198,42 +213,59 @@ class ProdutoRepository:
                     cursor.execute(sql, parametros)
 
                 elif opcao == "Código":
-                    cursor.execute(
-                        """
-                        SELECT codigo, descricao, quantidade, preco_venda
+                    sql = """
+                        SELECT codigo, descricao, quantidade, preco_venda, status
                         FROM produtos
                         WHERE codigo = %s
-                        ORDER BY descricao
-                        """,
-                        (valor,),
-                    )
+                    """
+                    parametros = [valor]
+
+                    if status == "Ativo":
+                        sql += " AND status = 'A'"
+                    elif status == "Excluído":
+                        sql += " AND status = 'E'"
+
+                    sql += " ORDER BY descricao"
+
+                    cursor.execute(sql, parametros)
 
                 elif opcao == "Cód. Barras":
                     filtro = f"%{valor}%"
-                    cursor.execute(
-                        """
-                        SELECT codigo, descricao, quantidade, preco_venda
+                    sql = """
+                        SELECT codigo, descricao, quantidade, preco_venda, status
                         FROM produtos
-                        WHERE cod_barras LIKE %s
-                           OR cod_barras_2 LIKE %s
-                        ORDER BY descricao
-                        """,
-                        (filtro, filtro),
-                    )
+                        WHERE (cod_barras LIKE %s OR cod_barras_2 LIKE %s)
+                    """
+                    parametros = [filtro, filtro]
+
+                    if status == "Ativo":
+                        sql += " AND status = 'A'"
+                    elif status == "Excluído":
+                        sql += " AND status = 'E'"
+
+                    sql += " ORDER BY descricao"
+
+                    cursor.execute(sql, parametros)
 
                 elif opcao == "Referências":
                     filtro = "%" + "%".join(valor.split()) + "%"
-                    cursor.execute(
-                        """
-                        SELECT codigo, descricao, quantidade, preco_venda
+                    sql = """
+                        SELECT codigo, descricao, quantidade, preco_venda, status
                         FROM produtos
-                        WHERE ref_fornecedor LIKE %s
-                           OR ref_original LIKE %s
-                           OR ref_similar LIKE %s
-                        ORDER BY descricao
-                        """,
-                        (filtro, filtro, filtro),
-                    )
+                        WHERE (ref_fornecedor LIKE %s
+                        OR ref_original LIKE %s
+                        OR ref_similar LIKE %s)
+                    """
+                    parametros = [filtro, filtro, filtro]
+
+                    if status == "Ativo":
+                        sql += " AND status = 'A'"
+                    elif status == "Excluído":
+                        sql += " AND status = 'E'"
+
+                    sql += " ORDER BY descricao"
+
+                    cursor.execute(sql, parametros)
 
                 else:
                     return []
@@ -249,6 +281,7 @@ class ProdutoRepository:
         finally:
             if conexao is not None:
                 conexao.close()
+
 
     def buscar_por_codigo(self, codigo):
         conexao = None
@@ -273,7 +306,8 @@ class ProdutoRepository:
             if conexao is not None:
                 conexao.close()
 
-    def excluir(self, codigo):
+
+    def alterar_status(self, codigo, status):
         conexao = None
 
         try:
@@ -281,18 +315,18 @@ class ProdutoRepository:
 
             with conexao.cursor(pymysql.cursors.DictCursor) as cursor:
                 cursor.execute(
-                    "DELETE FROM produtos WHERE codigo = %s",
-                    (codigo,),
+                    "UPDATE produtos SET status = %s WHERE codigo = %s",
+                    (status, codigo),
                 )
 
             conexao.commit()
-            return {"sucesso": True, "mensagem": "Produto excluído com sucesso!"}
+            return {"sucesso": True, "mensagem": "Status do produto alterado com sucesso!"}
 
         except Exception as erro:
-            print("ERRO AO EXCLUIR PRODUTO:", erro)
+            print("ERRO AO ALTERAR STATUS DO PRODUTO:", erro)
             import traceback
             traceback.print_exc()
-            return {"sucesso": False, "mensagem": "Erro ao excluir produto."}
+            return {"sucesso": False, "mensagem": "Erro ao alterar status do produto."}
 
         finally:
             if conexao is not None:

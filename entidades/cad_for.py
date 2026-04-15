@@ -79,6 +79,7 @@ class CadFornecedor(QWidget):
         label_pesq.setFixedSize(label_pesq.sizeHint())
 
         self.check_todos = QCheckBox("Todos")
+        
 
         self.lnedit_pesq = criar_lineedit_padrao()
         self.lnedit_pesq.setMinimumWidth(810)
@@ -94,6 +95,7 @@ class CadFornecedor(QWidget):
 
         hbox_pesq = QHBoxLayout()
         hbox_pesq.addWidget(label_pesq)
+        hbox_pesq.addStretch()
         hbox_pesq.addWidget(self.check_todos)
 
         vbox_pesq = QVBoxLayout()

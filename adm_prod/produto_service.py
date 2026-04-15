@@ -7,26 +7,29 @@ class ProdutoService:
         self.repository = repository or ProdutoRepository()
         self.fornecedor_repository = fornecedor_repository or FornecedorRepository()
 
+
     def listar_produtos_para_consulta(self):
         return self.repository.listar_para_consulta()
 
+
     def pesquisar_produtos_para_consulta(self, opcao, texto, buscar_todos=False, status=None):
-        del status
         texto = (texto or "").strip().upper()
+        status = (status or "").strip()
 
         if buscar_todos:
-            return self.listar_produtos_para_consulta()
+            return self.repository.listar_para_consulta(status=status)
 
         if not texto:
-            return []
+            return self.repository.listar_para_consulta(status=status)
 
-        return self.repository.pesquisar_para_consulta(opcao, texto)
+        return self.repository.pesquisar_para_consulta(opcao, texto, status=status)
 
     def buscar_produto_por_codigo(self, codigo):
         codigo = (codigo or "").strip()
         if not codigo:
             return None
         return self.repository.buscar_por_codigo(codigo)
+
 
     def salvar_produto(self, dados_formulario):
         validacao = self._validar_dados(dados_formulario)
@@ -35,6 +38,7 @@ class ProdutoService:
 
         dados_tratados = self._tratar_dados(dados_formulario)
         return self.repository.salvar(dados_tratados)
+
 
     def atualizar_produto(self, dados_formulario):
         codigo = (dados_formulario.get("codigo") or "").strip()
@@ -48,11 +52,6 @@ class ProdutoService:
         dados_tratados = self._tratar_dados(dados_formulario)
         return self.repository.atualizar(dados_tratados)
 
-    def excluir_produto(self, codigo):
-        codigo = (codigo or "").strip()
-        if not codigo:
-            return {"sucesso": False, "mensagem": "Código do produto inválido."}
-        return self.repository.excluir(codigo)
 
     def calcular_preco_venda(self, preco_custo_texto, margem_texto):
         preco_custo = self._to_float(preco_custo_texto)
@@ -63,6 +62,7 @@ class ProdutoService:
 
         return preco_custo + (preco_custo * margem / 100)
 
+
     def calcular_margem_lucro(self, preco_custo_texto, preco_venda_texto):
         preco_custo = self._to_float(preco_custo_texto)
         preco_venda = self._to_float(preco_venda_texto)
@@ -71,6 +71,7 @@ class ProdutoService:
             raise ValueError("Preço de custo deve ser maior que zero.")
 
         return ((preco_venda - preco_custo) / preco_custo) * 100
+
 
     def _validar_dados(self, dados):
         descricao = (dados.get("descricao") or "").strip()
@@ -98,6 +99,7 @@ class ProdutoService:
                 return {"sucesso": False, "mensagem": "Fornecedor informado está excluído."}
 
         return {"sucesso": True, "mensagem": ""}
+
 
     def _tratar_dados(self, dados):
         cod_fornecedor = (dados.get("cod_fornecedor") or "").strip()
@@ -129,6 +131,7 @@ class ProdutoService:
             "tipo_quantidade": (dados.get("tipo_quantidade") or "").strip(),
         }
 
+
     def _to_float(self, valor):
         texto = str(valor or "").strip()
         if not texto or texto == "None":
@@ -139,3 +142,21 @@ class ProdutoService:
             texto = texto.replace(".", "").replace(",", ".")
 
         return float(texto)
+
+    def alterar_status_produto(self, codigo, status_atual):
+        codigo = (codigo or "").strip()
+
+        if not codigo:
+            return {
+                "sucesso": False,
+                "mensagem": "Código do produto inválido."
+            }
+
+        if status_atual == "A":
+            novo_status = "E"
+            mensagem = "Produto excluído com sucesso."
+        else:
+            novo_status = "A"
+            mensagem = "Produto ativado com sucesso."
+
+        return self.repository.alterar_status(codigo, novo_status)

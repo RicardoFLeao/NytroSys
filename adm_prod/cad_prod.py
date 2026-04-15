@@ -17,6 +17,7 @@ from util.padrao import (
 from util.fun_basicas import(LineEditComEnter)
 from util.fun_basicas import texto_para_float, formatar_preco
 from adm_prod.produto_service import ProdutoService
+from adm_prod.tela_marc_prod import TelaMarcaProd
 
 
 class CadProd(QWidget):
@@ -25,16 +26,18 @@ class CadProd(QWidget):
         self.setWindowTitle('Cadastro de Produtos')
         self.setWindowIcon(QIcon('imagens/icone.png'))
         self.service = ProdutoService()
+        self.status_produto_atual = "A"
         self.componentes()
         self.showMaximized()
         QShortcut(QKeySequence('Esc'), self).activated.connect(self.sair)
         QShortcut(QKeySequence('F5'), self).activated.connect(self.limpar_campos)
-        QShortcut(QKeySequence('F8'), self).activated.connect(self.preencher_tabela)
+        # QShortcut(QKeySequence('F8'), self).activated.connect(self.preencher_tabela)
 
         self.setTabOrder(self.edit_preco_custo, self.edit_preco_venda)
         self.setTabOrder(self.edit_preco_venda, self.edit_preco_promocao)
         self.setTabOrder(self.edit_preco_promocao, self.edit_margem_lucro)
         self.setTabOrder(self.edit_margem_lucro, self.edit_desconto)
+        self.edit_nome_marca.installEventFilter(self)
 
         
     def componentes(self):
@@ -104,7 +107,7 @@ class CadProd(QWidget):
         label_ativo.setFixedSize(label_ativo.sizeHint())
 
         self.combo_ativo = criar_combobox_padrao()
-        self.combo_ativo.addItems(["Todos", "Ativo", "Inativo"])
+        self.combo_ativo.addItems(["Ativo", "Excluído", "Todos"])
         self.combo_ativo.setFixedWidth(220)
 
         self.btn_pesq = criar_botao()
@@ -121,8 +124,8 @@ class CadProd(QWidget):
 
         # ---------- TABELA DE RESULTADOS ----------
         self.tabela_resultado = QTableWidget()
-        self.tabela_resultado.setColumnCount(4)
-        self.tabela_resultado.setHorizontalHeaderLabels(["Código", "Descrição", "Quant.", "Preço"])
+        self.tabela_resultado.setColumnCount(5)
+        self.tabela_resultado.setHorizontalHeaderLabels(["Código", "Descrição", "Quant.", "Preço", "Status"])
         self.tabela_resultado.setStyleSheet("""
             QTableWidget {
                 background-color: white;
@@ -151,6 +154,7 @@ class CadProd(QWidget):
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        self.tabela_resultado.setColumnWidth(4, 80)
 
         self.tabela_resultado.cellDoubleClicked.connect(self.carregar_produto)
 
@@ -419,6 +423,28 @@ class CadProd(QWidget):
         vbox_repositor.addLayout(hbox_repositor)
         vbox_repositor.addWidget(self.edit_repositor)
 
+        # nome marca
+        nome_marca = criar_label_padrao()
+        nome_marca.setText('Marca')
+        nome_marca.setContentsMargins(2, 0, 0, 0)
+        nome_marca.setFixedSize(nome_marca.sizeHint())
+
+        pesc_marca = criar_label_padrao()
+        pesc_marca.setText('F8 - Pesquisa')
+        pesc_marca.setContentsMargins(0, 0, 5, 0)
+        pesc_marca.setFixedSize(pesc_marca.sizeHint())
+
+        hbox_nome_marca = QHBoxLayout()
+        hbox_nome_marca.addWidget(nome_marca, alignment=Qt.AlignmentFlag.AlignLeft)
+        hbox_nome_marca.addWidget(pesc_marca, alignment=Qt.AlignmentFlag.AlignRight)
+
+        self.edit_nome_marca = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_nome_marca.setFixedWidth(250)
+
+        vbox_nome_marca = QVBoxLayout()
+        vbox_nome_marca.addLayout(hbox_nome_marca)
+        vbox_nome_marca.addWidget(self.edit_nome_marca)
+
 
         hbox_aba_abastecimento = QHBoxLayout()
         hbox_aba_abastecimento.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -426,6 +452,7 @@ class CadProd(QWidget):
         hbox_aba_abastecimento.addLayout(vbox_cod_forn)
         hbox_aba_abastecimento.addLayout(vbox_nome_forn)
         hbox_aba_abastecimento.addLayout(vbox_repositor)
+        hbox_aba_abastecimento.addLayout(vbox_nome_marca)
 
 
         aba_abastecimento.setLayout(hbox_aba_abastecimento)
@@ -1171,8 +1198,18 @@ class CadProd(QWidget):
         self.edit_desconto.setText(str(produto.get("desconto") or ""))
         self.combo_tipo_quant.setCurrentText(produto.get("tipo_quantidade") or "Inteiro")
 
+        status = produto.get("status", "A")
+
+        if status == "A":
+            self.status_produto_atual = "A"
+            self.botao_excluir.setText("Excluir")
+        else:
+            self.status_produto_atual = "E"
+            self.botao_excluir.setText("Ativar")
+
         # Vai pra aba cadastro
         self.tab.setCurrentIndex(1)
+
 
     def preencher_tabela(self, texto=None):
         texto_pesquisa = self.edit_label_pesq.text().strip().upper()
@@ -1203,11 +1240,26 @@ class CadProd(QWidget):
             except (ValueError, TypeError):
                 preco = "0,00"
 
+            status = dados_linha.get("status", "A")
+
+            if status == "A":
+                status_texto = "Ativo"
+            else:
+                status_texto = "Excluído"
+
+            item_status = QTableWidgetItem(status_texto)
+
+            if status_texto == "Excluído":
+                from PyQt6.QtGui import QColor
+                item_status.setForeground(QColor("red"))
+
             self.tabela_resultado.setItem(linha, 0, QTableWidgetItem(codigo))
             self.tabela_resultado.setItem(linha, 1, QTableWidgetItem(descricao))
             self.tabela_resultado.setItem(linha, 2, QTableWidgetItem(quantidade))
             self.tabela_resultado.setItem(linha, 3, QTableWidgetItem(preco))
+            self.tabela_resultado.setItem(linha, 4, item_status)
                     
+
     def formatar_preco_campo(self, campo):
         try:
             valor = texto_para_float(campo.text())
@@ -1294,28 +1346,40 @@ class CadProd(QWidget):
 
         self.edit_desc.setFocus()
 
+        self.status_produto_atual = "A"
+        self.botao_excluir.setText("Excluir")
+
     def excluir_produto(self):
         linha = self.tabela_resultado.currentRow()
 
         if linha < 0:
-            QMessageBox.warning(self, "Aviso", "Selecione um produto na tabela para excluir.")
+            QMessageBox.warning(self, "Aviso", "Selecione um produto na tabela.")
             return
 
         item_codigo = self.tabela_resultado.item(linha, 0)
         item_descricao = self.tabela_resultado.item(linha, 1)
+        item_status = self.tabela_resultado.item(linha, 4)
 
-        if item_codigo is None:
+        if item_codigo is None or item_status is None:
             QMessageBox.warning(self, "Aviso", "Não foi possível identificar o produto.")
             return
 
         codigo = item_codigo.text().strip()
         descricao = item_descricao.text().strip() if item_descricao else ""
+        status_texto = item_status.text().strip()
+
+        if status_texto == "Ativo":
+            status_atual = "A"
+            acao = "excluir"
+        else:
+            status_atual = "E"
+            acao = "ativar"
 
         msg = QMessageBox(self)
-        msg.setWindowTitle("Confirmar exclusão")
+        msg.setWindowTitle("Confirmar")
         msg.setIcon(QMessageBox.Icon.Question)
         msg.setText(
-            f"Deseja excluir o produto?\n\n"
+            f"Deseja {acao} o produto?\n\n"
             f"Código: {codigo}\n"
             f"Descrição: {descricao}"
         )
@@ -1324,21 +1388,19 @@ class CadProd(QWidget):
         btn_nao = msg.addButton("Não", QMessageBox.ButtonRole.NoRole)
 
         msg.setDefaultButton(btn_nao)
-
         msg.exec()
 
         if msg.clickedButton() != btn_sim:
             return
 
-        resultado = self.service.excluir_produto(codigo)
+        resultado = self.service.alterar_status_produto(codigo, status_atual)
 
         if resultado["sucesso"]:
-            QMessageBox.information(self, "Sucesso", "Produto excluído com sucesso!")
+            QMessageBox.information(self, "Sucesso", resultado["mensagem"])
             self.preencher_tabela()
-            
+
             if self.edit_cod.text().strip() == codigo:
                 self.limpar_campos()
-
         else:
             QMessageBox.critical(self, "Erro", resultado["mensagem"])
 
@@ -1378,6 +1440,25 @@ class CadProd(QWidget):
             "desconto": (self.edit_desconto.text() or "").strip(),
             "tipo_quantidade": self.combo_tipo_quant.currentText(),
         }
+
+
+    def eventFilter(self, obj, event):
+        if event.type() == event.Type.KeyPress:
+            if event.key() == Qt.Key.Key_F8:
+
+                if obj == self.edit_nome_marca:
+                    self.abrir_pesquisa_marca()
+                    return True
+
+        return super().eventFilter(obj, event)
+
+
+
+    def abrir_pesquisa_marca(self):
+        self.janela_marca = TelaMarcaProd()
+        self.janela_marca.show()
+        
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
