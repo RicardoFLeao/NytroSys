@@ -11,6 +11,10 @@ class ProdutoRepository:
             conexao = conectar()
 
             with conexao.cursor(pymysql.cursors.DictCursor) as cursor:
+                cod_marca = dados.get("cod_marca")
+
+                print("REPOSITORY cod_marca:", cod_marca)
+
                 sql = """
                     INSERT INTO produtos (
                         cod_barras,
@@ -29,9 +33,11 @@ class ProdutoRepository:
                         margem_lucro,
                         preco_promocao,
                         desconto,
-                        tipo_quantidade
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        tipo_quantidade,
+                        cod_marca
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
+
                 cursor.execute(
                     sql,
                     (
@@ -52,6 +58,7 @@ class ProdutoRepository:
                         dados["preco_promocao"],
                         dados["desconto"],
                         dados["tipo_quantidade"],
+                        cod_marca,
                     ),
                 )
 
@@ -80,6 +87,9 @@ class ProdutoRepository:
                 conexao.close()
 
 
+
+
+
     def atualizar(self, dados):
         conexao = None
 
@@ -106,7 +116,8 @@ class ProdutoRepository:
                         margem_lucro = %s,
                         preco_promocao = %s,
                         desconto = %s,
-                        tipo_quantidade = %s
+                        tipo_quantidade = %s,
+                        cod_marca = %s
                     WHERE codigo = %s
                 """
                 cursor.execute(
@@ -129,6 +140,7 @@ class ProdutoRepository:
                         dados["preco_promocao"],
                         dados["desconto"],
                         dados["tipo_quantidade"],
+                        dados["cod_marca"],
                         dados["codigo"],
                     ),
                 )
@@ -145,6 +157,8 @@ class ProdutoRepository:
         finally:
             if conexao is not None:
                 conexao.close()
+
+
 
 
     def listar_para_consulta(self, status="Ativo"):

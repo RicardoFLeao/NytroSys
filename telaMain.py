@@ -20,8 +20,6 @@ class telaPrincipal(QMainWindow):
         QShortcut(QKeySequence(Qt.Key.Key_B), self).activated.connect(lambda: tela_ent(self))
         QShortcut(QKeySequence(Qt.Key.Key_A), self).activated.connect(lambda: tela_cad_prod(self))
 
-
-
     def menu(self):
         barra_menu = QMenuBar()
         self.setMenuBar(barra_menu)

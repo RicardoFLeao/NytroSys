@@ -9,7 +9,7 @@ class FornecedorService:
     def salvar_fornecedor(self, dados_formulario):
         razao_social = dados_formulario.get("razao_social", "").strip().upper()
         if not razao_social:
-            return {"sucesso": False, "mensagem": "Razão social / nome é obrigatório."}
+            return {"sucesso": False, "mensagem": "Razão social é obrigatório."}
 
         tipo_pessoa = dados_formulario.get("tipo_pessoa", "").strip()
         if tipo_pessoa not in {"J", "F"}:
@@ -44,11 +44,11 @@ class FornecedorService:
         ativo = (ativo or "").strip()
 
         # 🔥 remover máscara para CPF/CNPJ e telefone
-        if opcao in ("CPF / CNPJ", "Telefone"):
+        if opcao in ("CPF / CNPJ", "WhatsApp"):
             texto = "".join(filter(str.isdigit, texto))
 
         if not texto and not buscar_todos:
-            return []
+            return self.repository.buscar_fornecedor(opcao, "", ativo, True)
 
         return self.repository.buscar_fornecedor(opcao, texto, ativo, buscar_todos)
 
@@ -114,7 +114,7 @@ class FornecedorService:
     def atualizar_fornecedor(self, dados_formulario):
         razao_social = dados_formulario.get("razao_social", "").strip().upper()
         if not razao_social:
-            return {"sucesso": False, "mensagem": "Razão social / nome é obrigatório."}
+            return {"sucesso": False, "mensagem": "Razão social é obrigatório."}
 
         tipo_pessoa = dados_formulario.get("tipo_pessoa", "").strip()
         if tipo_pessoa not in {"J", "F"}:

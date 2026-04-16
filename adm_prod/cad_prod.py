@@ -27,6 +27,7 @@ class CadProd(QWidget):
         self.setWindowIcon(QIcon('imagens/icone.png'))
         self.service = ProdutoService()
         self.status_produto_atual = "A"
+        self.cod_marca = None
         self.componentes()
         self.showMaximized()
         QShortcut(QKeySequence('Esc'), self).activated.connect(self.sair)
@@ -38,6 +39,8 @@ class CadProd(QWidget):
         self.setTabOrder(self.edit_preco_promocao, self.edit_margem_lucro)
         self.setTabOrder(self.edit_margem_lucro, self.edit_desconto)
         self.edit_nome_marca.installEventFilter(self)
+        self.edit_cod_forn.installEventFilter(self)
+        self.edit_nome_forn.installEventFilter(self)
 
         
     def componentes(self):
@@ -374,6 +377,7 @@ class CadProd(QWidget):
 
         self.edit_cod_forn = criar_lineedit_padrao(LineEditComEnter)
         self.edit_cod_forn.setFixedWidth(90)
+        self.edit_cod_forn.editingFinished.connect(self.buscar_fornecedor_por_codigo)
 
         vbox_cod_forn = QVBoxLayout()
         vbox_cod_forn.addWidget(cod_forn)
@@ -396,6 +400,7 @@ class CadProd(QWidget):
 
         self.edit_nome_forn = criar_lineedit_padrao(LineEditComEnter)
         self.edit_nome_forn.setFixedWidth(320)
+        self.edit_nome_forn.setReadOnly(True)
 
         vbox_nome_forn = QVBoxLayout()
         vbox_nome_forn.addLayout(hbox_nome_forn)
@@ -440,6 +445,8 @@ class CadProd(QWidget):
 
         self.edit_nome_marca = criar_lineedit_padrao(LineEditComEnter)
         self.edit_nome_marca.setFixedWidth(250)
+        self.edit_nome_marca.setReadOnly(True)
+        
 
         vbox_nome_marca = QVBoxLayout()
         vbox_nome_marca.addLayout(hbox_nome_marca)
@@ -1198,6 +1205,27 @@ class CadProd(QWidget):
         self.edit_desconto.setText(str(produto.get("desconto") or ""))
         self.combo_tipo_quant.setCurrentText(produto.get("tipo_quantidade") or "Inteiro")
 
+        # 🔥 MARCA (busca direta no banco)
+        self.cod_marca = produto.get("cod_marca")
+
+        if self.cod_marca:
+            from bd import conectar
+            conexao = conectar()
+            cursor = conexao.cursor()
+
+            cursor.execute("SELECT nome FROM marcas_produto WHERE codigo = %s", (self.cod_marca,))
+            resultado = cursor.fetchone()
+
+            if resultado:
+                self.edit_nome_marca.setText(resultado["nome"])
+            else:
+                self.edit_nome_marca.clear()
+
+            conexao.close()
+        else:
+            self.edit_nome_marca.clear()
+
+        # status
         status = produto.get("status", "A")
 
         if status == "A":
@@ -1209,6 +1237,8 @@ class CadProd(QWidget):
 
         # Vai pra aba cadastro
         self.tab.setCurrentIndex(1)
+
+
 
 
     def preencher_tabela(self, texto=None):
@@ -1297,8 +1327,14 @@ class CadProd(QWidget):
         elif self.edit_preco_venda.text().strip():
             self.calcular_margem_lucro()
 
+
+
     def salvar(self):
+        print("SALVAR - cod_marca:", getattr(self, "cod_marca", None))
+
         dados = self.coletar_dados_formulario()
+
+        dados["cod_marca"] = getattr(self, "cod_marca", None)
 
         if dados["codigo"]:
             resultado = self.service.atualizar_produto(dados)
@@ -1312,7 +1348,9 @@ class CadProd(QWidget):
         else:
             QMessageBox.warning(self, "Aviso", resultado["mensagem"])
             self.edit_desc.setFocus()
-                    
+
+
+
     def sair(self):
         from telaMain import telaPrincipal
         self.janela = telaPrincipal()
@@ -1348,6 +1386,8 @@ class CadProd(QWidget):
 
         self.status_produto_atual = "A"
         self.botao_excluir.setText("Excluir")
+        self.cod_marca = None
+        self.edit_nome_marca.clear()
 
     def excluir_produto(self):
         linha = self.tabela_resultado.currentRow()
@@ -1440,6 +1480,47 @@ class CadProd(QWidget):
             "desconto": (self.edit_desconto.text() or "").strip(),
             "tipo_quantidade": self.combo_tipo_quant.currentText(),
         }
+    def abrir_pesquisa_fornecedor(self):
+        from consulta.tela_pesq_fornecedor import TelaPesqFornecedor
+        self.janela_fornecedor = TelaPesqFornecedor(self)
+        self.janela_fornecedor.show()
+
+
+    def selecionar_fornecedor(self, codigo, nome):
+        self.edit_cod_forn.setText(str(codigo))
+        self.edit_nome_forn.setText(str(nome))
+        self.edit_repositor.setFocus()
+
+
+    def buscar_fornecedor_por_codigo(self):
+        codigo = self.edit_cod_forn.text().strip()
+
+        if not codigo:
+            self.edit_nome_forn.clear()
+            return
+
+        from entidades.fornecedor.fornecedor_repository import FornecedorRepository
+        repository = FornecedorRepository()
+
+        fornecedor = repository.buscar_por_codigo(codigo)
+
+        if not fornecedor:
+            self.edit_nome_forn.clear()
+            QMessageBox.warning(self, "Aviso", "Fornecedor não encontrado.")
+            self.edit_cod_forn.setFocus()
+            return
+
+        status = fornecedor.get("status", "")
+
+        if status not in ("A", "S"):
+            self.edit_nome_forn.clear()
+            QMessageBox.warning(self, "Aviso", "Fornecedor excluído.")
+            self.edit_cod_forn.setFocus()
+            return
+
+        nome = fornecedor.get("nome_fantasia") or fornecedor.get("razao_social") or ""
+        self.selecionar_fornecedor(codigo, nome)
+
 
 
     def eventFilter(self, obj, event):
@@ -1450,12 +1531,15 @@ class CadProd(QWidget):
                     self.abrir_pesquisa_marca()
                     return True
 
+                if obj == self.edit_cod_forn or obj == self.edit_nome_forn:
+                    self.abrir_pesquisa_fornecedor()
+                    return True
+
         return super().eventFilter(obj, event)
 
 
-
     def abrir_pesquisa_marca(self):
-        self.janela_marca = TelaMarcaProd()
+        self.janela_marca = TelaMarcaProd(self)
         self.janela_marca.show()
         
 

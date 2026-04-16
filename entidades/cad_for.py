@@ -20,8 +20,9 @@ from PyQt6.QtWidgets import *
 
 
 class CadFornecedor(QWidget):
-    def __init__(self):
+    def __init__(self, tela_origem=None):
         super().__init__()
+        self.tela_origem = tela_origem
         self.setWindowTitle("Cadastro Fornecedores")
         self.service = FornecedorService()
 
@@ -58,11 +59,12 @@ class CadFornecedor(QWidget):
         label_opc.setContentsMargins(2, 0, 0, 0)
         label_opc.setFixedSize(label_opc.sizeHint())
 
-        opcoes_consulta = ['Código', 'Nome / Razão Social', 'CPF / CNPJ','WhatsApp', 'Email']
+        opcoes_consulta = ['Código', 'Nome', 'Razão Social', 'CPF / CNPJ', 'WhatsApp', 'Email']
         self.comb_opc = criar_combobox_padrao()
         self.comb_opc.addItems(opcoes_consulta)
-        self.comb_opc.setCurrentText("Nome / Razão Social")
+        self.comb_opc.setCurrentText("Nome")
         self.comb_opc.setFixedWidth(220)
+        self.comb_opc.currentTextChanged.connect(self.atualizar_cabecalho_tabela)
 
         label_mdl = criar_label_padrao()
         label_mdl.setText('Modelo')
@@ -136,7 +138,7 @@ class CadFornecedor(QWidget):
         self.tabela_resultado.setColumnCount(6)
         self.tabela_resultado.setHorizontalHeaderLabels([
             'Código',
-            'Nome / Razão Social',
+            'Nome',
             'CPF / CNPJ',
             'WhatsApp',
             'E-mail',
@@ -169,7 +171,7 @@ class CadFornecedor(QWidget):
         self.tabela_resultado.itemDoubleClicked.connect(self.abrir_fornecedor_selecionado)
 
         self.tabela_resultado.setColumnWidth(0, 70)    # Código
-        self.tabela_resultado.setColumnWidth(1, 360)   # Nome / Razão Social
+        self.tabela_resultado.setColumnWidth(1, 360)   # Nome exibido na consulta
         self.tabela_resultado.setColumnWidth(2, 170)   # CPF / CNPJ
         self.tabela_resultado.setColumnWidth(3, 140)   # WhatsApp
         self.tabela_resultado.setColumnWidth(4, 220)   # E-mail
@@ -226,7 +228,7 @@ class CadFornecedor(QWidget):
         # RazÃ£o social
 
         raz_social = criar_label_padrao()
-        raz_social.setText('Razão Social/Nome')
+        raz_social.setText('Razão Social')
         raz_social.setContentsMargins(2, 0, 0, 0)
         raz_social.setFixedSize(raz_social.sizeHint())
 
@@ -597,7 +599,28 @@ class CadFornecedor(QWidget):
         vbox.addLayout(hbox_botoes)
         vbox.setContentsMargins(20, 20, 20, 20)
 
+        self.atualizar_cabecalho_tabela()
+
         self.setLayout(vbox)
+
+
+    def atualizar_cabecalho_tabela(self):
+        opcao = self.comb_opc.currentText()
+
+        texto_coluna = 'Nome'
+
+        if opcao == 'Razão Social':
+            texto_coluna = 'Razão Social'
+
+        self.tabela_resultado.setHorizontalHeaderLabels([
+            'Código',
+            texto_coluna,
+            'CPF / CNPJ',
+            'WhatsApp',
+            'E-mail',
+            'Status'
+        ])
+
 
     def salvar(self):
         dados = self.coletar_dados_formulario()
@@ -641,7 +664,7 @@ class CadFornecedor(QWidget):
         else:
             tipo_pessoa = ""
 
-        ativo = "S" if self.combo_ativo.currentText() != "Inativo" else "N"
+        ativo = "A"
 
         return {
             "codigo": self.edit_cod_for.text().strip(),
@@ -664,7 +687,7 @@ class CadFornecedor(QWidget):
             "data_referencia": self.edit_dt_nasc_forn.text().strip(),
             "sexo": self.comb_sexo_forn.currentText() if self.comb_sexo_forn.currentText() != "Selecione" else "",
             "info_adicional": self.text_inf_add_forn.toPlainText().strip(),
-            "ativo": ativo
+            "status": ativo
         }
 
     def limpar_campos(self):
@@ -697,15 +720,17 @@ class CadFornecedor(QWidget):
 
         self.edit_raz_social.setFocus()
 
+
+
     def acao_buscar_fornecedor(self, *args):
         texto = self.lnedit_pesq.text().strip()
         opcao = self.comb_opc.currentText()
         ativo = self.combo_ativo.currentText()
         buscar_todos = self.check_todos.isChecked()
 
+        self.atualizar_cabecalho_tabela()
+
         if not texto and not buscar_todos:
-            QMessageBox.warning(self, "Aviso", "Digite um dado para pesquisar.")
-            self.lnedit_pesq.setFocus()
             self.tabela_resultado.setRowCount(0)
             return
 
@@ -714,19 +739,36 @@ class CadFornecedor(QWidget):
         self.tabela_resultado.setRowCount(len(resultados))
 
         for linha, fornecedor in enumerate(resultados):
-            for coluna, valor in enumerate(fornecedor):
+            nome_exibicao = fornecedor.get("nome_fantasia", "")
 
+            if opcao == "Razão Social":
+                nome_exibicao = fornecedor.get("razao_social", "")
+            elif opcao in ["Código", "CPF / CNPJ", "WhatsApp", "Email"]:
+                nome_exibicao = fornecedor.get("nome_fantasia", "") or fornecedor.get("razao_social", "")
+
+            valores = [
+                fornecedor.get("codigo", ""),
+                nome_exibicao,
+                fornecedor.get("cpf_cnpj", ""),
+                fornecedor.get("whatsapp", ""),
+                fornecedor.get("email", ""),
+                fornecedor.get("status", ""),
+            ]
+
+            for coluna, valor in enumerate(valores):
                 item = QTableWidgetItem(str(valor) if valor is not None else "")
 
                 if coluna == 5:
                     if valor == "A":
                         item.setText("Ativo")
-
                     elif valor == "E":
                         item.setText("Excluído")
-                        item.setForeground(Qt.GlobalColor.red)  # 🔴 aqui é o segredo
+                        item.setForeground(Qt.GlobalColor.red)
 
                 self.tabela_resultado.setItem(linha, coluna, item)
+
+
+
 
     def abrir_fornecedor_selecionado(self):
         linha = self.tabela_resultado.currentRow()
@@ -749,31 +791,34 @@ class CadFornecedor(QWidget):
         self.carregar_fornecedor_no_formulario(fornecedor)
         self.tab.setCurrentIndex(1)
 
+
+
     def carregar_fornecedor_no_formulario(self, fornecedor):
         if not fornecedor:
             return
 
-        self.edit_cod_for.setText(str(fornecedor[1]) if fornecedor[1] is not None else "")
+        self.edit_cod_for.setText(str(fornecedor.get("codigo") or ""))
 
-        tipo_pessoa = fornecedor[2] if fornecedor[2] is not None else ""
-        self.edit_raz_social.setText(fornecedor[3] if fornecedor[3] is not None else "")
-        self.edit_fant_forn.setText(fornecedor[4] if fornecedor[4] is not None else "")
-        self.edit_cont_forn.setText(fornecedor[5] if fornecedor[5] is not None else "")
-        self.edit_zap_forn.setText(fornecedor[6] if fornecedor[6] is not None else "")
-        self.edit_tel_forn.setText(fornecedor[7] if fornecedor[7] is not None else "")
-        self.edit_email_forn.setText(fornecedor[8] if fornecedor[8] is not None else "")
-        self.edit_cep_forn.setText(fornecedor[9] if fornecedor[9] is not None else "")
-        self.edit_end_forn.setText(fornecedor[10] if fornecedor[10] is not None else "")
-        self.edit_num_for.setText(fornecedor[11] if fornecedor[11] is not None else "")
-        self.edit_bairro_forn.setText(fornecedor[12] if fornecedor[12] is not None else "")
-        self.edit_cid_forn.setText(fornecedor[13] if fornecedor[13] is not None else "")
-        self.edit_est_forn.setText(fornecedor[14] if fornecedor[14] is not None else "")
-        self.edit_cnpj_forn.setText(fornecedor[15] if fornecedor[15] is not None else "")
-        self.edit_insc_forn.setText(fornecedor[16] if fornecedor[16] is not None else "")
-        self.edit_insc_mun_forn.setText(fornecedor[17] if fornecedor[17] is not None else "")
+        tipo_pessoa = fornecedor.get("tipo_pessoa") or ""
+        self.edit_raz_social.setText(fornecedor.get("razao_social") or "")
+        self.edit_fant_forn.setText(fornecedor.get("nome_fantasia") or "")
+        self.edit_cont_forn.setText(fornecedor.get("contato") or "")
+        self.edit_zap_forn.setText(fornecedor.get("whatsapp") or "")
+        self.edit_tel_forn.setText(fornecedor.get("telefone") or "")
+        self.edit_email_forn.setText(fornecedor.get("email") or "")
+        self.edit_cep_forn.setText(fornecedor.get("cep") or "")
+        self.edit_end_forn.setText(fornecedor.get("endereco") or "")
+        self.edit_num_for.setText(fornecedor.get("numero") or "")
+        self.edit_bairro_forn.setText(fornecedor.get("bairro") or "")
+        self.edit_cid_forn.setText(fornecedor.get("cidade") or "")
+        self.edit_est_forn.setText(fornecedor.get("uf") or "")
+        self.edit_cnpj_forn.setText(fornecedor.get("cpf_cnpj") or "")
+        self.edit_insc_forn.setText(fornecedor.get("inscricao_estadual") or "")
+        self.edit_insc_mun_forn.setText(fornecedor.get("inscricao_municipal") or "")
 
-        if fornecedor[18] is not None:
-            data = str(fornecedor[18])
+        data = fornecedor.get("data_referencia")
+        if data:
+            data = str(data)
             if "-" in data:
                 partes = data.split("-")
                 if len(partes) == 3:
@@ -782,7 +827,7 @@ class CadFornecedor(QWidget):
         else:
             self.edit_dt_nasc_forn.clear()
 
-        sexo = fornecedor[19] if fornecedor[19] is not None else ""
+        sexo = fornecedor.get("sexo") or ""
         if sexo:
             indice = self.comb_sexo_forn.findText(sexo)
             if indice >= 0:
@@ -792,17 +837,22 @@ class CadFornecedor(QWidget):
         else:
             self.comb_sexo_forn.setCurrentIndex(0)
 
-        self.text_inf_add_forn.setPlainText(fornecedor[20] if fornecedor[20] is not None else "")
+        self.text_inf_add_forn.setPlainText(fornecedor.get("info_adicional") or "")
 
         if tipo_pessoa == "J":
             self.check_jur.setChecked(True)
         elif tipo_pessoa == "F":
             self.check_fis.setChecked(True)
 
+
     def sair(self):
-        from entidades.tela_ent import TelaEntidades
-        self.janela = TelaEntidades()
-        self.janela.show()
+        if self.tela_origem is not None:
+            self.tela_origem.show()
+        else:
+            from entidades.tela_ent import TelaEntidades
+            self.janela = TelaEntidades()
+            self.janela.show()
+
         self.close()
 
     def buscar_cep(self):
@@ -873,7 +923,7 @@ class CadFornecedor(QWidget):
             )
             return
 
-        status_atual = fornecedor[21]
+        status_atual = fornecedor.get("status")
 
         if status_atual == "A":
             novo_status = "E"
@@ -890,15 +940,19 @@ class CadFornecedor(QWidget):
                 "este fornecedor?"
             )
 
-        confirmacao = QMessageBox.question(
-            self,
-            "Confirmação",
-            mensagem,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No
-        )
+        # 🔥 QMessageBox manual (Sim / Não)
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Confirmação")
+        msg.setText(mensagem)
 
-        if confirmacao != QMessageBox.StandardButton.Yes:
+        btn_sim = msg.addButton("Sim", QMessageBox.ButtonRole.YesRole)
+        btn_nao = msg.addButton("Não", QMessageBox.ButtonRole.NoRole)
+
+        msg.setDefaultButton(btn_nao)
+
+        msg.exec()
+
+        if msg.clickedButton() != btn_sim:
             return
 
         resultado = self.service.alterar_status(codigo, novo_status)

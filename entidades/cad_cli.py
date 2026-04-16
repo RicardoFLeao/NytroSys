@@ -1192,6 +1192,8 @@ class CadCliente(QWidget):
         self.table_cliente.setCurrentIndex(0)
         self.edit_raz_social.setFocus()
 
+
+
     def acao_buscar_cliente(self, *args):
         texto = self.edit_label_pesq.text().strip()
         opcao = self.comb_opc.currentText()
@@ -1204,16 +1206,31 @@ class CadCliente(QWidget):
 
         resultados = self.service.buscar_cliente(opcao, texto, status, buscar_todos)
         self.tabela_resultado.setRowCount(len(resultados))
+
         for linha, cliente in enumerate(resultados):
-            for coluna, valor in enumerate(cliente):
+            valores = [
+                cliente.get("codigo", ""),
+                cliente.get("razao_social", ""),
+                cliente.get("cpf_cnpj", ""),
+                cliente.get("whatsapp", ""),
+                cliente.get("email", ""),
+                cliente.get("status", ""),
+            ]
+
+            for coluna, valor in enumerate(valores):
                 item = QTableWidgetItem(str(valor) if valor is not None else "")
+
                 if coluna == 5:
                     if valor == "A":
                         item.setText("Ativo")
                     elif valor == "E":
-                        item.setText("Excluido")
+                        item.setText("Excluído")
                         item.setForeground(Qt.GlobalColor.red)
+
                 self.tabela_resultado.setItem(linha, coluna, item)
+
+
+
 
     def abrir_cliente_selecionado(self):
         linha = self.tabela_resultado.currentRow()
@@ -1230,24 +1247,27 @@ class CadCliente(QWidget):
 
 
     def carregar_cliente_no_formulario(self, cliente):
-        self.edit_cod_cli.setText(str(cliente[1]) if cliente[1] is not None else "")
-        self.edit_raz_social.setText(cliente[3] or "")
-        self.edit_fant_cli.setText(cliente[4] or "")
-        self.edit_cont_cli.setText(cliente[5] or "")
-        self.edit_zap_cli.setText(cliente[6] or "")
-        self.edit_tel_cli.setText(cliente[7] or "")
-        self.edit_email_cli.setText(cliente[8] or "")
-        self.edit_cep_cli.setText(cliente[9] or "")
-        self.edit_end_cli.setText(cliente[10] or "")
-        self.edit_num_cli.setText(cliente[11] or "")
-        self.edit_bairro_cli.setText(cliente[12] or "")
-        self.edit_cid_cli.setText(cliente[13] or "")
-        self.edit_est_cli.setText(cliente[14] or "")
-        self.edit_cnpj_cli.setText(cliente[15] or "")
-        self.edit_insc_cli.setText(cliente[16] or "")
-        self.edit_insc_mun_cli.setText(cliente[17] or "")
+        if not cliente:
+            return
 
-        data = cliente[18]
+        self.edit_cod_cli.setText(str(cliente.get("codigo") or ""))
+        self.edit_raz_social.setText(cliente.get("razao_social") or "")
+        self.edit_fant_cli.setText(cliente.get("nome_fantasia") or "")
+        self.edit_cont_cli.setText(cliente.get("contato") or "")
+        self.edit_zap_cli.setText(cliente.get("whatsapp") or "")
+        self.edit_tel_cli.setText(cliente.get("telefone") or "")
+        self.edit_email_cli.setText(cliente.get("email") or "")
+        self.edit_cep_cli.setText(cliente.get("cep") or "")
+        self.edit_end_cli.setText(cliente.get("endereco") or "")
+        self.edit_num_cli.setText(cliente.get("numero") or "")
+        self.edit_bairro_cli.setText(cliente.get("bairro") or "")
+        self.edit_cid_cli.setText(cliente.get("cidade") or "")
+        self.edit_est_cli.setText(cliente.get("uf") or "")
+        self.edit_cnpj_cli.setText(cliente.get("cpf_cnpj") or "")
+        self.edit_insc_cli.setText(cliente.get("inscricao_estadual") or "")
+        self.edit_insc_mun_cli.setText(cliente.get("inscricao_municipal") or "")
+
+        data = cliente.get("data_referencia")
         if data:
             texto_data = str(data)
             if "-" in texto_data:
@@ -1258,31 +1278,31 @@ class CadCliente(QWidget):
         else:
             self.edit_dt_nasc_cli.clear()
 
-        sexo = cliente[19] or ""
+        sexo = cliente.get("sexo") or ""
         indice_sexo = self.comb_sexo_cli.findText(sexo)
         self.comb_sexo_cli.setCurrentIndex(indice_sexo if indice_sexo >= 0 else 0)
 
-        self.text_inf_add_cli.setPlainText(cliente[20] or "")
-        self.status_atual = cliente[21] or "A"
+        self.text_inf_add_cli.setPlainText(cliente.get("info_adicional") or "")
+        self.status_atual = cliente.get("status") or "A"
 
-        self.edit_nome_mae.setText(cliente[22] or "")
-        self.edit_loc_trab.setText(cliente[23] or "")
-        self.edit_carg_trab.setText(cliente[24] or "")
-        self.edit_salario.setText(cliente[25] or "")
-        self.edit_tel_trab.setText(cliente[26] or "")
+        self.edit_nome_mae.setText(cliente.get("nome_mae") or "")
+        self.edit_loc_trab.setText(cliente.get("local_trabalho") or "")
+        self.edit_carg_trab.setText(cliente.get("cargo") or "")
+        self.edit_salario.setText(str(cliente.get("salario") or ""))
+        self.edit_tel_trab.setText(cliente.get("telefone_trabalho") or "")
 
-        self.edit_nome_pai.setText(cliente[27] or "")
-        self.edit_nacion_cli.setText(cliente[28] or "")
-        self.edit_natur_cli.setText(cliente[29] or "")
-        self.edit_temp_serv.setText(cliente[30] or "")
-        self.edit_cep_trab.setText(cliente[31] or "")
-        self.edit_end_trab.setText(cliente[32] or "")
-        self.edit_num_trab.setText(cliente[33] or "")
-        self.edit_bairro_trab.setText(cliente[34] or "")
-        self.edit_cid_trab.setText(cliente[35] or "")
-        self.edit_est_trab.setText(cliente[36] or "")
+        self.edit_nome_pai.setText(cliente.get("nome_pai") or "")
+        self.edit_nacion_cli.setText(cliente.get("cidade_nascimento") or "")
+        self.edit_natur_cli.setText(cliente.get("pais_nascimento") or "")
+        self.edit_temp_serv.setText(cliente.get("tempo_servico") or "")
+        self.edit_cep_trab.setText(cliente.get("cep_trabalho") or "")
+        self.edit_end_trab.setText(cliente.get("endereco_trabalho") or "")
+        self.edit_num_trab.setText(cliente.get("numero_trabalho") or "")
+        self.edit_bairro_trab.setText(cliente.get("bairro_trabalho") or "")
+        self.edit_cid_trab.setText(cliente.get("cidade_trabalho") or "")
+        self.edit_est_trab.setText(cliente.get("uf_trabalho") or "")
 
-        tipo_pessoa = cliente[2] or ""
+        tipo_pessoa = cliente.get("tipo_pessoa") or ""
         if tipo_pessoa == "J":
             self.check_jur.setChecked(True)
         elif tipo_pessoa == "F":
@@ -1352,6 +1372,8 @@ class CadCliente(QWidget):
             if not self.check_jur.isChecked() and not self.check_fis.isChecked():
                 self.check_jur.setChecked(True)
 
+
+
     def alterar_status_cliente(self):
         codigo = self.edit_cod_cli.text().strip()
         if not codigo:
@@ -1360,26 +1382,31 @@ class CadCliente(QWidget):
 
         cliente = self.service.buscar_por_codigo(codigo)
         if not cliente:
-            QMessageBox.warning(self, "Erro", "Cliente nao encontrado.")
+            QMessageBox.warning(self, "Erro", "Cliente não encontrado.")
             return
 
-        if cliente[21] == "A":
+        status_atual = cliente.get("status")
+
+        if status_atual == "A":
             novo_status = "E"
             mensagem = "Deseja EXCLUIR este cliente?"
-            acao = "excluido"
+            acao = "excluído"
         else:
             novo_status = "A"
             mensagem = "Deseja ATIVAR este cliente?"
             acao = "ativado"
 
-        confirmacao = QMessageBox.question(
-            self,
-            "Confirmacao",
-            mensagem,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No,
-        )
-        if confirmacao != QMessageBox.StandardButton.Yes:
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Confirmação")
+        msg.setText(mensagem)
+
+        btn_sim = msg.addButton("Sim", QMessageBox.ButtonRole.YesRole)
+        btn_nao = msg.addButton("Não", QMessageBox.ButtonRole.NoRole)
+
+        msg.setDefaultButton(btn_nao)
+        msg.exec()
+
+        if msg.clickedButton() != btn_sim:
             return
 
         resultado = self.service.alterar_status(codigo, novo_status)
@@ -1390,6 +1417,8 @@ class CadCliente(QWidget):
             self.acao_buscar_cliente()
         else:
             QMessageBox.warning(self, "Erro", resultado["mensagem"])
+
+
 
     def novo_cliente(self):
         self.limpar_campos()

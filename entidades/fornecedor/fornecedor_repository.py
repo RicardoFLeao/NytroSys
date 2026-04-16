@@ -87,58 +87,90 @@ class FornecedorRepository:
         try:
             conexao = conectar()
 
-            mapa_campos = {
-                "Código": "codigo",
-                "Nome / Razão Social": "razao_social",
-                "CPF / CNPJ": "cpf_cnpj",
-                "WhatsApp": "whatsapp",
-                "Email": "email",
-                "E-mail": "email",
-            }
-
-            campo = mapa_campos.get(opcao)
-
             sql = """
-                SELECT codigo, razao_social, cpf_cnpj, whatsapp, email, status
+                SELECT codigo, nome_fantasia, razao_social, cpf_cnpj, whatsapp, email, status
                 FROM fornecedores
                 WHERE 1=1
             """
             parametros = []
 
             if status == "Ativos":
-                sql += " AND status = %s"
-                parametros.append("A")
-            elif status == "Exclúidos" or status == "Excluídos":
-                sql += " AND status = %s"
-                parametros.append("E")
-            elif status == "Todos":
-                pass
+                sql += " AND status IN (%s, %s)"
+                parametros.extend(["A", "S"])
+            elif status in ("Excluídos", "Excluidos"):
+                sql += " AND status IN (%s, %s)"
+                parametros.extend(["E", "N"])
 
-            if not buscar_todos and campo and texto:
-                if opcao in ("CPF / CNPJ", "WhatsApp"):
-                    sql += f"""
+            if not buscar_todos and texto:
+                if opcao == "Código":
+                    sql += " AND codigo LIKE %s"
+                    parametros.append(f"%{texto}%")
+
+                elif opcao == "Nome":
+                    sql += " AND (nome_fantasia LIKE %s OR razao_social LIKE %s)"
+                    parametros.append(f"%{texto}%")
+                    parametros.append(f"%{texto}%")
+
+                elif opcao == "Razão Social":
+                    sql += " AND razao_social LIKE %s"
+                    parametros.append(f"%{texto}%")
+
+                elif opcao == "CPF / CNPJ":
+                    sql += """
                         AND REPLACE(
                             REPLACE(
                                 REPLACE(
                                     REPLACE(
-                                        REPLACE({campo}, '.', ''),
+                                        REPLACE(cpf_cnpj, '.', ''),
                                     '-', ''),
                                 '/', ''),
                             '(', ''),
                         ')', '') LIKE %s
                     """
                     parametros.append(f"%{texto}%")
-                else:
-                    sql += f" AND {campo} LIKE %s"
+
+                elif opcao == "WhatsApp":
+                    sql += """
+                        AND REPLACE(
+                            REPLACE(
+                                REPLACE(
+                                    REPLACE(
+                                        REPLACE(whatsapp, '.', ''),
+                                    '-', ''),
+                                '/', ''),
+                            '(', ''),
+                        ')', '') LIKE %s
+                    """
                     parametros.append(f"%{texto}%")
 
-            sql += " ORDER BY razao_social"
+                elif opcao in ("Email", "E-mail"):
+                    sql += " AND email LIKE %s"
+                    parametros.append(f"%{texto}%")
+
+            if opcao == "Nome":
+                sql += " ORDER BY nome_fantasia, razao_social"
+            else:
+                sql += " ORDER BY razao_social, nome_fantasia"
+
 
             with conexao.cursor() as cursor:
                 cursor.execute(sql, tuple(parametros))
                 resultados = cursor.fetchall()
 
-            return resultados
+            lista = []
+
+            for linha in resultados:
+                lista.append({
+                    "codigo": linha.get("codigo"),
+                    "nome_fantasia": linha.get("nome_fantasia"),
+                    "razao_social": linha.get("razao_social"),
+                    "cpf_cnpj": linha.get("cpf_cnpj"),
+                    "whatsapp": linha.get("whatsapp"),
+                    "email": linha.get("email"),
+                    "status": linha.get("status"),
+                })
+
+            return lista
 
         except Exception as e:
             print("ERRO NA BUSCA DE FORNECEDOR:", e)
@@ -149,6 +181,7 @@ class FornecedorRepository:
         finally:
             if conexao is not None:
                 conexao.close()
+
 
     def buscar_por_codigo(self, codigo):
         conexao = None

@@ -106,3 +106,30 @@ class MarcaRepository:
         finally:
             if conexao:
                 conexao.close()
+
+    def buscar_por_codigo(self, codigo):
+        conexao = None
+        try:
+            conexao = conectar()
+            cursor = conexao.cursor()
+
+            sql = "SELECT codigo, nome FROM marcas_produto WHERE codigo = %s"
+            cursor.execute(sql, (codigo,))
+
+            resultado = cursor.fetchone()
+
+            if resultado:
+                return {
+                    "codigo": resultado[0],
+                    "nome": resultado[1]
+                }
+
+            return None
+
+        except Exception as e:
+            print(f"Erro ao buscar marca: {e}")
+            return None
+
+        finally:
+            if conexao:
+                conexao.close()

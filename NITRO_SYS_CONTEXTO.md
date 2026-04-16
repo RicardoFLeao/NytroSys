@@ -1,298 +1,207 @@
+# NITRO SYS — PROGRESSO 15/04/2026
 
+## ✅ O QUE FOI FINALIZADO HOJE
 
+### 🔹 MÓDULO FORNECEDOR (REFATORAÇÃO COMPLETA)
 
-PROMPT PADRÃO - NITRO SYS
+- Separação correta:
+  - Nome → nome_fantasia
+  - Razão Social → razao_social
 
-Você é um desenvolvedor sênior especialista em Python, PyQt6 e MySQL.
-
-Sua função é me ajudar a desenvolver o sistema comercial desktop chamado
-Nitro Sys, seguindo boas práticas de programação, organização e clareza.
-
-COMO RESPONDER: - use respostas o mais simples possivel, em etapas sem encher a tela, ex. de respostas: o arquivo ... vamos mudar a função ..., ou está parte da função ... por está parte ...
-
-PADRÃO DE CÓDIGO: - Código limpo e organizado - Funções com nomes
-simples (ex: menu(), salvar()) - Separar interface, lógica e banco -
-Usar try/except no banco - Fechar conexões corretamente - Evitar
-complexidade desnecessária
-
-REGRAS DO PROJETO: (Cole aqui o conteúdo do seu NITRO_SYS_CONTEXTO.md)
-
-COMO AJUDAR: - Sugerir melhorias - Corrigir erros - Explicar passo a
-passo - Guiar no desenvolvimento
-
-IMPORTANTE: - Não complicar soluções simples - Priorizar clareza -
-Pensar como sistema real
-
-OBJETIVO: Ajudar a construir um sistema comercial completo e evoluir
-como desenvolvedor.
-
-# 🚀 NITRO SYS — CONTEXTO GERAL (15/04/2026)
+- Ajustes realizados:
+  - Tela `cad_for.py` corrigida
+  - Busca funcionando corretamente por:
+    - Nome
+    - Razão Social
+    - Código
+  - Cabeçalho da tabela dinâmico
+  - Repository ajustado para retornar `dict`
+  - Service padronizado
 
 ---
 
-# 🧠 VISÃO DO PROJETO
+### 🔹 PADRÃO IMPORTANTE DEFINIDO
 
-Sistema comercial desktop desenvolvido com:
+**Erro corrigido:**
 
-- Python
-- PyQt6
-- MySQL (PyMySQL)
+KeyError: 0
+
+
+**Causa:**
+Uso de índice em dados que agora são `dict`
+
+**Solução padrão:**
+```python
+fornecedor.get("campo")
+🔹 TELA DE PESQUISA DE FORNECEDOR
+
+Arquivo:
+
+consulta/tela_pesq_fornecedor.py
+
+Implementado:
+
+Busca por Nome / Razão Social / Código
+Navegação:
+Digitação → filtra
+↓ → vai para tabela
+ENTER → seleciona
+Duplo clique → seleciona
+Retorno para tela de origem
+🔹 INTEGRAÇÃO COM CADASTRO DE PRODUTO
+
+Arquivo:
+
+adm_prod/cad_prod.py
+
+Fluxo completo funcionando:
+
+Digita código do fornecedor → busca automático ✔️
+F8 no campo → abre tela de pesquisa ✔️
+Duplo clique / ENTER → retorna fornecedor ✔️
+Preenche:
+cod_fornecedor
+nome_fornecedor ✔️
+Salva corretamente no banco ✔️
+🔹 VALIDAÇÃO NO SERVICE
+
+Arquivo:
+
+produto_service.py
+Valida fornecedor por código
+Bloqueia fornecedor excluído
+Corrigido acesso:
+fornecedor.get("status")
+🔹 TRATAMENTO DE DADOS
+
+Função _tratar_dados corrigida:
+
+Sempre busca o fornecedor no banco
+Prioridade:
+nome_fantasia
+razao_social
+Salva nome padronizado (UPPER)
+🧠 CONCEITOS IMPORTANTES DEFINIDOS
+📌 Separação correta
+cod_fornecedor → relacionamento
+nome_fornecedor → histórico (snapshot)
+📌 Arquitetura padrão consolidada
+Tela (PyQt)
+   ↓
+Service (regras)
+   ↓
+Repository (SQL)
+   ↓
+Banco
+📌 Padrão de retorno
+
+Sempre usar:
+
+dict
+
+Nunca mais usar:
+
+linha[0]
+linha[1]
+🚀 PRÓXIMO PASSO — MÓDULO ESTOQUE (EVOLUÇÃO)
+🔥 FOCO: MOVIMENTAÇÃO DE ESTOQUE
+📌 NOVA ESTRUTURA DEFINIDA
+1) Tela de Pesquisa de Produto (MOVIMENTAÇÃO)
+
+Arquivo:
+
+estoque/tela_pesq_prod_mov.py
 
 Objetivo:
-Construir um sistema **profissional, modular, organizado e escalável**, seguindo boas práticas.
 
----
+Busca rápida e eficiente (base para vendas)
 
-# 🏗️ ARQUITETURA PADRÃO
+Campos da tabela:
 
-Separação clara:
+Código
+Descrição
+Quantidade
+Preço
+Marca
+Localização
+2) Tela de Informações do Produto
 
-- Interface → telas (PyQt)
-- Service → regras de negócio
-- Repository → acesso ao banco
-- bd.py → apenas conexão
+Arquivo:
 
-✔ Tela NÃO faz SQL direto  
-✔ Repository NÃO tem regra de negócio  
-✔ Service controla fluxo  
+estoque/dialog_info_produto.py
 
----
+Tipo:
 
-# 📦 PADRÃO DE STATUS (IMPORTANTE)
+QDialog
 
-Padronizado em todo o sistema:
+Vai mostrar:
 
-| Valor | Significado |
-|------|-----------|
-| A    | Ativo     |
-| E    | Excluído  |
+Descrição completa
+Aplicação
+Referências:
+fornecedor
+original
+similar
+Fornecedor
+Marca
+Estoque
+Localização completa
+Tipo quantidade
+📸 FOTO DO PRODUTO
+📸 SISTEMA DE IMAGENS (IMPORTANTE)
 
-✔ Já aplicado em:
-- Marcas
-- Produtos
-- Fornecedores
+Estratégia:
 
----
+NÃO salvar imagem no banco
+Salvar caminho da imagem
 
-# 📦 MÓDULOS
+Exemplo:
 
----
+foto_produto = "imagens/produtos/123.jpg"
 
-## 🟢 MÓDULO MARCAS
+Benefícios:
 
-### ✔ Implementado
+Mais leve
+Mais rápido
+Mais fácil manutenção
+🧩 FLUXO FUTURO
+Pesquisa
 
-- Tela completa (Consulta + Cadastro)
-- Repository:
-  - salvar()
-  - atualizar()
-  - listar()
-  - alterar_status()
-- Service:
-  - salvar_marca()
-  - atualizar_marca()
-  - listar_marcas()
-  - alterar_status_marca()
+→ encontra produto rápido
 
-### ✔ Funcionalidades
+Informações (F2 ou botão)
 
-- Cadastro
-- Alteração
-- Exclusão lógica (A ↔ E)
-- Filtro por:
-  - Ativo
-  - Excluído
-  - Todos
-- Pesquisa dinâmica (digitando)
-- F8 → busca geral
-- Status exibido como:
-  - Ativo
-  - Excluído (vermelho)
+→ abre dialog com detalhes + foto
 
-### ✔ UX
+Seleção
 
-- Botão dinâmico:
-  - Excluir ↔ Ativar
-- Tabela limpa ao iniciar
+→ retorna para movimentação / venda
 
----
+🎯 OBJETIVO FINAL
 
-## 🟢 MÓDULO PRODUTOS
+Criar uma base reutilizável para:
 
-### ✔ Banco ajustado
+Movimentação de estoque
+Vendas
+Orçamentos
+Consulta rápida
+⚠️ OBSERVAÇÃO
 
-- Coluna:
-  - ativo → status
-- Valores:
-  - S → A
+Hoje foi uma evolução grande:
 
----
+Integração real entre módulos
+Padrão profissional aplicado
+Base sólida para próximos módulos
+📅 PRÓXIMA SESSÃO
 
-### ✔ Repository
+Começar por:
 
-- salvar()
-- atualizar()
-- listar_para_consulta()
-- pesquisar_para_consulta()
-- buscar_por_codigo()
-- alterar_status()
+Criar tela_pesq_prod_mov.py
+Estruturar tabela
+Implementar busca
+Preparar retorno do produto
+💬 STATUS
 
-🚫 Removido:
-- delete físico
-
----
-
-### ✔ Service
-
-- salvar_produto()
-- atualizar_produto()
-- pesquisar_produtos_para_consulta()
-- buscar_produto_por_codigo()
-- alterar_status_produto()
-
----
-
-### ✔ Tela (`cad_prod`)
-
-#### Consulta
-- Pesquisa por:
-  - descrição
-  - código
-  - código de barras
-  - referências
-- F8 → busca
-- Combo status:
-  - Ativo
-  - Excluído
-  - Todos
-- Checkbox "Todos" (redundante, manter por enquanto)
-
-#### Tabela
-- Código
-- Descrição
-- Quantidade
-- Preço
-- Status
-
-✔ Status:
-- Ativo normal
-- Excluído vermelho
-
----
-
-### ✔ Cadastro
-
-- Todos os campos principais funcionando
-- Cálculo automático:
-  - preço venda
-  - margem
-- Validações básicas
-- Integração com fornecedor
-
----
-
-### ✔ Exclusão lógica
-
-- Botão dinâmico:
-  - Excluir ↔ Ativar
-- Funciona direto pela tabela
-- Não depende do cadastro carregado
-
----
-
-# 🟡 NOVO: INTEGRAÇÃO COM MARCA
-
-## ✔ UI criada
-
-Na aba **Abastecimento**:
-
-- edit_nome_marca
-- edit_cod_marca (não usado manualmente por enquanto)
-
----
-
-## ✔ F8 no campo marca
-
-Funcionando:
-
-- foco no campo marca
-- F8 abre TelaMarcaProd
-
----
-
-# 🔥 ONDE PARAMOS
-
-## 🎯 PONTO ATUAL
-
-Precisamos implementar:
-
-### 👉 seleção de marca na TelaMarcaProd
-
-Regra:
-
-- Se abrir normal → NÃO faz nada
-- Se abrir pelo cad_prod → seleciona marca
-
----
-
-# 🚀 PRÓXIMO PASSO
-
-## 1. TelaMarcaProd precisa:
-
-### ✔ receber tela origem
-```python
-def __init__(self, tela_origem=None):
-✔ detectar duplo clique
-self.tabela_resultado.cellDoubleClicked.connect(self.selecionar_marca)
-✔ criar função:
-def selecionar_marca(self):
-    if self.tela_origem is None:
-        return
-✔ comportamento:
-pega linha selecionada
-valida status (não permitir excluído)
-devolve:
-código
-nome
-fecha tela
-2. cad_prod
-
-Na abertura:
-
-TelaMarcaProd(self)
-🔮 PRÓXIMOS PASSOS FUTUROS
-🔹 Marca
-carregar marca no produto
-salvar corretamente no banco
-mostrar na consulta (opcional)
-🔹 Produto
-filtro mais avançado
-integração com estoque
-melhorar UX
-🔹 Sistema geral
-padronizar todos módulos
-criar tela padrão de pesquisa (genérica)
-criar relatórios
-🧠 APRENDIZADO IMPORTANTE
-
-✔ sistema deixou de ser "tela"
-✔ agora existe padrão de arquitetura
-✔ fluxo consistente entre módulos
-✔ reutilização de lógica
-
-🧠 FRASE DO MOMENTO
-
-"Agora não estamos mais fazendo telas… estamos construindo um sistema."
-
-🔚 OBS FINAL
-
-Projeto está em excelente evolução:
-
-✔ estrutura profissional
-✔ padrões definidos
-✔ código cada vez mais limpo
-
-👉 próximo passo (marca ↔ produto) é um dos mais importantes do sistema.
-
-
-
+✔️ Sistema mais estável
+✔️ Código mais limpo
+✔️ Arquitetura consistente

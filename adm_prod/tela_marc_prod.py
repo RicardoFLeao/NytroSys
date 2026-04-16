@@ -32,8 +32,9 @@ from util.fun_basicas import LineEditComEnter
 
 
 class TelaMarcaProd(QWidget):
-    def __init__(self):
+    def __init__(self, tela_origem=None):
         super().__init__()
+        self.tela_origem = tela_origem
         self.setWindowTitle('Marca dos Produtos')
         self.setWindowIcon(QIcon('imagens/icone.png'))
         self.setFixedSize(800,600)
@@ -44,6 +45,8 @@ class TelaMarcaProd(QWidget):
         QShortcut(QKeySequence('Esc'), self).activated.connect(self.sair)
         QShortcut(QKeySequence('F5'), self).activated.connect(self.novo)
         self.tabela_resultado.setRowCount(0)
+        self.edit_pesq.setFocus()
+        self.edit_pesq.installEventFilter(self)
 
     def componentes(self):
         nometela = QLabel('Marca dos Produtos')
@@ -74,6 +77,7 @@ class TelaMarcaProd(QWidget):
         self.edit_pesq = criar_lineedit_padrao()
         self.edit_pesq.setMinimumWidth(300)
         self.edit_pesq.textChanged.connect(self.pesquisar_digito)
+        self.edit_pesq.returnPressed.connect(self.focar_tabela)
 
         hbox_pesquisa = QHBoxLayout()
         hbox_pesquisa.addWidget(label_pesq)
@@ -140,6 +144,8 @@ class TelaMarcaProd(QWidget):
         header = self.tabela_resultado.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.tabela_resultado.cellDoubleClicked.connect(self.selecionar_marca)
+        self.tabela_resultado.itemActivated.connect(self.selecionar_marca)
 
         self.tabela_resultado.setColumnWidth(2, 80)
 
@@ -413,6 +419,45 @@ class TelaMarcaProd(QWidget):
 
       
         self.preencher_tabela(status_filtro=status_filtro)
+
+
+    def selecionar_marca(self, *args):
+        if self.tela_origem is None:
+            return
+
+        linha = self.tabela_resultado.currentRow()
+
+        if linha < 0:
+            return
+
+        codigo = self.tabela_resultado.item(linha, 0).text()
+        nome = self.tabela_resultado.item(linha, 1).text()
+        status = self.tabela_resultado.item(linha, 2).text()
+
+        if status == "Excluído":
+            return
+        print("MARCA SELECIONADA:", codigo)
+        self.tela_origem.cod_marca = int(codigo)
+        self.tela_origem.edit_nome_marca.setText(nome)
+
+        self.close()
+
+    def focar_tabela(self):
+        if self.tabela_resultado.rowCount() > 0:
+            self.tabela_resultado.setCurrentCell(0, 0)
+            self.tabela_resultado.setFocus()
+
+
+    def eventFilter(self, obj, event):
+        if obj == self.edit_pesq:
+            if event.type() == event.Type.KeyPress:
+                if event.key() == Qt.Key.Key_Down:
+                    self.focar_tabela()
+                    return True
+
+        return super().eventFilter(obj, event)
+
+
 
 
     def sair(self):

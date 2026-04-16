@@ -1,16 +1,16 @@
 from adm_prod.produto_repository import ProdutoRepository
 from entidades.fornecedor.fornecedor_repository import FornecedorRepository
+from adm_prod.marca_repository import MarcaRepository
 
 
 class ProdutoService:
     def __init__(self, repository=None, fornecedor_repository=None):
         self.repository = repository or ProdutoRepository()
         self.fornecedor_repository = fornecedor_repository or FornecedorRepository()
-
+        self.repository_marca = MarcaRepository()
 
     def listar_produtos_para_consulta(self):
         return self.repository.listar_para_consulta()
-
 
     def pesquisar_produtos_para_consulta(self, opcao, texto, buscar_todos=False, status=None):
         texto = (texto or "").strip().upper()
@@ -30,15 +30,15 @@ class ProdutoService:
             return None
         return self.repository.buscar_por_codigo(codigo)
 
-
     def salvar_produto(self, dados_formulario):
         validacao = self._validar_dados(dados_formulario)
         if not validacao["sucesso"]:
             return validacao
 
         dados_tratados = self._tratar_dados(dados_formulario)
-        return self.repository.salvar(dados_tratados)
 
+        dados_tratados["cod_marca"] = dados_formulario.get("cod_marca")
+        return self.repository.salvar(dados_tratados)
 
     def atualizar_produto(self, dados_formulario):
         codigo = (dados_formulario.get("codigo") or "").strip()
@@ -52,7 +52,6 @@ class ProdutoService:
         dados_tratados = self._tratar_dados(dados_formulario)
         return self.repository.atualizar(dados_tratados)
 
-
     def calcular_preco_venda(self, preco_custo_texto, margem_texto):
         preco_custo = self._to_float(preco_custo_texto)
         margem = self._to_float(margem_texto)
@@ -62,7 +61,6 @@ class ProdutoService:
 
         return preco_custo + (preco_custo * margem / 100)
 
-
     def calcular_margem_lucro(self, preco_custo_texto, preco_venda_texto):
         preco_custo = self._to_float(preco_custo_texto)
         preco_venda = self._to_float(preco_venda_texto)
@@ -71,7 +69,6 @@ class ProdutoService:
             raise ValueError("Preço de custo deve ser maior que zero.")
 
         return ((preco_venda - preco_custo) / preco_custo) * 100
-
 
     def _validar_dados(self, dados):
         descricao = (dados.get("descricao") or "").strip()
@@ -90,25 +87,30 @@ class ProdutoService:
 
         cod_fornecedor = (dados.get("cod_fornecedor") or "").strip()
         if cod_fornecedor:
-            fornecedor = self.fornecedor_repository.buscar_por_codigo(cod_fornecedor)
+            fornecedor = self.fornecedor_repository.buscar_por_codigo(
+                cod_fornecedor)
             if not fornecedor:
                 return {"sucesso": False, "mensagem": "Fornecedor não foi encontrado."}
 
-            status = fornecedor[21] if len(fornecedor) > 21 else ""
+            status = fornecedor.get("status", "")
             if status == "E":
                 return {"sucesso": False, "mensagem": "Fornecedor informado está excluído."}
 
         return {"sucesso": True, "mensagem": ""}
-
 
     def _tratar_dados(self, dados):
         cod_fornecedor = (dados.get("cod_fornecedor") or "").strip()
         nome_fornecedor = (dados.get("nome_fornecedor") or "").strip().upper()
 
         if cod_fornecedor:
-            fornecedor = self.fornecedor_repository.buscar_por_codigo(cod_fornecedor)
+            fornecedor = self.fornecedor_repository.buscar_por_codigo(
+                cod_fornecedor)
             if fornecedor:
-                nome_fornecedor = (fornecedor[3] or "").strip().upper()
+                nome_fornecedor = (
+                    fornecedor.get("nome_fantasia")
+                    or fornecedor.get("razao_social")
+                    or ""
+                ).strip().upper()
 
         return {
             "codigo": (dados.get("codigo") or "").strip(),
@@ -129,8 +131,8 @@ class ProdutoService:
             "margem_lucro": self._to_float(dados.get("margem_lucro")),
             "desconto": self._to_float(dados.get("desconto")),
             "tipo_quantidade": (dados.get("tipo_quantidade") or "").strip(),
+            "cod_marca": dados.get("cod_marca"),
         }
-
 
     def _to_float(self, valor):
         texto = str(valor or "").strip()
@@ -160,3 +162,6 @@ class ProdutoService:
             mensagem = "Produto ativado com sucesso."
 
         return self.repository.alterar_status(codigo, novo_status)
+
+    def buscar_marca_por_codigo(self, codigo):
+        return self.repository_marca.buscar_por_codigo(codigo)

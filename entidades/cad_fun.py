@@ -634,6 +634,7 @@ class CadFuncionarios(QWidget):
         self.comb_cargo_fun.setCurrentIndex(0)
         self.edit_nome_func.setFocus()
 
+
     def acao_buscar_funcionario(self, *args):
         texto = self.lnedit_pesq.text().strip()
         opcao = self.comb_opc.currentText()
@@ -648,15 +649,27 @@ class CadFuncionarios(QWidget):
         self.tabela_resultado.setRowCount(len(resultados))
 
         for linha, funcionario in enumerate(resultados):
-            for coluna, valor in enumerate(funcionario):
+            valores = [
+                funcionario.get("codigo", ""),
+                funcionario.get("nome", ""),
+                funcionario.get("cargo", ""),
+                funcionario.get("whatsapp", ""),
+                funcionario.get("email", ""),
+                funcionario.get("status", ""),
+            ]
+
+            for coluna, valor in enumerate(valores):
                 item = QTableWidgetItem(str(valor) if valor is not None else "")
+
                 if coluna == 5:
                     if valor == "A":
                         item.setText("Ativo")
                     elif valor == "E":
-                        item.setText("Excluido")
+                        item.setText("Excluído")
                         item.setForeground(Qt.GlobalColor.red)
+
                 self.tabela_resultado.setItem(linha, coluna, item)
+
 
     def abrir_funcionario_selecionado(self):
         linha = self.tabela_resultado.currentRow()
@@ -739,9 +752,11 @@ class CadFuncionarios(QWidget):
             self.edit_cid_func.setText(dados.get('localidade', '').upper())
             self.edit_est_func.setText(dados.get('uf', '').upper())
 
+
     def ao_trocar_aba(self, index):
         if index == 1:
             self.edit_nome_func.setFocus()
+
 
     def alterar_status_funcionario(self):
         codigo = self.edit_cod.text().strip()
@@ -756,25 +771,28 @@ class CadFuncionarios(QWidget):
 
         if funcionario.get("status") == "A":
             novo_status = "E"
-            mensagem = "Deseja realmente EXCLUIR este funcionario?"
+            mensagem = "Deseja EXCLUIR este funcionario?"
             acao = "excluido"
         else:
             novo_status = "A"
-            mensagem = "Deseja realmente ATIVAR este funcionario?"
+            mensagem = "Deseja ATIVAR este funcionario?"
             acao = "ativado"
 
-        confirmacao = QMessageBox.question(
-            self,
-            "Confirmacao",
-            mensagem,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No
-        )
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Confirmação")
+        msg.setText(mensagem)
 
-        if confirmacao != QMessageBox.StandardButton.Yes:
+        btn_sim = msg.addButton("Sim", QMessageBox.ButtonRole.YesRole)
+        btn_nao = msg.addButton("Não", QMessageBox.ButtonRole.NoRole)
+
+        msg.setDefaultButton(btn_nao)
+        msg.exec()
+
+        if msg.clickedButton() != btn_sim:
             return
 
         resultado = self.service.alterar_status(codigo, novo_status)
+
         if resultado["sucesso"]:
             QMessageBox.information(self, "Sucesso", f"Funcionario {acao} com sucesso!")
             self.limpar_campos()
@@ -782,6 +800,8 @@ class CadFuncionarios(QWidget):
             self.acao_buscar_funcionario()
         else:
             QMessageBox.warning(self, "Erro", resultado["mensagem"])
+
+
 
     def novo_funcionario(self):
         self.limpar_campos()
