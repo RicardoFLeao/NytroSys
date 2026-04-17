@@ -18,6 +18,7 @@ from util.fun_basicas import(LineEditComEnter)
 from util.fun_basicas import texto_para_float, formatar_preco
 from adm_prod.produto_service import ProdutoService
 from adm_prod.tela_marc_prod import TelaMarcaProd
+from adm_prod.tela_dados_add_prod import TelaDadosAdicionaisProd
 
 
 class CadProd(QWidget):
@@ -1120,12 +1121,22 @@ class CadProd(QWidget):
         vbox_desconto_preco.addWidget(desconto)
         vbox_desconto_preco.addWidget(self.edit_desconto)
 
+        self.btn_dados_adc = criar_botao()
+        self.btn_dados_adc.setText("Dados Adicinais")
+        self.btn_dados_adc.clicked.connect(self.abrir_dados_adicionais)
+
+        hbox_btn_adicinais = QHBoxLayout()
+        hbox_btn_adicinais.addWidget(self.btn_dados_adc)
+
+
         #cria o horizontal layout dos preços
         hbox_linha_preco = QHBoxLayout()
         hbox_linha_preco.setAlignment(Qt.AlignmentFlag.AlignLeft)
         hbox_linha_preco.addLayout(vbox_preco_custo)
         hbox_linha_preco.addLayout(vbox_preco_venda)
         hbox_linha_preco.addLayout(vbox_desconto_preco)
+        hbox_linha_preco.addStretch()
+        hbox_linha_preco.addLayout(hbox_btn_adicinais)
 
 
         layout_geral_aba2 = QVBoxLayout()
@@ -1204,6 +1215,11 @@ class CadProd(QWidget):
         self.edit_margem_lucro.setText(str(produto.get("margem_lucro") or ""))
         self.edit_desconto.setText(str(produto.get("desconto") or ""))
         self.combo_tipo_quant.setCurrentText(produto.get("tipo_quantidade") or "Inteiro")
+
+        self.foto_1 = produto.get("foto_1") or ""
+        self.foto_2 = produto.get("foto_2") or ""
+        self.foto_3 = produto.get("foto_3") or ""
+
 
         # 🔥 MARCA (busca direta no banco)
         self.cod_marca = produto.get("cod_marca")
@@ -1334,6 +1350,10 @@ class CadProd(QWidget):
 
         dados = self.coletar_dados_formulario()
 
+        print("CAD_PROD foto_1:", dados.get("foto_1"))
+        print("CAD_PROD foto_2:", dados.get("foto_2"))
+        print("CAD_PROD foto_3:", dados.get("foto_3"))
+
         dados["cod_marca"] = getattr(self, "cod_marca", None)
 
         if dados["codigo"]:
@@ -1348,6 +1368,7 @@ class CadProd(QWidget):
         else:
             QMessageBox.warning(self, "Aviso", resultado["mensagem"])
             self.edit_desc.setFocus()
+
 
 
 
@@ -1479,7 +1500,13 @@ class CadProd(QWidget):
             "margem_lucro": (self.edit_margem_lucro.text() or "").strip(),
             "desconto": (self.edit_desconto.text() or "").strip(),
             "tipo_quantidade": self.combo_tipo_quant.currentText(),
+            "foto_1": getattr(self, "foto_1", ""),
+            "foto_2": getattr(self, "foto_2", ""),
+            "foto_3": getattr(self, "foto_3", ""),
         }
+    
+
+
     def abrir_pesquisa_fornecedor(self):
         from consulta.tela_pesq_fornecedor import TelaPesqFornecedor
         self.janela_fornecedor = TelaPesqFornecedor(self)
@@ -1521,6 +1548,28 @@ class CadProd(QWidget):
         nome = fornecedor.get("nome_fantasia") or fornecedor.get("razao_social") or ""
         self.selecionar_fornecedor(codigo, nome)
 
+
+    def abrir_dados_adicionais(self):
+        self.tela_dados = TelaDadosAdicionaisProd(self)
+
+        self.tela_dados.edit_caminho_1.setText(getattr(self, "foto_1", ""))
+        self.tela_dados.edit_caminho_2.setText(getattr(self, "foto_2", ""))
+        self.tela_dados.edit_caminho_3.setText(getattr(self, "foto_3", ""))
+
+        self.tela_dados.carregar_imagem_1()
+        self.tela_dados.carregar_imagem_2()
+        self.tela_dados.carregar_imagem_3()
+
+        self.tela_dados.show()
+
+    def receber_dados_adicionais(self, foto_1, foto_2, foto_3):
+        self.foto_1 = foto_1
+        self.foto_2 = foto_2
+        self.foto_3 = foto_3
+
+        print("Foto 1:", self.foto_1)
+        print("Foto 2:", self.foto_2)
+        print("Foto 3:", self.foto_3)
 
 
     def eventFilter(self, obj, event):

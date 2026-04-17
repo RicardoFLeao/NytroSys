@@ -14,6 +14,9 @@ class ProdutoRepository:
                 cod_marca = dados.get("cod_marca")
 
                 print("REPOSITORY cod_marca:", cod_marca)
+                print("REPOSITORY foto_1:", dados.get("foto_1"))
+                print("REPOSITORY foto_2:", dados.get("foto_2"))
+                print("REPOSITORY foto_3:", dados.get("foto_3"))
 
                 sql = """
                     INSERT INTO produtos (
@@ -34,8 +37,12 @@ class ProdutoRepository:
                         preco_promocao,
                         desconto,
                         tipo_quantidade,
-                        cod_marca
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        cod_marca,
+                        foto_1,
+                        foto_2,
+                        foto_3,
+                        status
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
 
                 cursor.execute(
@@ -59,6 +66,10 @@ class ProdutoRepository:
                         dados["desconto"],
                         dados["tipo_quantidade"],
                         cod_marca,
+                        dados.get("foto_1"),
+                        dados.get("foto_2"),
+                        dados.get("foto_3"),
+                        "A",
                     ),
                 )
 
@@ -85,7 +96,6 @@ class ProdutoRepository:
         finally:
             if conexao is not None:
                 conexao.close()
-
 
 
 
@@ -117,7 +127,10 @@ class ProdutoRepository:
                         preco_promocao = %s,
                         desconto = %s,
                         tipo_quantidade = %s,
-                        cod_marca = %s
+                        cod_marca = %s,
+                        foto_1 = %s,
+                        foto_2 = %s,
+                        foto_3 = %s
                     WHERE codigo = %s
                 """
                 cursor.execute(
@@ -141,6 +154,9 @@ class ProdutoRepository:
                         dados["desconto"],
                         dados["tipo_quantidade"],
                         dados["cod_marca"],
+                        dados.get("foto_1"),
+                        dados.get("foto_2"),
+                        dados.get("foto_3"),
                         dados["codigo"],
                     ),
                 )

@@ -12,11 +12,13 @@ def tela_cad_fun(self):
     self.janela.show()
     self.close()
 
+
 def tela_cad_cli(self):
     from entidades.cad_cli import CadCliente
     self.janela = CadCliente()
     self.janela.show()
     self.close()
+
 
 def tela_cad_for(self):
     from entidades.cad_for import CadFornecedor
@@ -24,11 +26,13 @@ def tela_cad_for(self):
     self.janela.show()
     self.close()
 
+
 def tela_cad_prod(self):
     from adm_prod.cad_prod import CadProd
     self.janela = CadProd()
     self.janela.show()
     self.close()
+
 
 def tela_acerto_estoque(self):
     from estoque.tela_acerto_estoque import TelaAcertoEstoque
@@ -37,3 +41,8 @@ def tela_acerto_estoque(self):
     self.close()
 
 
+def tela_movimentacao(self):
+    from movimentacao.tela_movimentacao import TelaMovimentacao
+    self.janela = TelaMovimentacao()
+    self.janela.show()
+    self.close()

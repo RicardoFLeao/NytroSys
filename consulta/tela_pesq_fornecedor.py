@@ -1,3 +1,8 @@
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from util.padrao import (
     criar_botao,
     criar_botao_sair,
@@ -18,11 +23,6 @@ from PyQt6.QtWidgets import (
     QTableWidgetItem,
     QHeaderView,
 )
-import sys
-import os
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 
 class TelaPesqFornecedor(QWidget):
     def __init__(self, tela_origem=None):

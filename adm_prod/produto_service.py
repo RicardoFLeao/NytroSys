@@ -132,6 +132,9 @@ class ProdutoService:
             "desconto": self._to_float(dados.get("desconto")),
             "tipo_quantidade": (dados.get("tipo_quantidade") or "").strip(),
             "cod_marca": dados.get("cod_marca"),
+            "foto_1": (dados.get("foto_1") or "").strip(),
+            "foto_2": (dados.get("foto_2") or "").strip(),
+            "foto_3": (dados.get("foto_3") or "").strip(),
         }
 
     def _to_float(self, valor):

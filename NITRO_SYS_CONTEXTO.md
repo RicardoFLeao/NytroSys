@@ -1,207 +1,138 @@
-# NITRO SYS — PROGRESSO 15/04/2026
+# 🚀 NITRO SYS - CONTEXTO ATUAL (MOVIMENTAÇÃO / VENDA)
 
-## ✅ O QUE FOI FINALIZADO HOJE
+## ✅ SITUAÇÃO ATUAL
 
-### 🔹 MÓDULO FORNECEDOR (REFATORAÇÃO COMPLETA)
+### 🔷 ESTRUTURA DO MÓDULO MOVIMENTAÇÃO
 
-- Separação correta:
-  - Nome → nome_fantasia
-  - Razão Social → razao_social
 
-- Ajustes realizados:
-  - Tela `cad_for.py` corrigida
-  - Busca funcionando corretamente por:
-    - Nome
-    - Razão Social
-    - Código
-  - Cabeçalho da tabela dinâmico
-  - Repository ajustado para retornar `dict`
-  - Service padronizado
+movimentacao/
+tela_movimentacao.py
+saida/
+tela_saida.py
+
+
+✔ Tela intermediária criada (`tela_movimentacao.py`)  
+✔ Fluxo definido com subpastas (organização correta)  
+✔ Tela de saída (`tela_saida.py`) iniciada  
 
 ---
 
-### 🔹 PADRÃO IMPORTANTE DEFINIDO
+## 🎨 UI - TELA DE SAÍDA (VENDA)
 
-**Erro corrigido:**
+### ✔ O QUE JÁ ESTÁ PRONTO
 
-KeyError: 0
+- Tela base criada
+- Layout geral funcionando
+- Botões laterais:
+  - Vendas
+  - Consultas
+  - Relatórios
+- Quadro cinza principal criado (área de trabalho)
+- Layout alinhado corretamente (topo ajustado)
+- Visual já no padrão Nitro Sys
+
+👉 Resultado: Base sólida e profissional
+
+---
+
+## 🎯 OBJETIVO DA TELA
+
+Criar uma **tela única de venda (tipo PDV leve)** onde:
+
+- O usuário faz tudo sem trocar de tela
+- Alta velocidade de operação
+- UX simples e eficiente
+
+---
+
+## 🧠 ESTRUTURA DEFINIDA DA TELA (DENTRO DO QUADRO CINZA)
+
+### 🔷 TOPO DA VENDA
+- Nº Venda
+- Data/Hora automática
+- Checkboxes:
+  - Orçamento
+  - CFE
+  - NFE
+
+---
+
+### 🔷 DADOS PRINCIPAIS
+- Cliente
+- Vendedor
+- Desconto
+
+---
+
+### 🔷 RESUMO (lado direito)
+- Total Produtos
+- Total Venda
+
+---
+
+### 🔷 DIVISÃO VISUAL
+Label:
+
+PRODUTOS
 
 
-**Causa:**
-Uso de índice em dados que agora são `dict`
+---
 
-**Solução padrão:**
-```python
-fornecedor.get("campo")
-🔹 TELA DE PESQUISA DE FORNECEDOR
+### 🔷 TABELA DE PRODUTOS
+Colunas:
+- Código
+- Descrição
+- Quantidade
+- Preço
+- Subtotal
 
-Arquivo:
+---
 
-consulta/tela_pesq_fornecedor.py
+### 🔷 AÇÕES (rodapé)
+- Adicionar Produto
+- Remover Produto
+- Finalizar Venda
+- Cancelar
 
-Implementado:
+---
 
-Busca por Nome / Razão Social / Código
-Navegação:
-Digitação → filtra
-↓ → vai para tabela
-ENTER → seleciona
-Duplo clique → seleciona
-Retorno para tela de origem
-🔹 INTEGRAÇÃO COM CADASTRO DE PRODUTO
+## 🧱 ARQUITETURA (MANTER PADRÃO)
 
-Arquivo:
+- UI → `tela_saida.py`
+- Regras → `saida_service.py`
+- Banco → `saida_repository.py`
 
-adm_prod/cad_prod.py
+❗ Regra importante:
+- NÃO colocar lógica de negócio na UI
 
-Fluxo completo funcionando:
+---
 
-Digita código do fornecedor → busca automático ✔️
-F8 no campo → abre tela de pesquisa ✔️
-Duplo clique / ENTER → retorna fornecedor ✔️
-Preenche:
-cod_fornecedor
-nome_fornecedor ✔️
-Salva corretamente no banco ✔️
-🔹 VALIDAÇÃO NO SERVICE
+## 🚀 PRÓXIMOS PASSOS
 
-Arquivo:
+1. Montar topo da venda (nº + data + checkboxes)
+2. Criar campos cliente / vendedor / desconto
+3. Criar área de totais (lado direito)
+4. Criar label "PRODUTOS"
+5. Criar tabela
+6. Criar botões de ação
+7. Depois integrar com:
+   - pesquisa de produtos
+   - movimentação de estoque
+   - banco de dados
 
-produto_service.py
-Valida fornecedor por código
-Bloqueia fornecedor excluído
-Corrigido acesso:
-fornecedor.get("status")
-🔹 TRATAMENTO DE DADOS
+---
 
-Função _tratar_dados corrigida:
+## 💬 OBSERVAÇÃO
 
-Sempre busca o fornecedor no banco
-Prioridade:
-nome_fantasia
-razao_social
-Salva nome padronizado (UPPER)
-🧠 CONCEITOS IMPORTANTES DEFINIDOS
-📌 Separação correta
-cod_fornecedor → relacionamento
-nome_fornecedor → histórico (snapshot)
-📌 Arquitetura padrão consolidada
-Tela (PyQt)
-   ↓
-Service (regras)
-   ↓
-Repository (SQL)
-   ↓
-Banco
-📌 Padrão de retorno
+A base atual está muito boa.
 
-Sempre usar:
+👉 Esse módulo de venda é o coração do sistema  
+👉 O foco deve ser velocidade e simplicidade  
 
-dict
+---
 
-Nunca mais usar:
+## 🔥 STATUS
 
-linha[0]
-linha[1]
-🚀 PRÓXIMO PASSO — MÓDULO ESTOQUE (EVOLUÇÃO)
-🔥 FOCO: MOVIMENTAÇÃO DE ESTOQUE
-📌 NOVA ESTRUTURA DEFINIDA
-1) Tela de Pesquisa de Produto (MOVIMENTAÇÃO)
-
-Arquivo:
-
-estoque/tela_pesq_prod_mov.py
-
-Objetivo:
-
-Busca rápida e eficiente (base para vendas)
-
-Campos da tabela:
-
-Código
-Descrição
-Quantidade
-Preço
-Marca
-Localização
-2) Tela de Informações do Produto
-
-Arquivo:
-
-estoque/dialog_info_produto.py
-
-Tipo:
-
-QDialog
-
-Vai mostrar:
-
-Descrição completa
-Aplicação
-Referências:
-fornecedor
-original
-similar
-Fornecedor
-Marca
-Estoque
-Localização completa
-Tipo quantidade
-📸 FOTO DO PRODUTO
-📸 SISTEMA DE IMAGENS (IMPORTANTE)
-
-Estratégia:
-
-NÃO salvar imagem no banco
-Salvar caminho da imagem
-
-Exemplo:
-
-foto_produto = "imagens/produtos/123.jpg"
-
-Benefícios:
-
-Mais leve
-Mais rápido
-Mais fácil manutenção
-🧩 FLUXO FUTURO
-Pesquisa
-
-→ encontra produto rápido
-
-Informações (F2 ou botão)
-
-→ abre dialog com detalhes + foto
-
-Seleção
-
-→ retorna para movimentação / venda
-
-🎯 OBJETIVO FINAL
-
-Criar uma base reutilizável para:
-
-Movimentação de estoque
-Vendas
-Orçamentos
-Consulta rápida
-⚠️ OBSERVAÇÃO
-
-Hoje foi uma evolução grande:
-
-Integração real entre módulos
-Padrão profissional aplicado
-Base sólida para próximos módulos
-📅 PRÓXIMA SESSÃO
-
-Começar por:
-
-Criar tela_pesq_prod_mov.py
-Estruturar tabela
-Implementar busca
-Preparar retorno do produto
-💬 STATUS
-
-✔️ Sistema mais estável
-✔️ Código mais limpo
-✔️ Arquitetura consistente
+✔ Estrutura pronta  
+✔ UI base pronta  
+🚧 Iniciando construção da tela de venda  

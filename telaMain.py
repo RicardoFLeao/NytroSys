@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QPushBut
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon, QShortcut, QKeySequence, QKeyEvent, QAction
 from util.estilo import gerar_estilo
-from util.fun_telas import tela_ent, tela_cad_fun, tela_cad_cli, tela_cad_for, tela_cad_prod, tela_acerto_estoque 
+from util.fun_telas import tela_ent, tela_cad_fun, tela_cad_cli, tela_cad_for, tela_cad_prod, tela_acerto_estoque, tela_movimentacao
 import sys
 
 
@@ -47,7 +47,6 @@ class telaPrincipal(QMainWindow):
         act_marca = QAction('Marca Produto', self)
         act_marca.triggered.connect(self.abrir_cad_marca)
         
-
 
         menu_prod.addAction(act_prod)
         menu_prod.addSeparator()
@@ -121,6 +120,7 @@ class telaPrincipal(QMainWindow):
 
         btnA.clicked.connect(lambda: tela_cad_prod(self))
         btnB.clicked.connect(lambda: tela_ent(self))
+        btnD.clicked.connect(lambda: tela_movimentacao(self))
 
 
         #criação bloco de notas
