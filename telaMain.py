@@ -17,8 +17,10 @@ class telaPrincipal(QMainWindow):
         self.conteudo()
 
         QShortcut(QKeySequence('Esc'), self).activated.connect(self.close)
-        QShortcut(QKeySequence(Qt.Key.Key_B), self).activated.connect(lambda: tela_ent(self))
         QShortcut(QKeySequence(Qt.Key.Key_A), self).activated.connect(lambda: tela_cad_prod(self))
+        QShortcut(QKeySequence(Qt.Key.Key_B), self).activated.connect(lambda: tela_ent(self))
+        QShortcut(QKeySequence(Qt.Key.Key_D), self).activated.connect(lambda: tela_movimentacao(self))
+
 
     def menu(self):
         barra_menu = QMenuBar()
@@ -151,7 +153,10 @@ class telaPrincipal(QMainWindow):
         self.setCentralWidget(conteudo)
 
     def abrir_cad_marca(self):
-        print("Abrir cadastro de marca")
+        from adm_prod.tela_marc_prod import TelaMarcaProd
+        self.janela = TelaMarcaProd()
+        self.janela.show()
+        
 
 # Teste isolado (executar tela principal sem login)
 if __name__ == "__main__":

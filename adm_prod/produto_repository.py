@@ -31,6 +31,10 @@ class ProdutoRepository:
                         cod_fornecedor,
                         nome_fornecedor,
                         repositor,
+                        un_compra,
+                        quant_compra,
+                        un_venda,
+                        quant_venda,
                         preco_custo,
                         preco_venda,
                         margem_lucro,
@@ -38,11 +42,15 @@ class ProdutoRepository:
                         desconto,
                         tipo_quantidade,
                         cod_marca,
+                        rua,
+                        bloco,
+                        prateleira,
+                        gaveta,
                         foto_1,
                         foto_2,
                         foto_3,
                         status
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
 
                 cursor.execute(
@@ -59,6 +67,10 @@ class ProdutoRepository:
                         dados["cod_fornecedor"],
                         dados["nome_fornecedor"],
                         dados["repositor"],
+                        dados["un_compra"],
+                        dados["quant_compra"],
+                        dados["un_venda"],
+                        dados["quant_venda"],
                         dados["preco_custo"],
                         dados["preco_venda"],
                         dados["margem_lucro"],
@@ -66,6 +78,10 @@ class ProdutoRepository:
                         dados["desconto"],
                         dados["tipo_quantidade"],
                         cod_marca,
+                        dados["rua"],
+                        dados["bloco"],
+                        dados["prateleira"],
+                        dados["gaveta"],
                         dados.get("foto_1"),
                         dados.get("foto_2"),
                         dados.get("foto_3"),
@@ -98,8 +114,6 @@ class ProdutoRepository:
                 conexao.close()
 
 
-
-
     def atualizar(self, dados):
         conexao = None
 
@@ -121,6 +135,10 @@ class ProdutoRepository:
                         cod_fornecedor = %s,
                         nome_fornecedor = %s,
                         repositor = %s,
+                        un_compra = %s,
+                        quant_compra = %s,
+                        un_venda = %s,
+                        quant_venda = %s,
                         preco_custo = %s,
                         preco_venda = %s,
                         margem_lucro = %s,
@@ -128,6 +146,10 @@ class ProdutoRepository:
                         desconto = %s,
                         tipo_quantidade = %s,
                         cod_marca = %s,
+                        rua = %s,
+                        bloco = %s,
+                        prateleira = %s,
+                        gaveta = %s,
                         foto_1 = %s,
                         foto_2 = %s,
                         foto_3 = %s
@@ -147,6 +169,10 @@ class ProdutoRepository:
                         dados["cod_fornecedor"],
                         dados["nome_fornecedor"],
                         dados["repositor"],
+                        dados["un_compra"],
+                        dados["quant_compra"],
+                        dados["un_venda"],
+                        dados["quant_venda"],
                         dados["preco_custo"],
                         dados["preco_venda"],
                         dados["margem_lucro"],
@@ -154,6 +180,10 @@ class ProdutoRepository:
                         dados["desconto"],
                         dados["tipo_quantidade"],
                         dados["cod_marca"],
+                        dados["rua"],
+                        dados["bloco"],
+                        dados["prateleira"],
+                        dados["gaveta"],
                         dados.get("foto_1"),
                         dados.get("foto_2"),
                         dados.get("foto_3"),
@@ -185,9 +215,17 @@ class ProdutoRepository:
 
             with conexao.cursor(pymysql.cursors.DictCursor) as cursor:
                 sql = """
-                    SELECT codigo, descricao, quantidade, preco_venda, status
-                    FROM produtos
-                """
+                SELECT
+                    codigo,
+                    descricao,
+                    cod_marca,
+                    ref_fornecedor,
+                    preco_venda,
+                    un_venda,
+                    quantidade,
+                    status
+                FROM produtos
+            """
 
                 if status == "Ativo":
                     sql += " WHERE status = 'A'"
@@ -217,7 +255,54 @@ class ProdutoRepository:
             conexao = conectar()
 
             with conexao.cursor(pymysql.cursors.DictCursor) as cursor:
-                if opcao == "Descrição":
+                if opcao == "Todos":
+                    termos = valor.split()
+                    condicoes = []
+                    parametros = []
+
+                    for termo in termos:
+                        filtro = f"%{termo}%"
+                        condicoes.append("""
+                            (
+                                codigo LIKE %s
+                                OR descricao LIKE %s
+                                OR aplicacao LIKE %s
+                                OR cod_barras LIKE %s
+                                OR cod_barras_2 LIKE %s
+                                OR ref_fornecedor LIKE %s
+                                OR ref_original LIKE %s
+                                OR ref_similar LIKE %s
+                            )
+                        """)
+                        parametros.extend([
+                            filtro, filtro, filtro, filtro,
+                            filtro, filtro, filtro, filtro
+                        ])
+
+                    where = " AND ".join(condicoes)
+
+                    if status == "Ativo":
+                        where += " AND status = 'A'"
+                    elif status == "Excluído":
+                        where += " AND status = 'E'"
+
+                    sql = f"""
+                        SELECT
+                            codigo,
+                            descricao,
+                            cod_marca,
+                            ref_fornecedor,
+                            preco_venda,
+                            un_venda,
+                            quantidade,
+                            status
+                        FROM produtos
+                        WHERE {where}
+                        ORDER BY descricao
+                    """
+                    cursor.execute(sql, parametros)
+
+                elif opcao == "Descrição":
                     termos = valor.split()
                     condicoes = []
                     parametros = []
@@ -235,7 +320,15 @@ class ProdutoRepository:
                         where += " AND status = 'E'"
 
                     sql = f"""
-                        SELECT codigo, descricao, quantidade, preco_venda, status
+                        SELECT
+                            codigo,
+                            descricao,
+                            cod_marca,
+                            ref_fornecedor,
+                            preco_venda,
+                            un_venda,
+                            quantidade,
+                            status
                         FROM produtos
                         WHERE {where}
                         ORDER BY descricao
@@ -244,7 +337,15 @@ class ProdutoRepository:
 
                 elif opcao == "Código":
                     sql = """
-                        SELECT codigo, descricao, quantidade, preco_venda, status
+                        SELECT
+                            codigo,
+                            descricao,
+                            cod_marca,
+                            ref_fornecedor,
+                            preco_venda,
+                            un_venda,
+                            quantidade,
+                            status
                         FROM produtos
                         WHERE codigo = %s
                     """
@@ -262,7 +363,15 @@ class ProdutoRepository:
                 elif opcao == "Cód. Barras":
                     filtro = f"%{valor}%"
                     sql = """
-                        SELECT codigo, descricao, quantidade, preco_venda, status
+                        SELECT
+                            codigo,
+                            descricao,
+                            cod_marca,
+                            ref_fornecedor,
+                            preco_venda,
+                            un_venda,
+                            quantidade,
+                            status
                         FROM produtos
                         WHERE (cod_barras LIKE %s OR cod_barras_2 LIKE %s)
                     """
@@ -280,7 +389,15 @@ class ProdutoRepository:
                 elif opcao == "Referências":
                     filtro = "%" + "%".join(valor.split()) + "%"
                     sql = """
-                        SELECT codigo, descricao, quantidade, preco_venda, status
+                        SELECT
+                            codigo,
+                            descricao,
+                            cod_marca,
+                            ref_fornecedor,
+                            preco_venda,
+                            un_venda,
+                            quantidade,
+                            status
                         FROM produtos
                         WHERE (ref_fornecedor LIKE %s
                         OR ref_original LIKE %s
@@ -311,6 +428,8 @@ class ProdutoRepository:
         finally:
             if conexao is not None:
                 conexao.close()
+
+
 
 
     def buscar_por_codigo(self, codigo):

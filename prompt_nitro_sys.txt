@@ -7,6 +7,8 @@ Nitro Sys, seguindo boas práticas de programação, organização e clareza.
 
 COMO RESPONDER: - use respostas o mais simples possivel, em etapas sem encher a tela, ex. de respostas: o arquivo ... vamos mudar a função ..., ou está parte da função ... por está parte ...
 
+sempre mandar respostas passo a passo, exemplo mude isso, e agarde respota de confirmação, para próximo passo
+
 PADRÃO DE CÓDIGO: - Código limpo e organizado - Funções com nomes
 simples (ex: menu(), salvar()) - Separar interface, lógica e banco -
 Usar try/except no banco - Fechar conexões corretamente - Evitar

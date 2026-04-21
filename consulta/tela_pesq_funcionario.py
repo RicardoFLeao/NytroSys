@@ -5,7 +5,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from util.padrao import (
     criar_botao,
-    criar_botao_sair,
     criar_combobox_padrao,
     criar_label_padrao,
     criar_lineedit_padrao,
@@ -24,37 +23,35 @@ from PyQt6.QtWidgets import (
     QHeaderView,
 )
 
-class TelaPesqFornecedor(QDialog):
+
+class TelaPesqFuncionario(QDialog):
     def __init__(self, tela_origem=None):
         super().__init__()
         self.tela_origem = tela_origem
-        self.setWindowTitle("Pesquisa Fornecedor")
+        self.setWindowTitle("Pesquisa Vendedor")
         self.setFixedSize(700, 500)
-        self.setModal(True)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
 
         icon_path = os.path.abspath(
-            os.path.join(os.path.dirname(__file__),
-                         '..', 'imagens', 'icone.png')
+            os.path.join(os.path.dirname(__file__), '..', 'imagens', 'icone.png')
         )
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
 
         self.componentes()
 
-        QShortcut(QKeySequence('Esc'), self).activated.connect(self.sair)
+        from entidades.funcionario.funcionario_repository import FuncionarioRepository
+        self.repository = FuncionarioRepository()
+
+        QShortcut(QKeySequence('Esc'), self).activated.connect(self.close)
+
         self.edit_pesq.setFocus()
-        from entidades.fornecedor.fornecedor_repository import FornecedorRepository
-        self.repository = FornecedorRepository()
-        self.edit_pesq.returnPressed.connect(self.focar_tabela)
+        self.edit_pesq.textChanged.connect(self.buscar_funcionario)
+        # self.edit_pesq.returnPressed.connect(self.focar_tabela)
         self.edit_pesq.installEventFilter(self)
 
-        self.tabela_resultado.cellDoubleClicked.connect(
-            self.selecionar_fornecedor)
-        self.tabela_resultado.itemActivated.connect(self.selecionar_fornecedor)
-
-        QShortcut(QKeySequence('F5'), self).activated.connect(
-            self.abrir_cadastro_fornecedor)
+        self.tabela_resultado.itemActivated.connect(self.selecionar_funcionario)
+        self.tabela_resultado.currentCellChanged.connect(self.destacar_linha)
 
     def componentes(self):
         self.setStyleSheet("""
@@ -65,35 +62,45 @@ class TelaPesqFornecedor(QDialog):
             }
         """)
 
-        titulo = QLabel("Pesquisa Fornecedor")
-        titulo.setStyleSheet("color: orange; font-size: 38px; font: bold; background-color: #031740;")
 
-        # opções
+        titulo = QLabel("Pesquisa Vendedor")
+        titulo.setStyleSheet("""
+            color: orange;
+            background-color: #031740;
+            font-size: 38px;
+            font: bold;
+        """)
+
         label_opc = criar_label_padrao()
         label_opc.setText("Opções")
         label_opc.setContentsMargins(2, 0, 0, 0)
         label_opc.setFixedSize(label_opc.sizeHint())
-        label_opc.setStyleSheet("color: white; font-weight: bold; background-color: #031740;")
+        label_opc.setStyleSheet("""
+            color: white;
+            background-color: #031740;
+            font-weight: bold
+        """)
 
         self.comb_opc = criar_combobox_padrao()
-        self.comb_opc.addItems(
-            ["Nome", "Razão Social", "Código", "CPF / CNPJ"])
+        self.comb_opc.addItems(["Nome", "Código", "Usuário"])
         self.comb_opc.setFixedWidth(150)
 
         vbox_opc = QVBoxLayout()
         vbox_opc.addWidget(label_opc)
         vbox_opc.addWidget(self.comb_opc)
 
-        # pesquisa
         label_pesq = criar_label_padrao()
         label_pesq.setText("Dados a pesquisar")
         label_pesq.setContentsMargins(2, 0, 0, 0)
         label_pesq.setFixedSize(label_pesq.sizeHint())
-        label_pesq.setStyleSheet("color: white; font-weight: bold; background-color: #031740;")
+        label_pesq.setStyleSheet("""
+            color: white;
+            background-color: #031740;
+            font-weight: bold
+        """)
 
         self.edit_pesq = criar_lineedit_padrao()
         self.edit_pesq.setMinimumWidth(300)
-        self.edit_pesq.textChanged.connect(self.buscar_fornecedor)
 
         vbox_pesq = QVBoxLayout()
         vbox_pesq.addWidget(label_pesq)
@@ -103,13 +110,12 @@ class TelaPesqFornecedor(QDialog):
         hbox_topo.addLayout(vbox_opc)
         hbox_topo.addLayout(vbox_pesq)
 
-        # tabela
         self.tabela_resultado = QTableWidget()
         self.tabela_resultado.setColumnCount(3)
         self.tabela_resultado.setHorizontalHeaderLabels([
             "Código",
             "Nome",
-            "CPF / CNPJ"
+            "Usuário"
         ])
         self.tabela_resultado.setEditTriggers(
             QTableWidget.EditTrigger.NoEditTriggers)
@@ -147,27 +153,17 @@ class TelaPesqFornecedor(QDialog):
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
 
-        # botões
-        self.btn_cadastrar = criar_botao()
-        self.btn_cadastrar.setText("F5 - Cadastrar")
-        self.btn_cadastrar.clicked.connect(self.abrir_cadastro_fornecedor)
-        self.btn_cadastrar.setAutoDefault(False)
-        self.btn_cadastrar.setDefault(False)
-
-
-
         self.btn_sair = criar_botao()
         self.btn_sair.setText("Esc - Sair")
-        self.btn_sair.clicked.connect(self.sair)
+        self.btn_sair.clicked.connect(self.close)
         self.btn_sair.setAutoDefault(False)
         self.btn_sair.setDefault(False)
 
+
         hbox_botoes = QHBoxLayout()
-        hbox_botoes.addWidget(self.btn_cadastrar)
         hbox_botoes.addStretch()
         hbox_botoes.addWidget(self.btn_sair)
 
-        # layout geral
         layout = QVBoxLayout()
         layout.setContentsMargins(20, 20, 20, 20)
         layout.addWidget(titulo, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -177,15 +173,8 @@ class TelaPesqFornecedor(QDialog):
 
         self.setLayout(layout)
 
-    def abrir_cadastro_fornecedor(self):
-        from entidades.cad_for import CadFornecedor
-        self.janela_cadastro = CadFornecedor(self)
-        self.janela_cadastro.show()
 
-    def sair(self):
-        self.close()
-
-    def buscar_fornecedor(self):
+    def buscar_funcionario(self):
         texto = self.edit_pesq.text().strip()
         opcao = self.comb_opc.currentText()
 
@@ -193,35 +182,21 @@ class TelaPesqFornecedor(QDialog):
             self.tabela_resultado.setRowCount(0)
             return
 
-        resultados = self.repository.buscar_fornecedor(
-            opcao, texto, "Ativos", False)
+        resultados = self.repository.buscar_funcionario(opcao, texto, "Ativos", False)
 
         self.tabela_resultado.setRowCount(len(resultados))
 
-        for linha, fornecedor in enumerate(resultados):
+        for linha, funcionario in enumerate(resultados):
+            codigo = funcionario.get("codigo", "")
+            nome = funcionario.get("nome", "")
+            usuario = funcionario.get("apelido", "")
 
-            nome_exibicao = fornecedor.get("nome_fantasia", "")
+            self.tabela_resultado.setItem(linha, 0, QTableWidgetItem(str(codigo)))
+            self.tabela_resultado.setItem(linha, 1, QTableWidgetItem(str(nome)))
+            self.tabela_resultado.setItem(linha, 2, QTableWidgetItem(str(usuario)))
 
-            if opcao == "Razão Social":
-                nome_exibicao = fornecedor.get("razao_social", "")
-            elif opcao in ["Código", "CPF / CNPJ"]:
-                nome_exibicao = fornecedor.get(
-                    "nome_fantasia", "") or fornecedor.get("razao_social", "")
 
-            valores = [
-                fornecedor.get("codigo", ""),
-                nome_exibicao,
-                fornecedor.get("cpf_cnpj", ""),
-            ]
-
-            for coluna, valor in enumerate(valores):
-                self.tabela_resultado.setItem(
-                    linha,
-                    coluna,
-                    QTableWidgetItem(str(valor) if valor else "")
-                )
-
-    def selecionar_fornecedor(self, *args):
+    def selecionar_funcionario(self, *args):
         if self.tela_origem is None:
             return
 
@@ -231,16 +206,16 @@ class TelaPesqFornecedor(QDialog):
             return
 
         item_codigo = self.tabela_resultado.item(linha, 0)
-        item_nome = self.tabela_resultado.item(linha, 1)
+        item_apelido = self.tabela_resultado.item(linha, 2)
 
-        if item_codigo is None or item_nome is None:
+        if not item_codigo or not item_apelido:
             return
 
         codigo = item_codigo.text().strip()
-        nome = item_nome.text().strip()
+        apelido = item_apelido.text().strip()
 
-        if hasattr(self.tela_origem, "selecionar_fornecedor"):
-            self.tela_origem.selecionar_fornecedor(codigo, nome)
+        if hasattr(self.tela_origem, "selecionar_vendedor"):
+            self.tela_origem.selecionar_vendedor(codigo, apelido)
 
         self.close()
 
@@ -250,18 +225,35 @@ class TelaPesqFornecedor(QDialog):
             self.tabela_resultado.setFocus()
 
     def eventFilter(self, obj, event):
-        if obj == self.edit_pesq:
-            if event.type() == event.Type.KeyPress:
-                if event.key() == Qt.Key.Key_Down:
-                    self.focar_tabela()
-                    return True
+        if obj == self.edit_pesq and event.type() == event.Type.KeyPress:
+            if event.key() in (Qt.Key.Key_Down, Qt.Key.Key_Return, Qt.Key.Key_Enter):
+                self.focar_tabela()
+                return True
 
         return super().eventFilter(obj, event)
 
+    def destacar_linha(self, linha_atual, coluna_atual, linha_anterior, coluna_anterior):
+        for linha in range(self.tabela_resultado.rowCount()):
+            for coluna in range(self.tabela_resultado.columnCount()):
+                item = self.tabela_resultado.item(linha, coluna)
+                if item:
+                    fonte = item.font()
+                    fonte.setBold(False)
+                    item.setFont(fonte)
+
+        if linha_atual < 0:
+            return
+
+        for coluna in range(self.tabela_resultado.columnCount()):
+            item = self.tabela_resultado.item(linha_atual, coluna)
+            if item:
+                fonte = item.font()
+                fonte.setBold(True)
+                item.setFont(fonte)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     estilo = gerar_estilo()
     app.setStyleSheet(estilo)
-    janela = TelaPesqFornecedor()
+    janela = TelaPesqFuncionario()
     janela.exec()

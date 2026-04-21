@@ -1373,7 +1373,6 @@ class CadCliente(QWidget):
                 self.check_jur.setChecked(True)
 
 
-
     def alterar_status_cliente(self):
         codigo = self.edit_cod_cli.text().strip()
         if not codigo:

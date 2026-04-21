@@ -1,4 +1,5 @@
 from bd import conectar
+import pymysql
 
 
 class MarcaRepository:
@@ -111,20 +112,13 @@ class MarcaRepository:
         conexao = None
         try:
             conexao = conectar()
-            cursor = conexao.cursor()
 
-            sql = "SELECT codigo, nome FROM marcas_produto WHERE codigo = %s"
-            cursor.execute(sql, (codigo,))
+            with conexao.cursor(pymysql.cursors.DictCursor) as cursor:
+                sql = "SELECT codigo, nome FROM marcas_produto WHERE codigo = %s"
+                cursor.execute(sql, (codigo,))
 
-            resultado = cursor.fetchone()
-
-            if resultado:
-                return {
-                    "codigo": resultado[0],
-                    "nome": resultado[1]
-                }
-
-            return None
+                resultado = cursor.fetchone()
+                return resultado
 
         except Exception as e:
             print(f"Erro ao buscar marca: {e}")
@@ -133,3 +127,5 @@ class MarcaRepository:
         finally:
             if conexao:
                 conexao.close()
+
+

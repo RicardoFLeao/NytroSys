@@ -60,7 +60,8 @@ class CadProd(QWidget):
         label_opc.setFixedSize(label_opc.sizeHint())
 
         self.comb_opc = criar_combobox_padrao()
-        self.comb_opc.addItems(["Descrição", "Código", "Cód. Barras", "Referências"])
+        self.comb_opc.addItems(["Todos", "Descrição", "Código", "Cód. Barras", "Referências"])
+        self.comb_opc.setCurrentIndex(0)
         self.comb_opc.setFixedWidth(220)
 
         label_mdl = criar_label_padrao()
@@ -1208,6 +1209,10 @@ class CadProd(QWidget):
         self.edit_cod_forn.setText(str(produto.get("cod_fornecedor") or ""))
         self.edit_nome_forn.setText(str(produto.get("nome_fornecedor") or ""))
         self.edit_repositor.setText(str(produto.get("repositor") or ""))
+        self.edit_rua.setText(produto.get("rua") or "")
+        self.edit_bloco.setText(produto.get("bloco") or "")
+        self.edit_prateleira.setText(produto.get("prateleira") or "")
+        self.edit_gaveta.setText(produto.get("gaveta") or "")
 
         self.edit_preco_custo.setText(str(produto.get("preco_custo") or ""))
         self.edit_preco_venda.setText(str(produto.get("preco_venda") or ""))
@@ -1401,10 +1406,12 @@ class CadProd(QWidget):
         self.edit_cod_forn.clear()
         self.edit_nome_forn.clear()
         self.edit_repositor.clear()
+        self.edit_rua.clear()
+        self.edit_bloco.clear()
+        self.edit_prateleira.clear()
+        self.edit_gaveta.clear()
         self.combo_tipo_quant.setCurrentText("Inteiro")
-
         self.edit_desc.setFocus()
-
         self.status_produto_atual = "A"
         self.botao_excluir.setText("Excluir")
         self.cod_marca = None
@@ -1494,17 +1501,24 @@ class CadProd(QWidget):
             "cod_fornecedor": (self.edit_cod_forn.text() or "").strip(),
             "nome_fornecedor": (self.edit_nome_forn.text() or "").strip(),
             "repositor": (self.edit_repositor.text() or "").strip(),
+            "un_compra": self.comb_un_compra.currentText(),
+            "quant_compra": (self.edit_quant_compra.text() or "").strip(),
+            "un_venda": self.comb_un_venda.currentText(),
+            "quant_venda": (self.edit_quant_venda.text() or "").strip(),
             "preco_custo": (self.edit_preco_custo.text() or "").strip(),
             "preco_venda": (self.edit_preco_venda.text() or "").strip(),
             "preco_promocao": (self.edit_preco_promocao.text() or "").strip(),
             "margem_lucro": (self.edit_margem_lucro.text() or "").strip(),
             "desconto": (self.edit_desconto.text() or "").strip(),
             "tipo_quantidade": self.combo_tipo_quant.currentText(),
+            "rua": (self.edit_rua.text() or "").strip(),
+            "bloco": (self.edit_bloco.text() or "").strip(),
+            "prateleira": (self.edit_prateleira.text() or "").strip(),
+            "gaveta": (self.edit_gaveta.text() or "").strip(),
             "foto_1": getattr(self, "foto_1", ""),
             "foto_2": getattr(self, "foto_2", ""),
             "foto_3": getattr(self, "foto_3", ""),
         }
-    
 
 
     def abrir_pesquisa_fornecedor(self):

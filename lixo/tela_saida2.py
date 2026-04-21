@@ -1,38 +1,18 @@
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '..', '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from util.padrao import criar_label_padrao, criar_lineedit_padrao
-from util.fun_basicas import LineEditComEnter
-from util.estilo import gerar_estilo
-from PyQt6.QtGui import QShortcut, QKeySequence
-from PyQt6.QtCore import Qt, QDateTime, QTimer
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QLabel, QFrame,
     QPushButton, QHBoxLayout, QLineEdit, QCheckBox,
-    QTableWidget, QHeaderView, QAbstractItemView
+    QTableWidget, QHeaderView, QAbstractItemView, QTableWidgetItem
 )
+from PyQt6.QtCore import Qt, QDateTime, QTimer
+from PyQt6.QtGui import QShortcut, QKeySequence, QPixmap
 
-from movimentacao.saida.funcao_venda import (
-    abrir_pesquisa_produto,
-    abrir_pesquisa_ao_digitar,
-    receber_produto_pesquisa,
-    ir_para_unitario,
-    criar_item,
-    limpar_info_produto,
-    adicionar_produto_tabela,
-    ir_para_tabela_quantidade,
-    event_filter_tabela,
-    tratar_edicao_tabela,
-    destacar_linha_atual,
-    texto_para_float,
-    formatar_valor,
-    atualizar_info_produto_tabela,
-    atualizar_totais,
-    renumerar_itens_tabela,
-    novo
-)
+from util.estilo import gerar_estilo
+from util.fun_basicas import LineEditComEnter
+from util.padrao import criar_label_padrao, criar_lineedit_padrao
 
 
 class TelaSaida(QWidget):
@@ -40,84 +20,33 @@ class TelaSaida(QWidget):
         super().__init__()
         self.setWindowTitle('Saída')
         self.produto_atual = None
+        self.bloquear_tratamento_tabela = False
 
         self.componentes()
         self.showMaximized()
 
         QShortcut(QKeySequence('Esc'), self).activated.connect(self.sair)
-        self.edit_busca_produto.textEdited.connect(
-            self.abrir_pesquisa_ao_digitar
-        )
+        QShortcut(QKeySequence('F8'), self.edit_busca_produto).activated.connect(self.abrir_pesquisa_produto)
+
+        QShortcut(QKeySequence(Qt.Key.Key_Down), self.tabela).activated.connect(self.descer_tabela_quantidade)
+        QShortcut(QKeySequence(Qt.Key.Key_Up), self.tabela).activated.connect(self.subir_tabela_quantidade)
+
+        self.atalho_enter_tabela = QShortcut(QKeySequence('Return'), self.tabela)
+        self.atalho_enter_tabela.setContext(Qt.ShortcutContext.WidgetShortcut)
+        self.atalho_enter_tabela.activated.connect(self.enter_tabela)
+
+        self.atalho_enter_tabela2 = QShortcut(QKeySequence('Enter'), self.tabela)
+        self.atalho_enter_tabela2.setContext(Qt.ShortcutContext.WidgetShortcut)
+        self.atalho_enter_tabela2.activated.connect(self.enter_tabela)
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.atualizar_data_hora)
         self.timer.start(1000)
 
-        self.atalho_f8_produto = QShortcut(
-            QKeySequence('F8'), self.edit_busca_produto)
-        self.atalho_f8_produto.setContext(Qt.ShortcutContext.WidgetShortcut)
-        self.atalho_f8_produto.activated.connect(
-            lambda: self.abrir_pesquisa_produto(self.edit_busca_produto.text())
-        )
-
-        self.atalho_f8_quantidade = QShortcut(
-            QKeySequence('F8'), self.edit_quantidade_item)
-        self.atalho_f8_quantidade.setContext(Qt.ShortcutContext.WidgetShortcut)
-        self.atalho_f8_quantidade.activated.connect(
-            lambda: self.abrir_pesquisa_produto(self.edit_busca_produto.text())
-        )
-
-        self.atalho_f8_tabela = QShortcut(QKeySequence('F8'), self.tabela)
-        self.atalho_f8_tabela.setContext(Qt.ShortcutContext.WidgetShortcut)
-        self.atalho_f8_tabela.activated.connect(
-            lambda: self.abrir_pesquisa_produto(self.edit_busca_produto.text())
-        )
-
-        self.atalho_f8_vendedor = QShortcut(QKeySequence('F8'), self.edit_vendedor)
-        self.atalho_f8_vendedor.setContext(Qt.ShortcutContext.WidgetShortcut)
-        self.atalho_f8_vendedor.activated.connect(self.abrir_pesquisa_vendedor)
-
-        self.atalho_f8_cod_vendedor = QShortcut(QKeySequence('F8'), self.cod_vendedor)
-        self.atalho_f8_cod_vendedor.setContext(Qt.ShortcutContext.WidgetShortcut)
-        self.atalho_f8_cod_vendedor.activated.connect(self.abrir_pesquisa_vendedor)
-
-        QShortcut(QKeySequence('Ctrl+D'), self).activated.connect(self.focar_desconto)
-
-        self.tabela.installEventFilter(self)
-        self.edit_quantidade_item.returnPressed.connect(self.ir_para_unitario)
-        self.edit_unitario_item.returnPressed.connect(
-            self.adicionar_produto_tabela
-        )
-        self.edit_busca_produto.returnPressed.connect(
-            self.ir_para_tabela_quantidade
-        )
+        self.tabela.cellClicked.connect(self.clicar_tabela)
         self.tabela.itemChanged.connect(self.tratar_edicao_tabela)
-        self.tabela.currentCellChanged.connect(self.destacar_linha_atual)
-        self.tabela.currentCellChanged.connect(
-            self.atualizar_info_produto_tabela
-        )
-        self.edit_desconto.textChanged.connect(self.atualizar_totais)
-        QShortcut(QKeySequence('F5'), self).activated.connect(self.novo)
 
-        QShortcut(QKeySequence('F3'), self).activated.connect(self.focar_cod_vendedor)
-        QShortcut(QKeySequence('F6'), self).activated.connect(self.focar_cod_cliente)
-
-        self.edit_busca_produto.setFocus()
-
-        self.cod_vendedor.returnPressed.connect(self.buscar_vendedor_por_codigo)
-
-        self.cod_cliente.returnPressed.connect(self.buscar_cliente_por_codigo)
-        self.cod_cliente.returnPressed.connect(self.ir_para_nome_cliente)
-        self.edit_cliente.textEdited.connect(self.abrir_cliente_rapido)
-
-
-        self.atalho_f8_cliente = QShortcut(QKeySequence('F8'), self.edit_cliente)
-        self.atalho_f8_cliente.setContext(Qt.ShortcutContext.WidgetShortcut)
-        self.atalho_f8_cliente.activated.connect(self.abrir_pesquisa_cliente)
-
-        self.atalho_f8_cod_cliente = QShortcut(QKeySequence('F8'), self.cod_cliente)
-        self.atalho_f8_cod_cliente.setContext(Qt.ShortcutContext.WidgetShortcut)
-        self.atalho_f8_cod_cliente.activated.connect(self.abrir_pesquisa_cliente)
+        self.edit_busca_produto.returnPressed.connect(self.ir_para_tabela_quantidade)
 
     def componentes(self):
         titulo = QLabel("Saída")
@@ -139,9 +68,9 @@ class TelaSaida(QWidget):
         self.botao_sair = QPushButton("ESC - Sair")
         self.botao_sair.clicked.connect(self.sair)
 
-        for botao in [self.botao_venda, self.botao_consultas, self.botao_relatorios, self.botao_sair]:
-            botao.setFixedSize(180, 60)
-            botao.setStyleSheet("""
+        for b in [self.botao_venda, self.botao_consultas, self.botao_relatorios, self.botao_sair]:
+            b.setFixedSize(180, 60)
+            b.setStyleSheet("""
                 QPushButton {
                     background-color: #031740;
                     color: white;
@@ -164,8 +93,7 @@ class TelaSaida(QWidget):
         layout_quadro.setSpacing(8)
 
         self.label_num = QLabel("Nº Venda:")
-        self.label_num.setStyleSheet(
-            "font-size:14px; font-weight:bold; color:#031740;")
+        self.label_num.setStyleSheet("font-size:14px; font-weight:bold; color:#031740;")
 
         self.edit_num = QLineEdit("0001")
         self.edit_num.setFixedSize(80, 28)
@@ -232,7 +160,7 @@ class TelaSaida(QWidget):
 
         self.cod_cliente = criar_lineedit_padrao()
         self.cod_cliente.setFixedWidth(70)
-        self.cod_cliente.setPlaceholderText("F6")
+        self.cod_cliente.setPlaceholderText("Cod. Cli.")
 
         self.edit_cliente = criar_lineedit_padrao(LineEditComEnter)
         self.edit_cliente.setMinimumWidth(500)
@@ -242,7 +170,7 @@ class TelaSaida(QWidget):
         self.label_cpf_cliente.setText("CPF")
         self.label_cpf_cliente.setFixedSize(self.label_cpf_cliente.sizeHint())
 
-        self.edit_cpf_cliente = criar_lineedit_padrao(LineEditComEnter)
+        self.edit_cpf_cliente = criar_lineedit_padrao()
         self.edit_cpf_cliente.setFixedWidth(150)
 
         linha_cliente = QHBoxLayout()
@@ -257,9 +185,9 @@ class TelaSaida(QWidget):
         self.label_vendedor.setText("Vendedor:")
         self.label_vendedor.setFixedSize(self.label_vendedor.sizeHint())
 
-        self.cod_vendedor = criar_lineedit_padrao(LineEditComEnter)
+        self.cod_vendedor = criar_lineedit_padrao()
         self.cod_vendedor.setFixedWidth(70)
-        self.cod_vendedor.setPlaceholderText("F3")
+        self.cod_vendedor.setPlaceholderText("Cod. Vend.")
 
         self.edit_vendedor = criar_lineedit_padrao(LineEditComEnter)
         self.edit_vendedor.setFixedWidth(150)
@@ -271,7 +199,7 @@ class TelaSaida(QWidget):
 
         self.edit_desconto = criar_lineedit_padrao(LineEditComEnter)
         self.edit_desconto.setFixedWidth(70)
-        self.edit_desconto.setPlaceholderText("Ctrl+D")
+        self.edit_desconto.setPlaceholderText('ctrl+d')
 
         self.label_percentual = criar_label_padrao()
         self.label_percentual.setText("%")
@@ -288,8 +216,7 @@ class TelaSaida(QWidget):
         linha_vendedor_desconto.addStretch()
 
         bloco_esquerdo = QVBoxLayout()
-        bloco_esquerdo.setAlignment(
-            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        bloco_esquerdo.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         bloco_esquerdo.setSpacing(8)
         bloco_esquerdo.addLayout(linha_cliente)
         bloco_esquerdo.addLayout(linha_vendedor_desconto)
@@ -304,8 +231,7 @@ class TelaSaida(QWidget):
                 border: none;
             }
         """)
-        self.label_total_prod_titulo.setFixedSize(
-            self.label_total_prod_titulo.sizeHint())
+        self.label_total_prod_titulo.setFixedSize(self.label_total_prod_titulo.sizeHint())
 
         self.label_total_produtos = QLabel("R$ 0,00")
         self.label_total_produtos.setStyleSheet("""
@@ -372,8 +298,7 @@ class TelaSaida(QWidget):
 
         self.label_busca_produto = criar_label_padrao()
         self.label_busca_produto.setText("Busca de produtos")
-        self.label_busca_produto.setFixedSize(
-            self.label_busca_produto.sizeHint())
+        self.label_busca_produto.setFixedSize(self.label_busca_produto.sizeHint())
 
         self.label_quantidade = criar_label_padrao()
         self.label_quantidade.setText("Quantidade")
@@ -385,8 +310,6 @@ class TelaSaida(QWidget):
 
         self.edit_busca_produto = criar_lineedit_padrao()
         self.edit_busca_produto.setMinimumHeight(34)
-        self.edit_busca_produto.setPlaceholderText(
-            'Digite para buscar ou tecle F8')
 
         self.edit_quantidade_item = QLineEdit()
         self.edit_quantidade_item.setFixedSize(120, 34)
@@ -396,8 +319,9 @@ class TelaSaida(QWidget):
         self.edit_unitario_item.setFixedSize(120, 34)
         self.edit_unitario_item.setText("0,00")
 
-        self.edit_quantidade_item.setStyleSheet(
-            self.edit_unitario_item.styleSheet())
+        self.edit_quantidade_item.setStyleSheet(self.edit_unitario_item.styleSheet())
+        self.edit_quantidade_item.returnPressed.connect(self.ir_para_unitario)
+        self.edit_unitario_item.returnPressed.connect(self.adicionar_produto_tabela)
 
         topo_busca_esquerda = QVBoxLayout()
         topo_busca_esquerda.setSpacing(4)
@@ -444,7 +368,7 @@ class TelaSaida(QWidget):
 
         self.tabela = QTableWidget()
         self.tabela.setColumnCount(8)
-        self.tabela.setRowCount(0)
+        self.tabela.setRowCount(12)
         self.tabela.setHorizontalHeaderLabels([
             "Item",
             "Cód",
@@ -460,12 +384,13 @@ class TelaSaida(QWidget):
         self.tabela.setShowGrid(True)
         self.tabela.setGridStyle(Qt.PenStyle.SolidLine)
         self.tabela.setAlternatingRowColors(True)
-        self.tabela.setSelectionBehavior(
-            QAbstractItemView.SelectionBehavior.SelectItems)
-        self.tabela.setSelectionMode(
-            QAbstractItemView.SelectionMode.SingleSelection)
+        self.tabela.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
+        self.tabela.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.tabela.setEditTriggers(
-            QAbstractItemView.EditTrigger.NoEditTriggers)
+            QAbstractItemView.EditTrigger.DoubleClicked |
+            QAbstractItemView.EditTrigger.SelectedClicked |
+            QAbstractItemView.EditTrigger.EditKeyPressed
+        )
         self.tabela.verticalHeader().setVisible(False)
         self.tabela.verticalHeader().setDefaultSectionSize(26)
         self.tabela.horizontalHeader().setFixedHeight(28)
@@ -581,8 +506,8 @@ class TelaSaida(QWidget):
         self.valor_aplicacao.setReadOnly(True)
 
         linha_aplicacao = QHBoxLayout()
-        linha_aplicacao.setSpacing(17)
         linha_aplicacao.addWidget(self.label_aplicacao)
+        linha_aplicacao.setSpacing(17)
         linha_aplicacao.addWidget(self.valor_aplicacao)
 
         def criar_botao(texto):
@@ -602,8 +527,6 @@ class TelaSaida(QWidget):
             return botao
 
         self.btn_novo = criar_botao("F5 - Novo")
-        self.btn_novo.clicked.connect(self.novo)
-
         self.btn_gravar = criar_botao("F12 - Finalizar")
         self.btn_cancelar = criar_botao("F3 - Cancelar")
 
@@ -619,15 +542,17 @@ class TelaSaida(QWidget):
         bloco_esquerdo_inf.addLayout(linha_aplicacao)
         bloco_esquerdo_inf.addLayout(linha_botoes)
 
-        self.label_foto = QLabel("Sem foto")
+        self.label_foto = QLabel()
         self.label_foto.setFixedSize(180, 140)
-        self.label_foto.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label_foto.setStyleSheet("""
             QLabel {
                 background: white;
                 border: 1px solid #cfd6dd;
             }
         """)
+        self.label_foto.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.label_foto.setScaledContents(True)
+        self.label_foto.setText("Sem foto")
 
         linha_inferior = QHBoxLayout()
         linha_inferior.setSpacing(15)
@@ -665,190 +590,354 @@ class TelaSaida(QWidget):
         self.janela.show()
         self.close()
 
-    def abrir_pesquisa_produto(self, texto_inicial=""):
-        return abrir_pesquisa_produto(self, texto_inicial)
-
-    def abrir_pesquisa_ao_digitar(self, texto):
-        return abrir_pesquisa_ao_digitar(self, texto)
+    def abrir_pesquisa_produto(self):
+        from consulta.tela_pesq_prod_mov import TelaConsProd
+        self.tela_pesquisa = TelaConsProd(self)
+        self.tela_pesquisa.show()
 
     def receber_produto_pesquisa(self, produto):
-        return receber_produto_pesquisa(self, produto)
+        self.produto_atual = produto
 
-    def ir_para_unitario(self):
-        return ir_para_unitario(self)
+        self.edit_busca_produto.setText(str(produto.get("descricao") or ""))
+        self.edit_unitario_item.setText(str(produto.get("preco_venda") or "0,00"))
 
-    def criar_item(self, texto=""):
-        return criar_item(self, texto)
+        self.valor_rua.setText(str(produto.get("rua") or ""))
+        self.valor_bloco.setText(str(produto.get("bloco") or ""))
+        self.valor_prateleira.setText(str(produto.get("prateleira") or ""))
+        self.valor_gaveta.setText(str(produto.get("gaveta") or ""))
+        self.valor_aplicacao.setText(str(produto.get("aplicacao") or ""))
 
-    def limpar_info_produto(self):
-        return limpar_info_produto(self)
+        caminho_foto = str(produto.get("foto_1") or "").strip()
 
-    def adicionar_produto_tabela(self):
-        return adicionar_produto_tabela(self)
+        if caminho_foto and os.path.exists(caminho_foto):
+            pixmap = QPixmap(caminho_foto)
+            pixmap = pixmap.scaled(
+                self.label_foto.width(),
+                self.label_foto.height(),
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation
+            )
+            self.label_foto.setPixmap(pixmap)
+            self.label_foto.setText("")
+        else:
+            self.label_foto.clear()
+            self.label_foto.setText("Sem foto")
 
-    def ir_para_tabela_quantidade(self):
-        return ir_para_tabela_quantidade(self)
+        self.edit_quantidade_item.setFocus()
+        self.edit_quantidade_item.selectAll()
 
-    def eventFilter(self, obj, event):
-        return event_filter_tabela(self, obj, event)
+    def criar_item(self, texto="", editavel=False):
+        item = QTableWidgetItem(texto)
+        if not editavel:
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+        return item
 
-    def tratar_edicao_tabela(self, item):
-        return tratar_edicao_tabela(self, item)
+    def linha_vazia(self):
+        for i in range(self.tabela.rowCount()):
+            item_descricao = self.tabela.item(i, 2)
+            if not item_descricao or not item_descricao.text().strip():
+                return i
+        return -1
 
-    def destacar_linha_atual(self, linha_atual, coluna_atual, linha_anterior, coluna_anterior):
-        return destacar_linha_atual(
-            self, linha_atual, coluna_atual, linha_anterior, coluna_anterior
-        )
+    def texto_float(self, texto):
+        texto = (texto or "").strip().replace(",", ".")
+        try:
+            return float(texto)
+        except ValueError:
+            return 0.0
 
-    def texto_para_float(self, texto):
-        return texto_para_float(self, texto)
+    def formatar_decimal(self, valor):
+        return f"{valor:.2f}".replace(".", ",")
 
-    def formatar_valor(self, valor):
-        return formatar_valor(self, valor)
+    def atualizar_linha_tabela(self, linha):
+        item_qtd = self.tabela.item(linha, 4)
+        item_preco = self.tabela.item(linha, 5)
 
-    def atualizar_info_produto_tabela(self, linha_atual, coluna_atual, linha_anterior, coluna_anterior):
-        return atualizar_info_produto_tabela(
-            self, linha_atual, coluna_atual, linha_anterior, coluna_anterior
-        )
+        if not item_qtd or not item_preco:
+            return
 
-    def atualizar_totais(self):
-        return atualizar_totais(self)
+        quantidade = self.texto_float(item_qtd.text())
+        preco = self.texto_float(item_preco.text())
+        total = quantidade * preco
+
+        self.bloquear_tratamento_tabela = True
+        self.tabela.blockSignals(True)
+
+        item_qtd.setText(self.formatar_decimal(quantidade))
+        item_preco.setText(self.formatar_decimal(preco))
+
+        item_desc = self.tabela.item(linha, 6)
+        if not item_desc:
+            item_desc = self.criar_item("0,00", editavel=False)
+            self.tabela.setItem(linha, 6, item_desc)
+        item_desc.setText(self.formatar_decimal(preco))
+
+        item_total = self.tabela.item(linha, 7)
+        if not item_total:
+            item_total = self.criar_item("0,00", editavel=False)
+            self.tabela.setItem(linha, 7, item_total)
+        item_total.setText(self.formatar_decimal(total))
+
+        self.tabela.blockSignals(False)
+        self.bloquear_tratamento_tabela = False
+
+    def remover_linha_tabela(self, linha):
+        self.bloquear_tratamento_tabela = True
+        self.tabela.blockSignals(True)
+
+        for col in range(self.tabela.columnCount()):
+            self.tabela.setItem(linha, col, self.criar_item("", editavel=False))
+
+        self.tabela.blockSignals(False)
+        self.bloquear_tratamento_tabela = False
+
+        self.renumerar_itens_tabela()
+        self.edit_busca_produto.setFocus()
 
     def renumerar_itens_tabela(self):
-        return renumerar_itens_tabela(self)
+        self.bloquear_tratamento_tabela = True
+        self.tabela.blockSignals(True)
 
-    def novo(self):
-        return novo(self)
+        contador = 1
+        for linha in range(self.tabela.rowCount()):
+            item_desc = self.tabela.item(linha, 2)
+            if item_desc and item_desc.text().strip():
+                item_num = self.tabela.item(linha, 0)
+                if not item_num:
+                    item_num = self.criar_item("", editavel=False)
+                    self.tabela.setItem(linha, 0, item_num)
+                item_num.setText(str(contador))
+                contador += 1
+            else:
+                item_num = self.tabela.item(linha, 0)
+                if item_num:
+                    item_num.setText("")
 
-    def focar_desconto(self):
-        self.edit_desconto.setFocus()
-        self.edit_desconto.selectAll()
+        self.tabela.blockSignals(False)
+        self.bloquear_tratamento_tabela = False
 
-    def abrir_pesquisa_vendedor(self):
-        from consulta.tela_pesq_funcionario import TelaPesqFuncionario
-        self.tela_pesq_vendedor = TelaPesqFuncionario(self)
-        self.tela_pesq_vendedor.exec()
+    def limpar_info_produto(self):
+        self.valor_rua.clear()
+        self.valor_bloco.clear()
+        self.valor_prateleira.clear()
+        self.valor_gaveta.clear()
+        self.valor_aplicacao.clear()
+        self.label_foto.clear()
+        self.label_foto.setText("Sem foto")
 
-    def selecionar_vendedor(self, codigo, nome):
-        self.cod_vendedor.setText(codigo)
-        self.edit_vendedor.setText(nome)
+    def adicionar_produto_tabela(self):
+        descricao = self.edit_busca_produto.text().strip()
+        if not descricao:
+            return
+
+        if not self.produto_atual:
+            return
+
+        linha = self.linha_vazia()
+        if linha < 0:
+            return
+
+        codigo = str(self.produto_atual.get("codigo") or "")
+        unidade = str(self.produto_atual.get("un_venda") or "")
+        quantidade = self.texto_float(self.edit_quantidade_item.text())
+        preco = self.texto_float(self.edit_unitario_item.text())
+
+        self.bloquear_tratamento_tabela = True
+        self.tabela.blockSignals(True)
+
+        self.tabela.setItem(linha, 0, self.criar_item(str(linha + 1), editavel=False))
+        self.tabela.setItem(linha, 1, self.criar_item(codigo, editavel=False))
+        self.tabela.setItem(linha, 2, self.criar_item(descricao, editavel=False))
+        self.tabela.setItem(linha, 3, self.criar_item(unidade, editavel=False))
+        self.tabela.setItem(linha, 4, self.criar_item(self.formatar_decimal(quantidade), editavel=True))
+        self.tabela.setItem(linha, 5, self.criar_item(self.formatar_decimal(preco), editavel=True))
+        self.tabela.setItem(linha, 6, self.criar_item(self.formatar_decimal(preco), editavel=False))
+        self.tabela.setItem(linha, 7, self.criar_item(self.formatar_decimal(quantidade * preco), editavel=False))
+
+        self.tabela.blockSignals(False)
+        self.bloquear_tratamento_tabela = False
+
+        self.edit_busca_produto.clear()
+        self.edit_quantidade_item.setText("0,00")
+        self.edit_unitario_item.setText("0,00")
+        self.limpar_info_produto()
         self.edit_busca_produto.setFocus()
 
-    def focar_cod_vendedor(self):
-        self.cod_vendedor.setFocus()
-        self.cod_vendedor.selectAll()
+    def ir_para_unitario(self):
+        self.edit_unitario_item.setFocus()
+        self.edit_unitario_item.selectAll()
 
-    def buscar_vendedor_por_codigo(self):
-        codigo = self.cod_vendedor.text().strip()
 
-        if not codigo:
+    def ir_para_tabela_quantidade(self):
+        for linha in range(self.tabela.rowCount()):
+            item_descricao = self.tabela.item(linha, 2)
+            item_quantidade = self.tabela.item(linha, 4)
+
+            if item_descricao and item_descricao.text().strip() and item_quantidade:
+                self.tabela.setFocus()
+                self.tabela.setCurrentCell(linha, 4)
+                return
+
+
+    def clicar_tabela(self, linha, coluna):
+        item_descricao = self.tabela.item(linha, 2)
+        if not item_descricao or not item_descricao.text().strip():
             return
 
-        from entidades.funcionario.funcionario_service import FuncionarioService
-        from PyQt6.QtWidgets import QMessageBox
+        if coluna == 4:
+            self.tabela.setCurrentCell(linha, 4)
+            item = self.tabela.item(linha, 4)
+            if item:
+                self.tabela.editItem(item)
 
-        service = FuncionarioService()
-        vendedor = service.buscar_por_codigo(codigo)
+        elif coluna == 5:
+            self.tabela.setCurrentCell(linha, 5)
+            item = self.tabela.item(linha, 5)
+            if item:
+                self.tabela.editItem(item)
 
-        if not vendedor:
-            QMessageBox.warning(self, "Aviso", "Vendedor não encontrado.")
-            self.cod_vendedor.setFocus()
-            self.cod_vendedor.selectAll()
+    def descer_tabela_quantidade(self):
+        linha = self.tabela.currentRow()
+        coluna = self.tabela.currentColumn()
+
+        if linha < 0:
             return
 
-        apelido = vendedor.get("apelido", "")
-
-        self.edit_vendedor.setText(apelido)
-        self.edit_busca_produto.setFocus()
-
-
-    def abrir_pesquisa_cliente(self):
-        from consulta.tela_pesq_cliente import TelaPesqCliente
-        self.tela_pesq_cliente = TelaPesqCliente(self)
-        self.tela_pesq_cliente.exec()
-
-    def selecionar_cliente(self, codigo, nome, cpf):
-        self.cod_cliente.setText(codigo)
-        self.edit_cliente.setText(nome)
-        self.edit_cpf_cliente.setText(cpf)
-
-        self.edit_cliente.setReadOnly(True)
-        self.edit_cpf_cliente.setReadOnly(True)
-
-        self.edit_cpf_cliente.setFocus()
-        self.edit_cpf_cliente.selectAll()
-
-    def focar_cod_cliente(self):
-        self.cod_cliente.setFocus()
-        self.cod_cliente.selectAll()
-
-    def ir_para_nome_cliente(self):
-        self.edit_cliente.setFocus()
-        self.edit_cliente.selectAll()
-
-    def limpar_cliente(self):
-        self.cod_cliente.clear()
-        self.edit_cliente.clear()
-        self.edit_cpf_cliente.clear()
-
-        self.edit_cliente.setReadOnly(False)
-        self.edit_cpf_cliente.setReadOnly(False)
-
-        self.edit_cliente.setFocus()
-
-    def buscar_cliente_por_codigo(self):
-        codigo = self.cod_cliente.text().strip()
-
-        if not codigo:
+        proxima_linha = linha + 1
+        if proxima_linha >= self.tabela.rowCount():
             return
 
-        if codigo == "0":
-            self.limpar_cliente()
+        item_descricao = self.tabela.item(proxima_linha, 2)
+        if not item_descricao or not item_descricao.text().strip():
             return
 
-        from entidades.cliente.cliente_service import ClienteService
-        from PyQt6.QtWidgets import QMessageBox
+        if coluna not in (4, 5):
+            coluna = 4
 
-        service = ClienteService()
-        cliente = service.buscar_por_codigo(codigo)
+        self.tabela.setCurrentCell(proxima_linha, coluna)
 
-        if not cliente:
-            QMessageBox.warning(self, "Aviso", "Cliente não encontrado.")
-            self.cod_cliente.setFocus()
-            self.cod_cliente.selectAll()
+
+    def subir_tabela_quantidade(self):
+        linha = self.tabela.currentRow()
+        coluna = self.tabela.currentColumn()
+
+        if linha <= 0:
             return
 
-        nome = (
-            cliente.get("nome")
-            or cliente.get("nome_fantasia")
-            or cliente.get("razao_social")
-            or ""
-        )
-        cpf = cliente.get("cpf_cnpj", "")
+        linha_anterior = linha - 1
 
-        self.edit_cliente.setText(nome)
-        self.edit_cpf_cliente.setText(cpf)
-        self.edit_cliente.setReadOnly(True)
-        self.edit_cpf_cliente.setReadOnly(True)
+        item_descricao = self.tabela.item(linha_anterior, 2)
+        if not item_descricao or not item_descricao.text().strip():
+            return
+
+        if coluna not in (4, 5):
+            coluna = 4
+
+        self.tabela.setCurrentCell(linha_anterior, coluna)
 
 
-    def abrir_cliente_rapido(self, texto):
-        texto = texto.strip()
+    def tratar_edicao_tabela(self, item):
+        if self.bloquear_tratamento_tabela:
+            return
+
+        if not item:
+            return
+
+        linha = item.row()
+        coluna = item.column()
+
+        if coluna not in (4, 5):
+            return
+
+        item_desc = self.tabela.item(linha, 2)
+        if not item_desc or not item_desc.text().strip():
+            return
+
+        texto = item.text().strip()
 
         if not texto:
+            item.setText("0,00")
             return
 
-        if self.cod_cliente.text().strip():
+        texto_teste = texto.replace(",", ".")
+
+        try:
+            valor = float(texto_teste)
+        except ValueError:
+            self.bloquear_tratamento_tabela = True
+            item.setText("0,00")
+            self.bloquear_tratamento_tabela = False
             return
 
-        from consulta.tela_cliente_rapido import TelaClienteRapido
+        if coluna == 4 and valor == 0:
+            self.remover_linha_tabela(linha)
+            return
 
-        self.tela_cliente_rapido = TelaClienteRapido(self, texto)
-        self.tela_cliente_rapido.exec()
+        self.bloquear_tratamento_tabela = True
+        item.setText(self.formatar_decimal(valor))
+        self.bloquear_tratamento_tabela = False
 
-        self.edit_cliente.blockSignals(True)
-        self.edit_cliente.clear()
-        self.edit_cliente.blockSignals(False)
+        self.atualizar_linha_tabela(linha)
+
+
+
+    def enter_tabela(self):
+        linha = self.tabela.currentRow()
+        coluna = self.tabela.currentColumn()
+
+        if linha < 0:
+            return
+
+        item_desc = self.tabela.item(linha, 2)
+        if not item_desc or not item_desc.text().strip():
+            return
+
+        if coluna == 4:
+            item_quantidade = self.tabela.item(linha, 4)
+            if not item_quantidade:
+                return
+
+            quantidade = self.texto_float(item_quantidade.text())
+            if quantidade == 0:
+                self.remover_linha_tabela(linha)
+                return
+
+            self.atualizar_linha_tabela(linha)
+
+            item_preco = self.tabela.item(linha, 5)
+            if item_preco:
+                self.tabela.setCurrentCell(linha, 5)
+                self.tabela.editItem(item_preco)
+            return
+
+        if coluna == 5:
+            self.atualizar_linha_tabela(linha)
+
+            item_quantidade = self.tabela.item(linha, 4)
+            if item_quantidade:
+                self.tabela.setCurrentCell(linha, 4)
+                self.tabela.editItem(item_quantidade)
+
+
+    def keyPressEvent(self, event):
+        if self.tabela.hasFocus():
+            linha = self.tabela.currentRow()
+            coluna = self.tabela.currentColumn()
+
+            if linha >= 0 and coluna in (4, 5):
+                texto = event.text()
+
+                if texto and (texto.isdigit() or texto in ",."):
+                    item = self.tabela.item(linha, coluna)
+                    if item:
+                        self.tabela.editItem(item)
+
+                        editor = self.tabela.findChild(QLineEdit)
+                        if editor:
+                            editor.setText(texto)
+                    return
+
+        super().keyPressEvent(event)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

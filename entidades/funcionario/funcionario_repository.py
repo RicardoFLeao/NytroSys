@@ -194,7 +194,7 @@ class FuncionarioRepository:
             campo = mapa_campos.get(opcao)
 
             sql = """
-                SELECT codigo, nome, cargo, telefone1, email, status
+                SELECT codigo, nome, apelido, cargo, telefone1, email, status
                 FROM funcionarios
                 WHERE 1=1
             """
