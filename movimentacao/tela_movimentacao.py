@@ -77,8 +77,9 @@ class TelaMovimentacao(QWidget):
 
     def tela_saida(self):
         from movimentacao.saida.tela_saida import TelaSaida
-        self.janela = TelaSaida()
+        self.janela = TelaSaida(self)
         self.janela.show()
+        self.hide()
 
 
 

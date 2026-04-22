@@ -432,3 +432,160 @@ def novo(self):
     self.produto_atual = None
 
     self.edit_busca_produto.setFocus()
+
+    self.carregar_proximo_numero_orcamento()
+
+def controlar_tipo_venda(self, checkbox):
+    if checkbox == self.check_orc and self.check_orc.isChecked():
+        self.check_cfe.setChecked(False)
+        self.check_nfe.setChecked(False)
+
+    elif checkbox == self.check_cfe and self.check_cfe.isChecked():
+        self.check_orc.setChecked(False)
+        self.check_nfe.setChecked(False)
+
+    elif checkbox == self.check_nfe and self.check_nfe.isChecked():
+        self.check_orc.setChecked(False)
+        self.check_cfe.setChecked(False)
+
+    # garante pelo menos um marcado
+    if (
+        not self.check_orc.isChecked()
+        and not self.check_cfe.isChecked()
+        and not self.check_nfe.isChecked()
+    ):
+        self.check_orc.setChecked(True)
+
+
+def salvar_orcamento(self):
+    from bd import conectar
+    from PyQt6.QtWidgets import QMessageBox
+    from datetime import datetime
+
+    try:
+        conn = conectar()
+        cursor = conn.cursor()
+
+        if self.check_orc.isChecked():
+            tipo = "ORCAMENTO"
+        elif self.check_cfe.isChecked():
+            tipo = "CFE"
+        else:
+            tipo = "NFE"
+
+        cod_cliente = self.cod_cliente.text().strip() or None
+        nome_cliente = self.edit_cliente.text().strip()
+        cpf_cliente = self.edit_cpf_cliente.text().strip()
+
+        cod_vendedor = self.cod_vendedor.text().strip() or None
+        nome_vendedor = self.edit_vendedor.text().strip()
+
+        desconto = self.texto_para_float(self.edit_desconto.text())
+
+        total_produtos = self.texto_para_float(
+            self.label_total_produtos.text().replace("R$", "").strip()
+        )
+
+        total_venda = self.texto_para_float(
+            self.label_total_venda.text().replace("R$", "").strip()
+        )
+
+        cursor.execute("""
+            INSERT INTO orcamento (
+                data_hora, tipo,
+                cod_cliente, nome_cliente, cpf_cliente,
+                cod_vendedor, nome_vendedor,
+                desconto, total_produtos, total_venda
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            datetime.now(),
+            tipo,
+            cod_cliente,
+            nome_cliente,
+            cpf_cliente,
+            cod_vendedor,
+            nome_vendedor,
+            desconto,
+            total_produtos,
+            total_venda
+        ))
+
+        id_orcamento = cursor.lastrowid
+        self.edit_num.setText(str(id_orcamento).zfill(4))
+
+        self.salvar_itens_orcamento(cursor, id_orcamento)
+
+        conn.commit()
+
+        QMessageBox.information(self, "Sucesso", "Orçamento salvo!")
+
+        self.novo()
+
+        cursor.close()
+        conn.close()
+
+    except Exception as e:
+        QMessageBox.critical(self, "Erro", f"Erro ao salvar:\n{e}")
+
+
+
+
+def salvar_itens_orcamento(self, cursor, id_orcamento):
+    for linha in range(self.tabela.rowCount()):
+        item = linha + 1
+
+        cod_produto = self.tabela.item(linha, 1).text()
+        descricao = self.tabela.item(linha, 2).text()
+        unidade = self.tabela.item(linha, 3).text()
+
+        quantidade = self.texto_para_float(
+            self.tabela.item(linha, 4).text()
+        )
+        preco = self.texto_para_float(
+            self.tabela.item(linha, 5).text()
+        )
+        preco_desc = self.texto_para_float(
+            self.tabela.item(linha, 6).text()
+        )
+        total = self.texto_para_float(
+            self.tabela.item(linha, 7).text()
+        )
+
+        cursor.execute("""
+            INSERT INTO orcamento_itens (
+                id_orcamento, item, cod_produto, descricao, unidade,
+                quantidade, preco_unitario, preco_com_desconto, total
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            id_orcamento,
+            item,
+            cod_produto,
+            descricao,
+            unidade,
+            quantidade,
+            preco,
+            preco_desc,
+            total
+        ))
+
+def carregar_proximo_numero_orcamento(self):
+    from bd import conectar
+
+    try:
+        conn = conectar()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT MAX(id) AS ultimo_id FROM orcamento")
+        resultado = cursor.fetchone()
+
+        ultimo_id = resultado["ultimo_id"] if resultado and resultado["ultimo_id"] else 0
+        proximo = ultimo_id + 1
+
+        self.edit_num.setText(str(proximo).zfill(4))
+
+        cursor.close()
+        conn.close()
+
+    except Exception as e:
+        print("ERRO AO CARREGAR NUMERO:", e)
+        self.edit_num.setText("0001")

@@ -36,8 +36,9 @@ from movimentacao.saida.funcao_venda import (
 
 
 class TelaSaida(QWidget):
-    def __init__(self):
+    def __init__(self, tela_origem=None):
         super().__init__()
+        self.tela_origem = tela_origem
         self.setWindowTitle('Saída')
         self.produto_atual = None
 
@@ -45,9 +46,8 @@ class TelaSaida(QWidget):
         self.showMaximized()
 
         QShortcut(QKeySequence('Esc'), self).activated.connect(self.sair)
-        self.edit_busca_produto.textEdited.connect(
-            self.abrir_pesquisa_ao_digitar
-        )
+
+        self.edit_busca_produto.textEdited.connect(self.abrir_pesquisa_ao_digitar)
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.atualizar_data_hora)
@@ -61,7 +61,8 @@ class TelaSaida(QWidget):
         )
 
         self.atalho_f8_quantidade = QShortcut(
-            QKeySequence('F8'), self.edit_quantidade_item)
+            QKeySequence('F8'), self.edit_quantidade_item
+        )
         self.atalho_f8_quantidade.setContext(Qt.ShortcutContext.WidgetShortcut)
         self.atalho_f8_quantidade.activated.connect(
             lambda: self.abrir_pesquisa_produto(self.edit_busca_produto.text())
@@ -73,17 +74,26 @@ class TelaSaida(QWidget):
             lambda: self.abrir_pesquisa_produto(self.edit_busca_produto.text())
         )
 
-        self.atalho_f8_vendedor = QShortcut(QKeySequence('F8'), self.edit_vendedor)
+        self.atalho_f8_vendedor = QShortcut(
+            QKeySequence('F8'), self.edit_vendedor
+        )
         self.atalho_f8_vendedor.setContext(Qt.ShortcutContext.WidgetShortcut)
         self.atalho_f8_vendedor.activated.connect(self.abrir_pesquisa_vendedor)
 
-        self.atalho_f8_cod_vendedor = QShortcut(QKeySequence('F8'), self.cod_vendedor)
+        self.atalho_f8_cod_vendedor = QShortcut(
+            QKeySequence('F8'), self.cod_vendedor
+        )
         self.atalho_f8_cod_vendedor.setContext(Qt.ShortcutContext.WidgetShortcut)
-        self.atalho_f8_cod_vendedor.activated.connect(self.abrir_pesquisa_vendedor)
+        self.atalho_f8_cod_vendedor.activated.connect(
+            self.abrir_pesquisa_vendedor
+        )
 
-        QShortcut(QKeySequence('Ctrl+D'), self).activated.connect(self.focar_desconto)
+        QShortcut(QKeySequence('Ctrl+D'), self).activated.connect(
+            self.focar_desconto
+        )
 
         self.tabela.installEventFilter(self)
+
         self.edit_quantidade_item.returnPressed.connect(self.ir_para_unitario)
         self.edit_unitario_item.returnPressed.connect(
             self.adicionar_produto_tabela
@@ -91,33 +101,77 @@ class TelaSaida(QWidget):
         self.edit_busca_produto.returnPressed.connect(
             self.ir_para_tabela_quantidade
         )
+
         self.tabela.itemChanged.connect(self.tratar_edicao_tabela)
         self.tabela.currentCellChanged.connect(self.destacar_linha_atual)
         self.tabela.currentCellChanged.connect(
             self.atualizar_info_produto_tabela
         )
-        self.edit_desconto.textChanged.connect(self.atualizar_totais)
-        QShortcut(QKeySequence('F5'), self).activated.connect(self.novo)
 
-        QShortcut(QKeySequence('F3'), self).activated.connect(self.focar_cod_vendedor)
-        QShortcut(QKeySequence('F6'), self).activated.connect(self.focar_cod_cliente)
+        self.edit_desconto.textChanged.connect(self.atualizar_totais)
+
+        QShortcut(QKeySequence('F5'), self).activated.connect(self.novo)
+        QShortcut(QKeySequence('F3'), self).activated.connect(
+            self.focar_cod_vendedor
+        )
+        QShortcut(QKeySequence('F6'), self).activated.connect(
+            self.focar_cod_cliente
+        )
 
         self.edit_busca_produto.setFocus()
 
         self.cod_vendedor.returnPressed.connect(self.buscar_vendedor_por_codigo)
+        # self.atalho_enter_cod_vendedor = QShortcut(QKeySequence('Return'), self.cod_vendedor)
+        # self.atalho_enter_cod_vendedor.activated.connect(self.buscar_vendedor_por_codigo)
 
+        # self.atalho_enter2_cod_vendedor = QShortcut(QKeySequence('Enter'), self.cod_vendedor)
+        # self.atalho_enter2_cod_vendedor.activated.connect(self.buscar_vendedor_por_codigo)
+
+        # -------- CLIENTE --------
         self.cod_cliente.returnPressed.connect(self.buscar_cliente_por_codigo)
         self.cod_cliente.returnPressed.connect(self.ir_para_nome_cliente)
-        self.edit_cliente.textEdited.connect(self.abrir_cliente_rapido)
 
+        self.atalho_enter_cliente = QShortcut(
+            QKeySequence('Return'), self.edit_cliente
+        )
+        self.atalho_enter_cliente.setContext(
+            Qt.ShortcutContext.WidgetShortcut
+        )
+        self.atalho_enter_cliente.activated.connect(
+            self.tratar_enter_cliente
+        )
 
-        self.atalho_f8_cliente = QShortcut(QKeySequence('F8'), self.edit_cliente)
-        self.atalho_f8_cliente.setContext(Qt.ShortcutContext.WidgetShortcut)
-        self.atalho_f8_cliente.activated.connect(self.abrir_pesquisa_cliente)
+        self.atalho_enter2_cliente = QShortcut(
+            QKeySequence('Enter'), self.edit_cliente
+        )
+        self.atalho_enter2_cliente.setContext(
+            Qt.ShortcutContext.WidgetShortcut
+        )
+        self.atalho_enter2_cliente.activated.connect(
+            self.tratar_enter_cliente
+        )
 
-        self.atalho_f8_cod_cliente = QShortcut(QKeySequence('F8'), self.cod_cliente)
-        self.atalho_f8_cod_cliente.setContext(Qt.ShortcutContext.WidgetShortcut)
-        self.atalho_f8_cod_cliente.activated.connect(self.abrir_pesquisa_cliente)
+        self.atalho_f8_cliente = QShortcut(
+            QKeySequence('F8'), self.edit_cliente
+        )
+        self.atalho_f8_cliente.setContext(
+            Qt.ShortcutContext.WidgetShortcut
+        )
+        self.atalho_f8_cliente.activated.connect(
+            self.abrir_pesquisa_cliente
+        )
+
+        self.atalho_f8_cod_cliente = QShortcut(
+            QKeySequence('F8'), self.cod_cliente
+        )
+        self.atalho_f8_cod_cliente.setContext(
+            Qt.ShortcutContext.WidgetShortcut
+        )
+        self.atalho_f8_cod_cliente.activated.connect(
+            self.abrir_pesquisa_cliente
+        )
+
+        self.carregar_proximo_numero_orcamento()
 
     def componentes(self):
         titulo = QLabel("Saída")
@@ -189,6 +243,12 @@ class TelaSaida(QWidget):
         self.check_cfe = QCheckBox("CFE")
         self.check_nfe = QCheckBox("NFE")
 
+        self.check_orc.setChecked(True)
+
+        self.check_orc.clicked.connect(lambda: self.controlar_tipo_venda(self.check_orc))
+        self.check_cfe.clicked.connect(lambda: self.controlar_tipo_venda(self.check_cfe))
+        self.check_nfe.clicked.connect(lambda: self.controlar_tipo_venda(self.check_nfe))
+
         for check in [self.check_orc, self.check_cfe, self.check_nfe]:
             check.setStyleSheet("""
                 QCheckBox {
@@ -257,7 +317,7 @@ class TelaSaida(QWidget):
         self.label_vendedor.setText("Vendedor:")
         self.label_vendedor.setFixedSize(self.label_vendedor.sizeHint())
 
-        self.cod_vendedor = criar_lineedit_padrao(LineEditComEnter)
+        self.cod_vendedor = criar_lineedit_padrao()
         self.cod_vendedor.setFixedWidth(70)
         self.cod_vendedor.setPlaceholderText("F3")
 
@@ -605,6 +665,8 @@ class TelaSaida(QWidget):
         self.btn_novo.clicked.connect(self.novo)
 
         self.btn_gravar = criar_botao("F12 - Finalizar")
+        self.btn_gravar.clicked.connect(self.salvar_orcamento)
+
         self.btn_cancelar = criar_botao("F3 - Cancelar")
 
         linha_botoes = QHBoxLayout()
@@ -660,9 +722,8 @@ class TelaSaida(QWidget):
         self.label_data.setText(agora.toString("dd/MM/yyyy HH:mm:ss"))
 
     def sair(self):
-        from movimentacao.tela_movimentacao import TelaMovimentacao
-        self.janela = TelaMovimentacao()
-        self.janela.show()
+        if self.tela_origem:
+            self.tela_origem.show()
         self.close()
 
     def abrir_pesquisa_produto(self, texto_inicial=""):
@@ -718,7 +779,16 @@ class TelaSaida(QWidget):
         return renumerar_itens_tabela(self)
 
     def novo(self):
+        if hasattr(self, "cliente_rapido"):
+            del self.cliente_rapido
+
         return novo(self)
+
+    def controlar_tipo_venda(self, checkbox):
+        from movimentacao.saida.funcao_venda import controlar_tipo_venda
+        return controlar_tipo_venda(self, checkbox)
+
+
 
     def focar_desconto(self):
         self.edit_desconto.setFocus()
@@ -742,6 +812,8 @@ class TelaSaida(QWidget):
         codigo = self.cod_vendedor.text().strip()
 
         if not codigo:
+            self.edit_vendedor.setFocus()
+            self.edit_vendedor.selectAll()
             return
 
         from entidades.funcionario.funcionario_service import FuncionarioService
@@ -756,11 +828,16 @@ class TelaSaida(QWidget):
             self.cod_vendedor.selectAll()
             return
 
-        apelido = vendedor.get("apelido", "")
+        nome_vendedor = (
+            vendedor.get("apelido")
+            or vendedor.get("nome")
+            or vendedor.get("nome_funcionario")
+            or ""
+        )
 
-        self.edit_vendedor.setText(apelido)
+        self.edit_vendedor.setText(nome_vendedor)
         self.edit_busca_produto.setFocus()
-
+        self.edit_busca_produto.selectAll()
 
     def abrir_pesquisa_cliente(self):
         from consulta.tela_pesq_cliente import TelaPesqCliente
@@ -783,8 +860,15 @@ class TelaSaida(QWidget):
         self.cod_cliente.selectAll()
 
     def ir_para_nome_cliente(self):
+        if self.cod_cliente.text().strip():
+            if self.edit_cliente.text().strip():
+                self.cod_vendedor.setFocus()
+                self.cod_vendedor.selectAll()
+                return
+
         self.edit_cliente.setFocus()
         self.edit_cliente.selectAll()
+
 
     def limpar_cliente(self):
         self.cod_cliente.clear()
@@ -831,7 +915,6 @@ class TelaSaida(QWidget):
         self.edit_cliente.setReadOnly(True)
         self.edit_cpf_cliente.setReadOnly(True)
 
-
     def abrir_cliente_rapido(self, texto):
         texto = texto.strip()
 
@@ -843,12 +926,62 @@ class TelaSaida(QWidget):
 
         from consulta.tela_cliente_rapido import TelaClienteRapido
 
-        self.tela_cliente_rapido = TelaClienteRapido(self, texto)
+        dados_iniciais = getattr(self, "cliente_rapido", None)
+
+        self.tela_cliente_rapido = TelaClienteRapido(
+            self,
+            nome_inicial=texto,
+            dados_iniciais=dados_iniciais
+        )
         self.tela_cliente_rapido.exec()
 
-        self.edit_cliente.blockSignals(True)
-        self.edit_cliente.clear()
-        self.edit_cliente.blockSignals(False)
+    def receber_cliente_rapido(self, dados):
+        self.cliente_rapido = {
+            "nome": dados.get("nome", "").strip(),
+            "cpf": dados.get("cpf", "").strip(),
+            "telefone": dados.get("telefone", "").strip(),
+            "cep": dados.get("cep", "").strip(),
+            "endereco": dados.get("endereco", "").strip(),
+            "numero": dados.get("numero", "").strip(),
+            "bairro": dados.get("bairro", "").strip(),
+            "cidade": dados.get("cidade", "").strip(),
+            "uf": dados.get("uf", "").strip(),
+        }
+
+        self.cod_cliente.clear()
+        self.edit_cliente.setText(self.cliente_rapido["nome"])
+        self.edit_cpf_cliente.setText(self.cliente_rapido["cpf"])
+
+        self.edit_cliente.setReadOnly(False)
+        self.edit_cpf_cliente.setReadOnly(False)
+
+        self.cod_vendedor.setFocus()
+        self.cod_vendedor.selectAll()
+
+    def tratar_enter_cliente(self):
+        texto = self.edit_cliente.text().strip()
+
+        if texto:
+            self.abrir_cliente_rapido(texto)
+            return
+
+        self.cod_vendedor.setFocus()
+        self.cod_vendedor.selectAll()
+
+
+    def salvar_orcamento(self):
+        from movimentacao.saida.funcao_venda import salvar_orcamento
+        return salvar_orcamento(self)
+
+    def salvar_itens_orcamento(self, cursor, id_orcamento):
+        from movimentacao.saida.funcao_venda import salvar_itens_orcamento
+        return salvar_itens_orcamento(self, cursor, id_orcamento)
+
+    def carregar_proximo_numero_orcamento(self):
+        from movimentacao.saida.funcao_venda import carregar_proximo_numero_orcamento
+        return carregar_proximo_numero_orcamento(self)
+
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

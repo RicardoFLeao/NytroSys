@@ -21,7 +21,7 @@ from PyQt6.QtWidgets import (
 
 
 class TelaClienteRapido(QDialog):
-    def __init__(self, tela_origem=None, nome_inicial=""):
+    def __init__(self, tela_origem=None, nome_inicial="", dados_iniciais=None):
         super().__init__()
         self.tela_origem = tela_origem
         self.setWindowTitle("Cliente Rápido")
@@ -39,11 +39,26 @@ class TelaClienteRapido(QDialog):
 
         self.componentes()
 
-        self.edit_nome.setText(nome_inicial)
+        if dados_iniciais:
+            self.edit_nome.setText(dados_iniciais.get("nome", ""))
+            self.edit_cpf.setText(dados_iniciais.get("cpf", ""))
+            self.edit_telefone.setText(dados_iniciais.get("telefone", ""))
+            self.edit_cep.setText(dados_iniciais.get("cep", ""))
+            self.edit_endereco.setText(dados_iniciais.get("endereco", ""))
+            self.edit_numero.setText(dados_iniciais.get("numero", ""))
+            self.edit_bairro.setText(dados_iniciais.get("bairro", ""))
+            self.edit_cidade.setText(dados_iniciais.get("cidade", ""))
+            self.edit_uf.setText(dados_iniciais.get("uf", ""))
+        else:
+            self.edit_nome.setText(nome_inicial)
+
         QTimer.singleShot(0, self.posicionar_cursor_nome)
 
-        QShortcut(QKeySequence('Esc'), self).activated.connect(self.reject)
+        QShortcut(QKeySequence('Esc'), self).activated.connect(self.confirmar)
         self.edit_cep.editingFinished.connect(self.buscar_cep)
+        self.btn_confirmar.clicked.connect(self.confirmar)
+
+
 
 
     def componentes(self):
@@ -179,20 +194,14 @@ class TelaClienteRapido(QDialog):
         linha_bairro_cidade_uf.addLayout(vbox_uf)
 
         self.btn_confirmar = criar_botao()
-        self.btn_confirmar.setText("F12 - Confirmar")
+        self.btn_confirmar.setText("ESC - Confirmar")
         self.btn_confirmar.setAutoDefault(False)
         self.btn_confirmar.setDefault(False)
 
-        self.btn_sair = criar_botao()
-        self.btn_sair.setText("Esc - Sair")
-        self.btn_sair.clicked.connect(self.reject)
-        self.btn_sair.setAutoDefault(False)
-        self.btn_sair.setDefault(False)
 
         linha_botoes = QHBoxLayout()
         linha_botoes.addWidget(self.btn_confirmar)
         linha_botoes.addStretch()
-        linha_botoes.addWidget(self.btn_sair)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(20, 20, 20, 20)
@@ -233,6 +242,25 @@ class TelaClienteRapido(QDialog):
         self.edit_nome.setFocus()
         self.edit_nome.setSelection(0, 0)
         self.edit_nome.setCursorPosition(len(self.edit_nome.text()))
+
+    def confirmar(self):
+        dados = {
+            "nome": self.edit_nome.text().strip(),
+            "cpf": self.edit_cpf.text().strip(),
+            "telefone": self.edit_telefone.text().strip(),
+            "cep": self.edit_cep.text().strip(),
+            "endereco": self.edit_endereco.text().strip(),
+            "numero": self.edit_numero.text().strip(),
+            "bairro": self.edit_bairro.text().strip(),
+            "cidade": self.edit_cidade.text().strip(),
+            "uf": self.edit_uf.text().strip(),
+        }
+
+        if self.tela_origem:
+            self.tela_origem.receber_cliente_rapido(dados)
+
+        self.accept()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
