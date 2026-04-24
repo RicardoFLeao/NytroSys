@@ -24,3 +24,7 @@ Pensar como sistema real
 
 OBJETIVO: Ajudar a construir um sistema comercial completo e evoluir
 como desenvolvedor.
+
+segue o .md e vou te mandar os arquivos que estamos trabalhando
+
+sempre que for me mandar uma alteração de função, mandar também nome arquivo e nome função. 

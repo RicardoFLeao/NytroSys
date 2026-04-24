@@ -435,26 +435,6 @@ def novo(self):
 
     self.carregar_proximo_numero_orcamento()
 
-def controlar_tipo_venda(self, checkbox):
-    if checkbox == self.check_orc and self.check_orc.isChecked():
-        self.check_cfe.setChecked(False)
-        self.check_nfe.setChecked(False)
-
-    elif checkbox == self.check_cfe and self.check_cfe.isChecked():
-        self.check_orc.setChecked(False)
-        self.check_nfe.setChecked(False)
-
-    elif checkbox == self.check_nfe and self.check_nfe.isChecked():
-        self.check_orc.setChecked(False)
-        self.check_cfe.setChecked(False)
-
-    # garante pelo menos um marcado
-    if (
-        not self.check_orc.isChecked()
-        and not self.check_cfe.isChecked()
-        and not self.check_nfe.isChecked()
-    ):
-        self.check_orc.setChecked(True)
 
 
 def salvar_orcamento(self):
@@ -466,12 +446,8 @@ def salvar_orcamento(self):
         conn = conectar()
         cursor = conn.cursor()
 
-        if self.check_orc.isChecked():
-            tipo = "ORCAMENTO"
-        elif self.check_cfe.isChecked():
-            tipo = "CFE"
-        else:
-            tipo = "NFE"
+        tipo = "ORCAMENTO"
+
 
         cod_cliente = self.cod_cliente.text().strip() or None
         nome_cliente = self.edit_cliente.text().strip()

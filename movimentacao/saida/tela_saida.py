@@ -6,11 +6,11 @@ sys.path.append(os.path.abspath(os.path.join(
 from util.padrao import criar_label_padrao, criar_lineedit_padrao
 from util.fun_basicas import LineEditComEnter
 from util.estilo import gerar_estilo
-from PyQt6.QtGui import QShortcut, QKeySequence
+from PyQt6.QtGui import QShortcut, QKeySequence, QIcon
 from PyQt6.QtCore import Qt, QDateTime, QTimer
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QLabel, QFrame,
-    QPushButton, QHBoxLayout, QLineEdit, QCheckBox,
+    QPushButton, QHBoxLayout, QLineEdit,
     QTableWidget, QHeaderView, QAbstractItemView
 )
 
@@ -40,6 +40,7 @@ class TelaSaida(QWidget):
         super().__init__()
         self.tela_origem = tela_origem
         self.setWindowTitle('Saída')
+        self.setWindowIcon(QIcon('imagens/icone.png'))
         self.produto_atual = None
 
         self.componentes()
@@ -118,14 +119,11 @@ class TelaSaida(QWidget):
             self.focar_cod_cliente
         )
 
+        QShortcut(QKeySequence('F12'), self).activated.connect(self.abrir_tela_pagamento)
+
         self.edit_busca_produto.setFocus()
 
         self.cod_vendedor.returnPressed.connect(self.buscar_vendedor_por_codigo)
-        # self.atalho_enter_cod_vendedor = QShortcut(QKeySequence('Return'), self.cod_vendedor)
-        # self.atalho_enter_cod_vendedor.activated.connect(self.buscar_vendedor_por_codigo)
-
-        # self.atalho_enter2_cod_vendedor = QShortcut(QKeySequence('Enter'), self.cod_vendedor)
-        # self.atalho_enter2_cod_vendedor.activated.connect(self.buscar_vendedor_por_codigo)
 
         # -------- CLIENTE --------
         self.cod_cliente.returnPressed.connect(self.buscar_cliente_por_codigo)
@@ -188,12 +186,13 @@ class TelaSaida(QWidget):
         """)
 
         self.botao_venda = QPushButton("Vendas")
-        self.botao_consultas = QPushButton("Consultas")
+        self.botao_faturar = QPushButton("Consultar/Faturar")
+        self.botao_consultas = QPushButton("Notas Fiscais - NFE")
         self.botao_relatorios = QPushButton("Relatórios")
         self.botao_sair = QPushButton("ESC - Sair")
         self.botao_sair.clicked.connect(self.sair)
 
-        for botao in [self.botao_venda, self.botao_consultas, self.botao_relatorios, self.botao_sair]:
+        for botao in [self.botao_venda, self.botao_faturar, self.botao_consultas, self.botao_relatorios, self.botao_sair]:
             botao.setFixedSize(180, 60)
             botao.setStyleSheet("""
                 QPushButton {
@@ -208,6 +207,7 @@ class TelaSaida(QWidget):
         layout_botoes = QVBoxLayout()
         layout_botoes.setSpacing(20)
         layout_botoes.addWidget(self.botao_venda)
+        layout_botoes.addWidget(self.botao_faturar)
         layout_botoes.addWidget(self.botao_consultas)
         layout_botoes.addWidget(self.botao_relatorios)
         layout_botoes.addStretch()
@@ -217,7 +217,7 @@ class TelaSaida(QWidget):
         layout_quadro.setContentsMargins(20, 10, 20, 10)
         layout_quadro.setSpacing(8)
 
-        self.label_num = QLabel("Nº Venda:")
+        self.label_num = QLabel("Nº :")
         self.label_num.setStyleSheet(
             "font-size:14px; font-weight:bold; color:#031740;")
 
@@ -239,24 +239,16 @@ class TelaSaida(QWidget):
         topo_esq.addWidget(self.edit_num)
         topo_esq.addStretch()
 
-        self.check_orc = QCheckBox("Orçamento")
-        self.check_cfe = QCheckBox("CFE")
-        self.check_nfe = QCheckBox("NFE")
 
-        self.check_orc.setChecked(True)
-
-        self.check_orc.clicked.connect(lambda: self.controlar_tipo_venda(self.check_orc))
-        self.check_cfe.clicked.connect(lambda: self.controlar_tipo_venda(self.check_cfe))
-        self.check_nfe.clicked.connect(lambda: self.controlar_tipo_venda(self.check_nfe))
-
-        for check in [self.check_orc, self.check_cfe, self.check_nfe]:
-            check.setStyleSheet("""
-                QCheckBox {
-                    background: transparent;
-                    color: black;
-                    font-weight: bold;
-                }
-            """)
+        self.label_tipo = QLabel("Orçamento")
+        self.label_tipo.setStyleSheet("""
+            QLabel {
+                background: transparent;
+                color: #031740;
+                font-weight: bold;
+                font-size: 20px;
+            }
+        """)
 
         self.label_data = QLabel()
         self.label_data.setFixedHeight(28)
@@ -270,9 +262,7 @@ class TelaSaida(QWidget):
         topo_dir = QHBoxLayout()
         topo_dir.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         topo_dir.setSpacing(8)
-        topo_dir.addWidget(self.check_orc)
-        topo_dir.addWidget(self.check_cfe)
-        topo_dir.addWidget(self.check_nfe)
+        topo_dir.addWidget(self.label_tipo)
         topo_dir.addSpacing(10)
         topo_dir.addWidget(self.label_data)
 
@@ -665,7 +655,7 @@ class TelaSaida(QWidget):
         self.btn_novo.clicked.connect(self.novo)
 
         self.btn_gravar = criar_botao("F12 - Finalizar")
-        self.btn_gravar.clicked.connect(self.salvar_orcamento)
+        self.btn_gravar.clicked.connect(self.abrir_tela_pagamento)
 
         self.btn_cancelar = criar_botao("F3 - Cancelar")
 
@@ -783,11 +773,6 @@ class TelaSaida(QWidget):
             del self.cliente_rapido
 
         return novo(self)
-
-    def controlar_tipo_venda(self, checkbox):
-        from movimentacao.saida.funcao_venda import controlar_tipo_venda
-        return controlar_tipo_venda(self, checkbox)
-
 
 
     def focar_desconto(self):
@@ -970,9 +955,10 @@ class TelaSaida(QWidget):
 
 
     def salvar_orcamento(self):
-        from movimentacao.saida.funcao_venda import salvar_orcamento
-        return salvar_orcamento(self)
+        self.abrir_tela_pagamento()
 
+
+        
     def salvar_itens_orcamento(self, cursor, id_orcamento):
         from movimentacao.saida.funcao_venda import salvar_itens_orcamento
         return salvar_itens_orcamento(self, cursor, id_orcamento)
@@ -981,6 +967,12 @@ class TelaSaida(QWidget):
         from movimentacao.saida.funcao_venda import carregar_proximo_numero_orcamento
         return carregar_proximo_numero_orcamento(self)
 
+
+    def abrir_tela_pagamento(self):
+        from movimentacao.tela_pagamento import TelaPagamento
+
+        self.tela_pagamento = TelaPagamento(self)
+        self.tela_pagamento.exec()
 
 
 if __name__ == '__main__':
